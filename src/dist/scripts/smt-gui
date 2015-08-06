@@ -1,0 +1,15 @@
+#!/bin/sh
+#
+#   The Subnet Monitoring Tool Graphical User Interface, or smt-gui
+#
+#   Intended to be the "workbench", or "dashboard" for the package of
+#   tools.  It provides a graphical mechanism for investigation, discovery,
+#   and simply browsing infiniband fabrics.
+#
+SMT_HOME="%h/.smt"
+#
+CMD_CLASS=gov.llnl.lc.smt.command.gui.SmtGui
+CMD_LOGS="$SMT_HOME/smt-gui%u.log"
+#
+# command line arguments for this command will be appended
+/usr/share/java/SubnetMonitorTool/bin/smt-abstract $CMD_CLASS -lf $CMD_LOGS $@

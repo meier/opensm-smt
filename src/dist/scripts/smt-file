@@ -1,0 +1,11 @@
+#!/bin/sh
+# the default script for starting this smt-command
+#
+SMT_HOME="%h/.smt"
+#
+# typically only the following two lines are command specific
+CMD_CLASS=gov.llnl.lc.smt.command.file.SmtFile
+CMD_LOGS="$SMT_HOME/smt-file%u.log"
+#
+# command line arguments for this command will be appended
+/usr/share/java/SubnetMonitorTool/bin/smt-abstract $CMD_CLASS -lf $CMD_LOGS $@

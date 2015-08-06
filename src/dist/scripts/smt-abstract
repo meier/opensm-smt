@@ -1,0 +1,42 @@
+#!/bin/sh
+# file: smt-abstract
+# date: 2-25-2015 (tam)
+#
+# generic convenience script for invoking subnet monitoring toos (SMT)
+# to personalize, see below;
+#
+# specify the location of JAVA.  A system may have several versions of java
+# and the desired or default version should be specified here
+#
+#JAVA_BIN=/usr/bin/java
+#JAVA_BIN=/home/meier3/javaRepo/jdk1.6.0_41//bin/java
+: ${JAVA_HOME:=/usr}
+JAVA_BIN=$JAVA_HOME/bin/java
+#
+#
+# FYI: JVisualVm is a java monitoring tool included with JAVA, and useful for debugging
+#      java applications.  A typical location would be;
+#                 /usr/lib/jvm/java-1.6.0-sun.x86_64/bin/jvisualvm
+#
+SMT_JARS=/usr/share/java/SubnetMonitorTool
+OCS_JARS=/usr/share/java/OsmClientServer
+LCC_JARS=/usr/share/java/JLdapOtpInterface
+MY_PROPS=/etc/opensm-plugin/OsmJClient.properties
+SMT_CFG=/etc/opensm-plugin/SubnetMonitorTool.config
+SMT_HOME="%h/.smt"
+#
+# to personalize, copy this script, and modify the following
+#
+# MY_PROPS=~/JavaProperties/localhost/OsmJClient.properties
+# SMT_CFG=$SMT_HOME/SubnetMonitorTool.config
+#
+JAVA_OPTS="-XX:MaxPermSize=512m -Xmx2048m -Xms1024m"
+CMD_OPTS=" -classpath .:$SMT_JARS/*:$SMT_JARS/lib/*:$OCS_JARS/*:$OCS_JARS/lib/*:$LCC_JARS/*:$LCC_JARS/lib/* -DNetworkProperties.file=$MY_PROPS -DKeyStoreProperties.file=$MY_PROPS -DAuthenticationProperties.file=$MY_PROPS -DAuthorizationProperties.file=$MY_PROPS -Djava.util.logging.config.file=$MY_PROPS"
+#
+# typically, this script would be invoked by another script, which extends it
+# for a specific SMT command, for example;
+#
+#   CMD_CLASS=gov.llnl.lc.smt.command.console.SmtConsole
+#   ./smt-abstract $CMD_CLASS --host localhost -rC "$SMT_HOME/config.file" -lf "$SMT_HOME/smt-console%u.log" $@
+# 
+$JAVA_BIN $JAVA_OPTS $CMD_OPTS $@ -rC $SMT_CFG
