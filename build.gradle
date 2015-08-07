@@ -9,6 +9,7 @@ apply plugin: 'java'
 
 def mainClass  = "gov/llnl/lc/smt/command/SubnetMonitorTool"
 def bundleDescription = "Subnet Monitoring Tools for OpenSM, that use the OpenSM Monitoring Service"
+def userJarRepo = System.getProperty('user.home') + '/jarRepo'
 
 // In this section you declare where to find the dependencies of your project
 // and in this case, all subprojects should be at the same level as this
@@ -22,8 +23,8 @@ repositories {
         dirs '../ldapotp-java-api/build/distributions/'
         dirs '../lc-jsecure-client-server/build/distributions/'
         dirs '../opensm-client-server/build/distributions/'
-        dirs '/home/meier3/jarRepo/gitOmsJars/'
-        dirs '/home/meier3/jarRepo/gitSmtJars/'
+        dirs userJarRepo + '/gitOmsJars/'
+        dirs userJarRepo + '/gitSmtJars/'
    }
 }
 
