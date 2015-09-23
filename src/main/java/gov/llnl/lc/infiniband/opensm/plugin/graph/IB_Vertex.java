@@ -527,9 +527,15 @@ public class IB_Vertex implements Comparable<IB_Vertex>, CommonLogger
   
   public static LinkedHashMap <String, IB_Vertex> createVertexMap(OSM_Fabric fabric) 
   {
+    return createVertexMap(fabric, null);
+  }
+    
+  public static LinkedHashMap <String, IB_Vertex> createVertexMap(OSM_Fabric fabric, ArrayList<IB_Guid> guidArray) 
+  {
+    
     if(fabric != null)
     {
-      LinkedHashMap <String, IB_Vertex> vMap = createVertexMap(fabric.getOSM_Nodes(), fabric.getOSM_Ports(), fabric);
+      LinkedHashMap <String, IB_Vertex> vMap = createVertexMap(fabric.getOSM_Nodes(), fabric.getOSM_Ports(), fabric, guidArray);
       IB_Vertex.setSBN_Switches(vMap, fabric);
 //      IB_Vertex.setMgmtNode(vMap, fabric);
       return vMap;
@@ -572,15 +578,22 @@ public class IB_Vertex implements Comparable<IB_Vertex>, CommonLogger
     return vertexMap;
   }
   
-  public static LinkedHashMap<String, IB_Vertex> createVertexMap(HashMap<String, OSM_Node> nodeMap, HashMap<String, OSM_Port> portMap, OSM_Fabric fabric)
+  public static LinkedHashMap<String, IB_Vertex> createVertexMap(HashMap<String, OSM_Node> nodeMap, HashMap<String, OSM_Port> portMap, OSM_Fabric fabric, ArrayList<IB_Guid> guidArray)
   {
     LinkedHashMap<String, IB_Edge> edgeMap = IB_Edge.createEdgeMap(nodeMap, portMap);
-    return IB_Vertex.createVertexMap(edgeMap, fabric);
+    return IB_Vertex.createVertexMap(edgeMap, fabric, guidArray);
   }
   
   public static LinkedHashMap<String, IB_Vertex> createVertexMap(HashMap<String, IB_Edge> edgeMap, OSM_Fabric fabric)
   {
+    return createVertexMap(edgeMap, fabric, null);
+  }
+  
+  public static LinkedHashMap<String, IB_Vertex> createVertexMap(HashMap<String, IB_Edge> edgeMap, OSM_Fabric fabric, ArrayList<IB_Guid> guidArray)
+  {
     // pull the vertices out of the edges (and initialize the decorators)
+    // if the guidArray is null, include all, but if it contains guids, then only include those guids
+    
     LinkedHashMap<String, IB_Vertex> vertexMap = null;
     if((edgeMap != null) && (edgeMap.size() > 1))
     {
@@ -589,23 +602,80 @@ public class IB_Vertex implements Comparable<IB_Vertex>, CommonLogger
       for (Entry<String, IB_Edge> entry : edgeMap.entrySet())
       {
           IB_Edge e = entry.getValue();
-
-          // add both Vertices to the bin list
-          vertexMap.put(e.getEndpoint1().getKey(), e.getEndpoint1());
-          vertexMap.put(e.getEndpoint2().getKey(), e.getEndpoint2());
+          // both sides fo the edge
+              vertexMap.put(e.getEndpoint1().getKey(), e.getEndpoint1());
+              vertexMap.put(e.getEndpoint2().getKey(), e.getEndpoint2());
+              
       }
+//      logger.info("The size of the vertexMap is: " + vertexMap.size());
       IB_Decorator.setAllLevelDecorators(vertexMap);
       IB_Vertex.setDepths(vertexMap);
+      IB_Vertex.setMgmtNode(vertexMap, fabric);
+      vertexMap = sortVertexMap(vertexMap, true);
+     
+      if((guidArray != null) && !(guidArray.isEmpty()))
+      {
+        LinkedHashMap<String, IB_Vertex> vertexMap2 = new LinkedHashMap<String, IB_Vertex>();
+        
+        // only include the vertex that have the guid
+        for (Entry<String, IB_Vertex> entry : vertexMap.entrySet())
+        {
+            IB_Vertex v = entry.getValue();
+            if(guidArray.contains(v.getGuid()))
+              vertexMap2.put(v.getKey(), v);
+        }
+//        logger.info("The size of the guid vertex map is: " + vertexMap2.size());
+        // if the size is greater than one, sort it
+        if(vertexMap2.size() > 1)
+          vertexMap = sortVertexMap(vertexMap2, true);
+        else
+          vertexMap = vertexMap2;
+      }
     }
     
     // return a sorted (by name) map
-    vertexMap = sortVertexMap(vertexMap, true);
-    IB_Vertex.setMgmtNode(vertexMap, fabric);
-
-    
     return vertexMap;
   }
   
+//  public static LinkedHashMap<String, IB_Vertex> createVertexMapOrig(HashMap<String, IB_Edge> edgeMap, OSM_Fabric fabric, ArrayList<IB_Guid> guidArray)
+//  {
+//    // pull the vertices out of the edges (and initialize the decorators)
+//    // if the guidArray is null, include all, but if it contains guids, then only include those guids
+//    
+//    LinkedHashMap<String, IB_Vertex> vertexMap = null;
+//    if((edgeMap != null) && (edgeMap.size() > 1))
+//    {
+//      vertexMap = new LinkedHashMap<String, IB_Vertex>();
+//      
+//      for (Entry<String, IB_Edge> entry : edgeMap.entrySet())
+//      {
+//          IB_Edge e = entry.getValue();
+//
+//              // conditionally add both the ends of the edge
+//            if((guidArray == null) || (guidArray.isEmpty()) || (guidArray.contains(e.getEndpoint1().getGuid())))
+//              vertexMap.put(e.getEndpoint1().getKey(), e.getEndpoint1());
+//              
+//            if((guidArray == null) || (guidArray.isEmpty()) || (guidArray.contains(e.getEndpoint2().getGuid())))
+//              vertexMap.put(e.getEndpoint2().getKey(), e.getEndpoint2());
+//              
+//      }
+//      logger.info("The size of the vertexMap is: " + vertexMap.size());
+//      
+//      if(guidArray == null)
+//      {
+//      IB_Decorator.setAllLevelDecorators(vertexMap);
+//      IB_Vertex.setDepths(vertexMap);
+//      }
+//    }
+//    
+//    // return a sorted (by name) map
+//    vertexMap = sortVertexMap(vertexMap, true);
+//    IB_Vertex.setMgmtNode(vertexMap, fabric);
+//
+//    
+//    return vertexMap;
+//  }
+//  
   public static LinkedHashMap<String, IB_Vertex> sortVertexMap(HashMap<String, IB_Vertex> vertexMap, boolean byName)
   {
     // create a new sorted version of this map.  Sort by Name if true, otherwise by depth
@@ -760,60 +830,74 @@ public class IB_Vertex implements Comparable<IB_Vertex>, CommonLogger
 
   private static int setDepthLevel(ArrayList<IB_Vertex> vL, int depthNumber)
   {
-    // walk through the vertices, and set all leaf vertex (with only a single edge) to
+    // walk through the vertices, and set all leaf vertex (with only a single
+    // edge) to
     // LEVEL 0
-    // walk through the vertieses again, skip LEVEL 0, set all vertex that touch LEVEL 0
+    // walk through the vertieses again, skip LEVEL 0, set all vertex that touch
+    // LEVEL 0
     // vertex to LEVEL 1
-    // walk through the verteces again, skip LEVEL 1, 2, set all vertex that touch LEVEL 2
+    // walk through the verteces again, skip LEVEL 1, 2, set all vertex that
+    // touch LEVEL 2
     // vertex to LEVEL 3
     // repeat until done.
-    
+
+    boolean newlyAssigned = false;
+
     int num = 0;
-    if((vL != null) && (vL.size() > 0))
+    if ((vL != null) && (vL.size() > 0))
     {
-      // now loop through the vertices, check their edges to see if they touch a lower level edge
-      for(IB_Vertex tv: vL)
+      // now loop through the vertices, check their edges to see if they touch a
+      // lower level edge
+      for (IB_Vertex tv : vL)
       {
         // Special case for level 1
-        if(depthNumber == 0)
+        if (depthNumber == 0)
         {
           // TODO - check if the node in this Vertex thinks its a switch
-          //       Don't make a Switch Level 0
-          //       Some HCAs or leaf nodes (depth 0) may have 2 ports, or edges
-          if(tv.getEdgeMap().size() <= 1)
+          // Don't make a Switch Level 0
+          // Some HCAs or leaf nodes (depth 0) may have 2 ports, or edges
+          if (tv.getEdgeMap().size() <= 1)
           {
             tv.setDepth(depthNumber);
+            newlyAssigned = true;
             num++;
-            if(tv.getEdgeMap().size() == 0)
+            if (tv.getEdgeMap().size() == 0)
               logger.warning("No edges for this vertex");
-          }          
+          }
         }
         else
         {
-        // skip vertices already assigned a depth
-        if(tv.getDepth() > -1)
-          continue;
-        
-        // assign only this level
-        if(tv.isTouchingDepth(depthNumber -1))
-        {
-          tv.setDepth(depthNumber);
-          num++;        
+          // skip vertices already assigned a depth
+          if (tv.getDepth() > -1)
+          {
+            continue;
+          }
+
+          // assign only this level
+          if (tv.isTouchingDepth(depthNumber - 1))
+          {
+            tv.setDepth(depthNumber);
+            newlyAssigned = true;
+            num++;
+          }
         }
       }
     }
-//      if(num > 0)
-//        logger.info("There are " + num + " vertices at depth " + depthNumber);          
+    if (newlyAssigned == false)
+    {
+      // this can happen (and normally does) if you work with a vertex map
+      // (partial)
+      // that has already been assigned levels. Not unusual...
+      logger.fine("No depths were assigned for this vertex map, already previously assigned??");
     }
-    if((num <=0) && (depthNumber ==0))
+
+    if ((num <= 0) && (depthNumber == 0))
     {
       logger.severe("Error, there must be at least one Leaf vertex!");
       System.exit(-1);
     }
-    
-    return num;   
+    return num;
   }  
-  
 
   public static void setDepths(ArrayList<IB_Vertex> vL)
   {
@@ -840,7 +924,6 @@ public class IB_Vertex implements Comparable<IB_Vertex>, CommonLogger
     if(vMap != null)
       IB_Vertex.setDepths(new ArrayList<IB_Vertex>(vMap.values()));
   }
-
   
   
   public static LinkedHashMap<String, IB_Edge> createEdgeMap(HashMap<String, IB_Vertex> vertexMap)
@@ -891,6 +974,13 @@ public class IB_Vertex implements Comparable<IB_Vertex>, CommonLogger
   {
     if(this.isRoot())
       return FabricName;
+    return getNode().sbnNode.description;
+  }
+
+  public String setName(String name)
+  {
+    if(this.isRoot())
+      return FabricName = name;
     return getNode().sbnNode.description;
   }
 
@@ -1385,6 +1475,9 @@ public class IB_Vertex implements Comparable<IB_Vertex>, CommonLogger
   @Override
   public String toString()
   {
+    if(this.isRoot())
+      return FabricName;
+
     StringBuffer stringValue = new StringBuffer();
     
     stringValue.append(node.pfmNode.node_name + " = " + node.getNodeGuid().toColonString());

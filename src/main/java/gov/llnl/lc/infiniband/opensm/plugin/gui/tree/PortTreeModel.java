@@ -447,6 +447,7 @@ public class PortTreeModel extends AbstractPortTreeModel
       System.err.println("NumChildren: " + childSet.size());    
       return childSet;
   }
+  
   public boolean containsSameRoot(PortTreeModel model)
   {
     // compare the root guids

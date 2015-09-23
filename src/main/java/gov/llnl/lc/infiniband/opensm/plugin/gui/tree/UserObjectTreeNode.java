@@ -55,12 +55,15 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.tree;
 
+import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 
 public class UserObjectTreeNode extends DefaultMutableTreeNode
 {
-  // must create the root first, and then add children (build from top down)
-   
+  /**  describe serialVersionUID here **/
+  private static final long serialVersionUID = -1881503825314799294L;
+
   /**
    * 
    */
@@ -87,6 +90,20 @@ public class UserObjectTreeNode extends DefaultMutableTreeNode
     // TODO Auto-generated constructor stub
   }
 
+  public static UserObjectTreeNode getTreeRootNode(JTree tree)
+  {
+    UserObjectTreeNode root = null;
+
+    if ((tree != null) && (tree.getModel() != null))
+    {
+      DefaultTreeModel tm = (DefaultTreeModel)tree.getModel();
+      Object obj = tm.getRoot();
+      if(obj instanceof UserObjectTreeNode)
+        root = (UserObjectTreeNode)obj;
+     }
+    return root;
+  }
+
   @Override
   public String toString()
   {
@@ -94,7 +111,5 @@ public class UserObjectTreeNode extends DefaultMutableTreeNode
     
     return n.toString();
   }
-
-  
 
 }

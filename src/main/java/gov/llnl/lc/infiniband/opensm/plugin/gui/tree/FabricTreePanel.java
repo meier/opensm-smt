@@ -132,14 +132,11 @@ public class FabricTreePanel extends JPanel implements OSM_ServiceChangeListener
     {
       public void valueChanged(TreeSelectionEvent arg0)
       {
-        // arg is the tree, and lastSelectedPathComponent is the
-        // FabricTreeNode
-        if (tree.getLastSelectedPathComponent() instanceof FabricTreeNode)
+         if (tree.getLastSelectedPathComponent() instanceof UserObjectTreeNode)
         {
-          FabricTreeNode tn = (FabricTreeNode) tree.getLastSelectedPathComponent();
+          UserObjectTreeNode tn = (UserObjectTreeNode) tree.getLastSelectedPathComponent();
           IB_Vertex v = (IB_Vertex) tn.getUserObject();
           logger.info("first one one");
-
         }
       }
     });
@@ -148,7 +145,7 @@ public class FabricTreePanel extends JPanel implements OSM_ServiceChangeListener
     /******************************redundant remove (see initTree) **********************************************************/   
   }
 
-  public void setTreeRootNode(FabricTreeNode root)
+  public void setTreeRootNode(UserObjectTreeNode root)
   {
     DefaultTreeModel tm = new DefaultTreeModel(root);
 
@@ -162,9 +159,9 @@ public class FabricTreePanel extends JPanel implements OSM_ServiceChangeListener
       logger.severe("The DefaultTreeModel for the NodeTreePanel is null");
   }
   
-  public FabricTreeNode getTreeRootNode()
+  public UserObjectTreeNode getTreeRootNode()
   {
-    return FabricTreeNode.getTreeRootNode(tree);
+    return UserObjectTreeNode.getTreeRootNode(tree);
   }
   
   
@@ -212,13 +209,15 @@ public class FabricTreePanel extends JPanel implements OSM_ServiceChangeListener
        {
          TreePath path = tree.getPathForLocation(e.getX(), e.getY());
          tree.setSelectionPath(path);
-         FabricTreeNode tn = (FabricTreeNode) tree.getLastSelectedPathComponent();
+         UserObjectTreeNode tn = (UserObjectTreeNode) tree.getLastSelectedPathComponent();
          if (tn != null)
          {
-//           System.err.println("A tree was right clicked! [" + tn.toString() + "]");
-//           System.err.println("ChildCount [" + tn.getChildCount() + "]");
-           IB_Vertex r = (IB_Vertex)getTreeRootNode().getUserObject();
-            IB_Vertex v = (IB_Vertex) tn.getUserObject();
+           NameValueNode nvn = (NameValueNode) tn.getUserObject();
+           IB_Vertex v = (IB_Vertex) nvn.getMemberObject();
+           
+           nvn = (NameValueNode) getTreeRootNode().getUserObject();
+           IB_Vertex r = (IB_Vertex) nvn.getMemberObject();
+           
            if (v.equals(r))
            {
              Rectangle pathBounds = tree.getUI().getPathBounds(tree, path);
@@ -283,7 +282,7 @@ public class FabricTreePanel extends JPanel implements OSM_ServiceChangeListener
     System.err.println("There are " + vertexMap.size() + " vertices");
     FabricTreeModel treeModel = new FabricTreeModel(vertexMap, OMS.getFabricName());
 
-    FabricTreeNode root = (FabricTreeNode) treeModel.getRoot();
+    UserObjectTreeNode root = (UserObjectTreeNode) treeModel.getRoot();
     if (root != null)
     {
       System.err.println("The root has " + root.getChildCount() + " children");
@@ -329,7 +328,7 @@ public class FabricTreePanel extends JPanel implements OSM_ServiceChangeListener
       model = new FabricTreeModel(vertexMap, osmService.getFabricName());
     }
     
-    FabricTreeNode root = (FabricTreeNode) model.getRoot();
+    UserObjectTreeNode root = (UserObjectTreeNode) model.getRoot();
     if (root != null)
     {
       logger.info("The root has " + root.getChildCount() + " children");
@@ -384,13 +383,15 @@ public class FabricTreePanel extends JPanel implements OSM_ServiceChangeListener
   @Override
   public void valueChanged(TreeSelectionEvent e)
   {
-  if (tree.getLastSelectedPathComponent() instanceof FabricTreeNode)
+  if (tree.getLastSelectedPathComponent() instanceof UserObjectTreeNode)
   {
-    FabricTreeNode tn = (FabricTreeNode) tree.getLastSelectedPathComponent();
-    IB_Vertex v = (IB_Vertex) tn.getUserObject();
+    UserObjectTreeNode tn = (UserObjectTreeNode) tree.getLastSelectedPathComponent();
+    NameValueNode nvn = (NameValueNode) tn.getUserObject();
+    IB_Vertex v = (IB_Vertex) nvn.getMemberObject();
     
     // only send out if this is NOT the root vertex, representing the fabric
-    IB_Vertex r = (IB_Vertex)getTreeRootNode().getUserObject();
+    nvn = (NameValueNode) getTreeRootNode().getUserObject();
+    IB_Vertex r = (IB_Vertex) nvn.getMemberObject();
 
     if(!(v.equals(r)))
        GraphSelectionManager.getInstance().updateAllListeners(new IB_GraphSelectionEvent(thisPanel, v, v));

@@ -90,8 +90,6 @@ public class SystemErrGraphListener implements IB_GraphSelectionListener
   @Override
   public void valueChanged(IB_GraphSelectionUpdater source, IB_GraphSelectionEvent event)
   {
-    // arg is the tree, and lastSelectedPathComponent is the
-    // FabricTreeNode
     StringBuffer buff = new StringBuffer();
     buff.append("Selection Updater: " + source.getName() + "\n");
      buff.append("Selection Event from: " + event.getSource().getClass().getName() + "\n");

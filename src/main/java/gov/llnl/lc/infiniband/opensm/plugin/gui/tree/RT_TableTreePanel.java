@@ -91,6 +91,8 @@ import javax.swing.tree.TreePath;
 
 public class RT_TableTreePanel extends JPanel implements OSM_ServiceChangeListener, CommonLogger, IB_GraphSelectionListener
 {
+  /**  describe serialVersionUID here **/
+  private static final long serialVersionUID = -7570249155427767368L;
   private static final SMTUserObjectTreeCellRenderer RT_TableCellRenderer = new SMTUserObjectTreeCellRenderer(true);
   /**
    * Create the panel.
@@ -147,16 +149,10 @@ public class RT_TableTreePanel extends JPanel implements OSM_ServiceChangeListen
         if (tree.getLastSelectedPathComponent() instanceof UserObjectTreeNode)
         {
           UserObjectTreeNode tn = (UserObjectTreeNode) tree.getLastSelectedPathComponent();
-//           System.err.println("A tree was selected! [" + tn.toString() + "]");
-//           System.err.println("ChildCount [" + tn.getChildCount() + "]");
-
           NameValueNode vmn = (NameValueNode) tn.getUserObject();
-//           System.err.println("The name of the object is: " +
 //           vmn.getMemberName());
 //          vmn.getMemberObject();
 //          
-//          System.err.println("UserObjectTreeNode selected");
-          
           
         // craft a selection event, for this switch route
           RT_Table t = (RT_Table)Model.getRoot();

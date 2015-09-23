@@ -93,7 +93,6 @@ import javax.swing.tree.TreePath;
 
 public class PortTreePanel extends JPanel implements OSM_ServiceChangeListener, CommonLogger, IB_GraphSelectionListener
 {
-
 	/**  describe serialVersionUID here **/
   private static final long serialVersionUID = -4569629228409327770L;
   private static final SMTUserObjectTreeCellRenderer PortCellRenderer = new SMTUserObjectTreeCellRenderer(true);
@@ -119,6 +118,8 @@ public class PortTreePanel extends JPanel implements OSM_ServiceChangeListener, 
   private void setTreeRootNode(UserObjectTreeNode root)
   {
 //    PortTreeModel tm = new PortTreeModel(root);
+    
+    // creates the "tree" model, using the root node for the PortModel
     DefaultTreeModel tm = new DefaultTreeModel(root);
     if(tm != null)
     {
@@ -168,16 +169,10 @@ public class PortTreePanel extends JPanel implements OSM_ServiceChangeListener, 
       {
         public void valueChanged(TreeSelectionEvent arg0)
         {
-          // arg is the tree, and lastSelectedPathComponent is the
-          // FabricTreeNode
           if (tree.getLastSelectedPathComponent() instanceof UserObjectTreeNode)
           {
             UserObjectTreeNode tn = (UserObjectTreeNode) tree.getLastSelectedPathComponent();
-//            System.err.println("A tree was selected! [" + tn.toString() + "]");
-//            System.err.println("ChildCount [" + tn.getChildCount() + "]");
-            
             NameValueNode vmn = (NameValueNode) tn.getUserObject();
-//            System.err.println("The name of the object is: " + vmn.getMemberName());
             vmn.getMemberObject();
             // craft a selection event, for this vertex
             IB_Vertex v = Model.getRootVertex();

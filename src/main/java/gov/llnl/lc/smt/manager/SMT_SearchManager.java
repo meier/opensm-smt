@@ -138,6 +138,7 @@ public class SMT_SearchManager implements CommonLogger
       return gSearchMgr;
     }
   }
+  
   public static IB_Guid getPortsNodeGuid(IB_Guid portGuid, OpenSmMonitorService oms)
   {
     if((oms != null) && (portGuid != null))
@@ -287,7 +288,7 @@ public class SMT_SearchManager implements CommonLogger
 //          
 //          {
             // a full or partial match??
-            for(Entry entry: OptionsMap.entrySet())
+            for(Entry<String, String> entry: OptionsMap.entrySet())
             {
               //does the value "contain" the key
               if(entry.getKey().toString().toLowerCase().trim().contains(key.toLowerCase().trim()))
@@ -303,7 +304,7 @@ public class SMT_SearchManager implements CommonLogger
           if(OptionsMap.containsValue(key))
           {
             // may contain more than one, so return all
-            for(Entry entry: OptionsMap.entrySet())
+            for(Entry<String, String> entry: OptionsMap.entrySet())
             {
               //does the key match the value??
               if(key.equalsIgnoreCase(entry.getValue().toString().trim()))

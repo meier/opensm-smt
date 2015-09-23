@@ -90,7 +90,6 @@ import gov.llnl.lc.infiniband.opensm.plugin.gui.text.SearchIdentificationPanel;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.text.TimeListenerPanel;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.FabricDiscoveryPanel;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.FabricTreeModel;
-import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.FabricTreeNode;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.FabricTreePanel;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.LinkTreeModel;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.LinkTreePanel;
@@ -110,6 +109,8 @@ import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.RT_TableTreePanel;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.SimplePortTreeModel;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.SubnetTreeModel;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.SubnetTreePanel;
+import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.SystemTreeModel;
+import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.SystemTreePanel;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.UserObjectTreeNode;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.VertexTreeModel;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.VertexTreePanel;
@@ -1275,7 +1276,7 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
     FabricTreeModel treeModel = new FabricTreeModel(vertexMap, OMS.getFabricName());
 
     Message_Mgr.postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INIT, "Initializing the FabricTreePanel"));
-    FabricTreeNode root = (FabricTreeNode) treeModel.getRoot();
+    UserObjectTreeNode root = (UserObjectTreeNode) treeModel.getRoot();
     FabricTreePanel vtp = new FabricTreePanel();
     vtp.setTreeRootNode(root);
     vtp.setRootNodePopup(getRootNodePopupMenu());
@@ -2181,6 +2182,88 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
     return handled;
   }
 
+  public boolean handleSystemImageGuidSelected(IB_GraphSelectionUpdater source, IB_GraphSelectionEvent event)
+  {
+    // the source will always be the global graph selection manager
+    // the event.source will be the parent object where the event came from
+    // the event.graphEvent is the object that was selected
+
+    boolean handled = false;  // return true if this method handled (consumed) this event
+    
+    
+    Object context  = event.getContextObject();    // this should be the IB_Vertex, or the switch node
+    Object selected = event.getSelectedObject();   // this should be the UserObjectTreeNode, "sys_guid" object
+    
+    IB_Guid swGuid  = null;
+    IB_Guid sysGuid = null;
+    
+    IB_Vertex sw = null;
+    RT_Node  rNode = null;
+    RT_Port  rPort = null;
+    
+    // process the context object first
+    if(context != null)
+    {
+      if(context instanceof IB_Vertex)
+      {
+        // typically when an RT_Node is selected
+        sw = (IB_Vertex)context;
+        swGuid = sw.getGuid();
+      }
+      
+      if(selected instanceof UserObjectTreeNode)
+      {
+        UserObjectTreeNode tn = (UserObjectTreeNode) selected;
+//        System.err.println("A tree was selected! [" + tn.toString() + "]\n");
+//        System.err.println("ChildCount [" + tn.getChildCount() + "]\n");
+        
+        NameValueNode vmn = (NameValueNode) tn.getUserObject();
+ //       System.err.println("The name of the object is: " + vmn.getMemberName() + "\n");
+        Object obj = vmn.getMemberObject();
+        if(obj instanceof String)
+        {
+        	sysGuid = new IB_Guid((String)obj);
+            // TODO FIXME - make the TreeModel and panel dynamically updatable, so that
+            // I don't have to go through the Manager
+            String tabName = "SYS: " + sysGuid.toColonString();
+            
+            // how many nodes are associated with this system image guid?
+            ArrayList<IB_Guid> guidList = OMS.getFabric().getNodeGuidsForSystemGuid(sysGuid);
+            
+            if(guidList != null)
+              logger.fine("There are " + OMS.getFabric().getNodeGuidsForSystemGuid(sysGuid).size() + " nodes for this system guid");
+            else
+              logger.fine("Could not find guids for system guid: " + sysGuid.toColonString());
+            
+            // Build the Tree Model for System Image Guid, put it in a Tree Panel, put that in a Scroll Pane (in center) and hook it up as a listener
+            
+            LinkedHashMap<String, IB_Vertex> vertexMap = IB_Vertex.createVertexMap(OMS.getFabric(), guidList);
+            if (vertexMap == null)
+            {
+              logger.severe("The VetexMap for System " + sysGuid.toColonString() + " could not be built");
+              System.exit(-1);
+            }
+            Message_Mgr.postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INIT, "Building the System Tree from the VertexMap "));
+//            SystemTreeModel treeModel = new SystemTreeModel(vertexMap, sysGuid);
+            SystemTreeModel treeModel = new SystemTreeModel(OMS.getFabric(), sysGuid);
+
+            Message_Mgr.postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INIT, "Initializing the SystemTreePanel"));
+            SystemTreePanel vtp = new SystemTreePanel();
+            vtp.setTreeModel(treeModel);
+             
+            JScrollPane scroller = new JScrollPane(vtp);
+            scroller.setName(tabName);
+            if (UpdateService != null)
+              UpdateService.addListener(vtp);
+            // now add this to the center tabbed pane
+            addToCenter(scroller, true, true);
+        }
+      }
+
+    }
+    return handled;
+  }
+
   public boolean handleAboutSelected(IB_GraphSelectionUpdater source, IB_GraphSelectionEvent event)
   {
     boolean handled = false;  // return true if this method handled (consumed) this event
@@ -2922,6 +3005,10 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
       {
         logger.info("An endport was selected");
         handled = handlePortSelected(source, event);
+      }
+      else if (vmn.getMemberName().equals("sys_guid"))
+      {
+        handled = handleSystemImageGuidSelected(source, event);
       }
 //      else if (vmn.getMemberName().equals("link >"))
 //      {

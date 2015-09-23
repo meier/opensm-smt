@@ -82,6 +82,8 @@ import javax.swing.tree.TreePath;
 
 public class RT_PathTreePanel extends JPanel implements OSM_ServiceChangeListener, CommonLogger, IB_GraphSelectionListener
 {
+  /**  describe serialVersionUID here **/
+  private static final long serialVersionUID = 1340344966520653784L;
   private static final SMTUserObjectTreeCellRenderer RT_TableCellRenderer = new SMTUserObjectTreeCellRenderer(true);
   /**
    * Create the panel.
@@ -133,16 +135,10 @@ public class RT_PathTreePanel extends JPanel implements OSM_ServiceChangeListene
     {
       public void valueChanged(TreeSelectionEvent arg0)
       {
-        // arg is the tree, and lastSelectedPathComponent is the
-        // FabricTreeNode
         if (tree.getLastSelectedPathComponent() instanceof UserObjectTreeNode)
         {
           UserObjectTreeNode tn = (UserObjectTreeNode) tree.getLastSelectedPathComponent();
-          // System.err.println("A tree was selected! [" + tn.toString() + "]");
-          // System.err.println("ChildCount [" + tn.getChildCount() + "]");
-
           NameValueNode vmn = (NameValueNode) tn.getUserObject();
-          // System.err.println("The name of the object is: " +
           // vmn.getMemberName());
           vmn.getMemberObject();
           // craft a selection event, for this vertex

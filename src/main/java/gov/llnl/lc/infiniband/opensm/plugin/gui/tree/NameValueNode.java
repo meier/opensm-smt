@@ -59,7 +59,6 @@ public class NameValueNode
 {
   private String MemberName;
   private Object MemberObject;
-
   
   /**
    * @return the memberName
@@ -95,12 +94,16 @@ public class NameValueNode
     MemberName = memberName;
     MemberObject = memberObject;
   }
-  /* (non-Javadoc)
-   * @see java.lang.Object#toString()
-   */
+  public String toStringOrig()
+  {
+    return MemberName + ": " + ((MemberObject == null)? null: MemberObject.toString());
+  }
+  
   @Override
   public String toString()
   {
+    if((MemberName == null) || (MemberName.isEmpty()))
+      return ((MemberObject == null)? null: MemberObject.toString());
     return MemberName + ": " + ((MemberObject == null)? null: MemberObject.toString());
   }
   

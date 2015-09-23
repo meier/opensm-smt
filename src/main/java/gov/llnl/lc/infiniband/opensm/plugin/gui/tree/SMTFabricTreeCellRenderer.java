@@ -56,6 +56,7 @@
 package gov.llnl.lc.infiniband.opensm.plugin.gui.tree;
 
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDeltaAnalyzer;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_NodeType;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.data.SmtIconType;
 import gov.llnl.lc.logging.CommonLogger;
@@ -79,7 +80,6 @@ import javax.swing.tree.TreeModel;
  **********************************************************************/
 public class SMTFabricTreeCellRenderer extends DefaultTreeCellRenderer implements CommonLogger
 {
-  
   /**  describe serialVersionUID here **/
   private static final long serialVersionUID = -3158458489318643199L;
   
@@ -95,53 +95,72 @@ public class SMTFabricTreeCellRenderer extends DefaultTreeCellRenderer implement
 
     super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
     
-    if((value == null) || !(value instanceof FabricTreeNode))
+    if((value == null) || !(value instanceof UserObjectTreeNode))
       return this;
     
     // determine what type of Object this is, and what state it is in
     // then set the appropriate icon, if any
-    FabricTreeNode n = (FabricTreeNode)value;
-    IB_Vertex v = (IB_Vertex)n.getUserObject();
+    UserObjectTreeNode n = (UserObjectTreeNode)value;
+    NameValueNode nvn = (NameValueNode) n.getUserObject();
     
-    // Root, Switch, Leaf - all nodes
+    // this could be a vertex, a string, or an integer (see the SystemTreeModel)
+    Object o = nvn.getMemberObject();
     
-    if(isRootFabricNode(tree, n, v))
+    if(o instanceof String)
     {
-      if(hasFabricErrors(tree, n, v))
-        setIcon(SmtIconType.SMT_FABRIC_DERR_ICON.getIcon());
-      else
-        setIcon(SmtIconType.SMT_FABRIC_ICON.getIcon());
+      return this;
     }
-    else if(isLeafNode(tree, n, v))
+
+    if(o instanceof Integer)
     {
-      // one of four leaf icons
-      if(hasDynamicError(tree, n, v, false))
-        if(isTopNode(tree, n, v))
-          setIcon(SmtIconType.SMT_LEAF_BOTH_ICON.getIcon());
+      return this;
+    }
+    
+    // handle the vertex object
+    if(o instanceof IB_Vertex)
+    {
+      IB_Vertex v = (IB_Vertex) o;
+      
+      // Root, Switch, Leaf - all nodes
+      if(isRootFabricNode(tree, n, v))
+      {
+        if(hasFabricErrors(tree, n, v))
+          setIcon(SmtIconType.SMT_FABRIC_DERR_ICON.getIcon());
         else
-          setIcon(SmtIconType.SMT_LEAF_ERR_ICON.getIcon());
-      else if(isTopNode(tree, n, v))
-        setIcon(SmtIconType.SMT_LEAF_TOP_ICON.getIcon());
-      else
-        setIcon(SmtIconType.SMT_LEAF_ICON.getIcon());
-    }
-    else
-    {
-      // one of four switch icons
-      if(hasDynamicError(tree, n, v, true))
-        if(hasTopTraffic(tree, n, v))
-          setIcon(SmtIconType.SMT_SWITCH_BOTH_ICON.getIcon());
+          setIcon(SmtIconType.SMT_FABRIC_ICON.getIcon());
+      }
+      else if(isLeafNode(tree, n, v))
+      {
+        // one of four leaf icons
+        if(hasDynamicError(tree, n, v, false))
+          if(isTopNode(tree, n, v))
+            setIcon(SmtIconType.SMT_LEAF_BOTH_ICON.getIcon());
+          else
+            setIcon(SmtIconType.SMT_LEAF_ERR_ICON.getIcon());
+        else if(isTopNode(tree, n, v))
+          setIcon(SmtIconType.SMT_LEAF_TOP_ICON.getIcon());
         else
-          setIcon(SmtIconType.SMT_SWITCH_ERR_ICON.getIcon());
-      else if(hasTopTraffic(tree, n, v))
-        setIcon(SmtIconType.SMT_SWITCH_TOP_ICON.getIcon());
+          setIcon(SmtIconType.SMT_LEAF_ICON.getIcon());
+      }
       else
-        setIcon(SmtIconType.SMT_SWITCH_ICON.getIcon());
+      {
+        // one of four switch icons
+        if(hasDynamicError(tree, n, v, true))
+          if(hasTopTraffic(tree, n, v))
+            setIcon(SmtIconType.SMT_SWITCH_BOTH_ICON.getIcon());
+          else
+            setIcon(SmtIconType.SMT_SWITCH_ERR_ICON.getIcon());
+        else if(hasTopTraffic(tree, n, v))
+          setIcon(SmtIconType.SMT_SWITCH_TOP_ICON.getIcon());
+        else
+          setIcon(SmtIconType.SMT_SWITCH_ICON.getIcon());
+      }
     }
+
     return this;
   }
 
-  private boolean hasErrors(JTree tree, FabricTreeNode node, IB_Vertex vertex)
+  private boolean hasErrors(JTree tree, UserObjectTreeNode node, IB_Vertex vertex)
   {
     // return true if this node has an error
     // has this changed since last time?)
@@ -149,7 +168,7 @@ public class SMTFabricTreeCellRenderer extends DefaultTreeCellRenderer implement
     return false;
   }
 
-  private boolean hasDynamicError(JTree tree, FabricTreeNode node, IB_Vertex vertex, boolean immediateChildren)
+  private boolean hasDynamicError(JTree tree, UserObjectTreeNode node, IB_Vertex vertex, boolean immediateChildren)
   {
     // return true if this node, or any of its children have a dynamic error
     // does this counter have a dynamic error?
@@ -161,29 +180,36 @@ public class SMTFabricTreeCellRenderer extends DefaultTreeCellRenderer implement
       if(!isLeafNode(tree, node, vertex))
       {
         // iterate through the children
-        Enumeration<FabricTreeNode> e = node.children();
+        Enumeration<UserObjectTreeNode> e = node.children();
         while(e.hasMoreElements())
         {
-          FabricTreeNode ftn = e.nextElement();
-          Object v = ftn.getUserObject();
-          if((v != null) && (v instanceof IB_Vertex))
+          UserObjectTreeNode ftn = e.nextElement();
+          
+          Object o = ftn.getUserObject();
+          if((o != null) && (o instanceof NameValueNode))
           {
-            // return immediately if this child has dynamic errors
-            if(immediateChildren)
+            NameValueNode nvn = (NameValueNode)o;
+            Object mo         = nvn.getMemberObject();
+            if((mo != null) && (mo instanceof IB_Vertex))
             {
-              if(isErrorNode(tree, ftn, (IB_Vertex)v))
-                return true;
+              IB_Vertex v = (IB_Vertex) mo;
+              // return immediately if this child has dynamic errors
+              if(immediateChildren)
+              {
+                if(isErrorNode(tree, ftn, v))
+                  return true;
+              }
+              else
+                if(hasDynamicError(tree, ftn, v, false))
+                  return true;
             }
-            else
-              if(hasDynamicError(tree, ftn, (IB_Vertex)v, false))
-                return true;
           }
         }
       }
     return false;
   }
 
-  private boolean hasTopTraffic(JTree tree, FabricTreeNode node, IB_Vertex vertex)
+  private boolean hasTopTraffic(JTree tree, UserObjectTreeNode node, IB_Vertex vertex)
   {
     // return true if this node, or any of its children is a Top Node
     
@@ -194,23 +220,30 @@ public class SMTFabricTreeCellRenderer extends DefaultTreeCellRenderer implement
       if(!isLeafNode(tree, node, vertex))
       {
         // iterate through the children
-        Enumeration<FabricTreeNode> e = node.children();
+        Enumeration<UserObjectTreeNode> e = node.children();
         while(e.hasMoreElements())
         {
-          FabricTreeNode ftn = e.nextElement();
-          Object v = ftn.getUserObject();
-          if((v != null) && (v instanceof IB_Vertex))
+          UserObjectTreeNode ftn = e.nextElement();
+          
+          
+          Object o = ftn.getUserObject();
+          if((o != null) && (o instanceof NameValueNode))
           {
-            // return immediately if this child is a Top Node
-            if(hasTopTraffic(tree, ftn, (IB_Vertex)v))
-              return true;
+            NameValueNode nvn = (NameValueNode)o;
+            Object mo         = nvn.getMemberObject();
+            if((mo != null) && (mo instanceof IB_Vertex))
+            {
+              // return immediately if this child is a Top Node
+              if(hasTopTraffic(tree, ftn, (IB_Vertex)mo))
+                return true;
+            }
           }
         }
       }
     return false;
   }
 
-  private boolean isRootFabricNode(JTree tree, FabricTreeNode node, IB_Vertex vertex)
+  private boolean isRootFabricNode(JTree tree, UserObjectTreeNode node, IB_Vertex vertex)
   {
     // return true if this object is the top level node (abstract root)
     // that represents the fabric
@@ -220,15 +253,20 @@ public class SMTFabricTreeCellRenderer extends DefaultTreeCellRenderer implement
       if(tm != null)
       {
          Object obj = tm.getRoot();
-         if((obj != null) && (obj instanceof FabricTreeNode))
+         if((obj != null) && (obj instanceof UserObjectTreeNode))
          {
-           FabricTreeNode ftn = (FabricTreeNode) obj;
+           UserObjectTreeNode ftn = (UserObjectTreeNode) obj;
            Object o = ftn.getUserObject();
-           if((o != null) && (o instanceof IB_Vertex))
+           if((o != null) && (o instanceof NameValueNode))
            {
-             IB_Vertex v = (IB_Vertex) o;
-             if((v != null) && (v.equals(vertex)))
-               return true;
+             NameValueNode nvn = (NameValueNode)o;
+             Object mo         = nvn.getMemberObject();
+             if((mo != null) && (mo instanceof IB_Vertex))
+             {
+               IB_Vertex v = (IB_Vertex) mo;
+               if((v != null) && (v.equals(vertex)))
+                 return true;               
+             }
            }
          }
        }
@@ -236,7 +274,7 @@ public class SMTFabricTreeCellRenderer extends DefaultTreeCellRenderer implement
     return false;
   }
 
-  private boolean isErrorNode(JTree tree, FabricTreeNode node, IB_Vertex vertex)
+  private boolean isErrorNode(JTree tree, UserObjectTreeNode node, IB_Vertex vertex)
   {
     // return true if this node has a dynamic error
     OSM_FabricDeltaAnalyzer deltaAnalysis = SMT_AnalysisManager.getInstance().getDeltaAnalysis();
@@ -248,15 +286,20 @@ public class SMTFabricTreeCellRenderer extends DefaultTreeCellRenderer implement
     return false;
   }
 
-  private boolean isLeafNode(JTree tree, FabricTreeNode node, IB_Vertex vertex)
+  private boolean isLeafNode(JTree tree, UserObjectTreeNode node, IB_Vertex vertex)
   {
-    // return true if this object doesn't have children
-    if(node != null)
-      return node.isLeaf();
-    return false;
+    // return true if this object doesn't have children and isn't a switch
+    if((node != null) && (node.isLeaf()))
+    {
+      // return true if this is not a switch
+      if(vertex != null)
+        if(!(OSM_NodeType.SW_NODE.getFullName().equals(vertex.getNodeType())))
+            return true;
+    }
+     return false;
   }
 
-  private boolean isTopNode(JTree tree, FabricTreeNode node, IB_Vertex vertex)
+  private boolean isTopNode(JTree tree, UserObjectTreeNode node, IB_Vertex vertex)
   {
     // return true if this node is one with the most traffic
     OSM_FabricDeltaAnalyzer deltaAnalysis = SMT_AnalysisManager.getInstance().getDeltaAnalysis();
@@ -268,7 +311,7 @@ public class SMTFabricTreeCellRenderer extends DefaultTreeCellRenderer implement
     return false;
   }
 
-  private boolean hasFabricErrors(JTree tree, FabricTreeNode node, IB_Vertex vertex)
+  private boolean hasFabricErrors(JTree tree, UserObjectTreeNode node, IB_Vertex vertex)
   {
     // return true if there was at least one dynamic error anywhere in the fabric
     return hasDynamicError(tree, node, vertex, false);

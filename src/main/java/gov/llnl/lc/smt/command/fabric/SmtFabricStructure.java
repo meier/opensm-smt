@@ -113,7 +113,7 @@ public class SmtFabricStructure implements CommonLogger, SmtConstants
   public ArrayList<SmtAttributeStructure> PortSpeeds = new ArrayList<SmtAttributeStructure>();
   public ArrayList<SmtAttributeStructure> PortState  = new ArrayList<SmtAttributeStructure>();
 
-  public class SmtAttributeStructure implements Comparable
+  public class SmtAttributeStructure implements Comparable<SmtAttributeStructure>
   {
     /************************************************************
      * Method Name:
@@ -179,7 +179,7 @@ public class SmtFabricStructure implements CommonLogger, SmtConstants
 
 
     @Override
-    public int compareTo(Object o)
+    public int compareTo(SmtAttributeStructure o)
     {
       if((o == null) || (this.Name == null))
         throw new NullPointerException();
@@ -243,7 +243,10 @@ public class SmtFabricStructure implements CommonLogger, SmtConstants
       aLinkBins.add(link, "State: " + link.getState().getStateName());
       aLinkBins.add(link, "Speed: " + link.getSpeed().getSpeedName());
       aLinkBins.add(link, "Width: " + link.getWidth().getWidthName());
-      aLinkBins.add(link, "Rate: " + link.getRate().getRateName());
+      if(link.getRate() != null)
+        aLinkBins.add(link, "Rate: " + link.getRate().getRateName());
+      else
+    	System.err.println("(ALL) The link rate is null");
     }
 
     // now I have the links separated by type, so determine "type" breakdown
@@ -261,7 +264,11 @@ public class SmtFabricStructure implements CommonLogger, SmtConstants
       sLinkBins.add(link, "State: " + link.getState().getStateName());
       sLinkBins.add(link, "Speed: " + link.getSpeed().getSpeedName());
       sLinkBins.add(link, "Width: " + link.getWidth().getWidthName());
-      sLinkBins.add(link, "Rate: " + link.getRate().getRateName());
+//      sLinkBins.add(link, "Rate: " + link.getRate().getRateName());
+      if(link.getRate() != null)
+          sLinkBins.add(link, "Rate: " + link.getRate().getRateName());
+        else
+      	System.err.println("(SW) The link rate is null");
     }
 
     for (IB_Link link : iblc)
@@ -276,7 +283,11 @@ public class SmtFabricStructure implements CommonLogger, SmtConstants
       cLinkBins.add(link, "State: " + link.getState().getStateName());
       cLinkBins.add(link, "Speed: " + link.getSpeed().getSpeedName());
       cLinkBins.add(link, "Width: " + link.getWidth().getWidthName());
-      cLinkBins.add(link, "Rate: " + link.getRate().getRateName());
+//      cLinkBins.add(link, "Rate: " + link.getRate().getRateName());
+      if(link.getRate() != null)
+          cLinkBins.add(link, "Rate: " + link.getRate().getRateName());
+        else
+      	System.err.println("(CA) The link rate is null");
     }
 
     // save the link stats, in this order... width, speed rate
@@ -624,8 +635,6 @@ public class SmtFabricStructure implements CommonLogger, SmtConstants
     return buff.toString();
   }
 
-  
-  
   public String toNodeContent()
   {
     int numTotal = Nodes == null ? 0: Nodes.NumTotal;

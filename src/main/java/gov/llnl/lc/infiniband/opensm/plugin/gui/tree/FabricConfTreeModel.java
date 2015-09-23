@@ -74,6 +74,9 @@ import org.w3c.dom.Comment;
 
 public class FabricConfTreeModel extends DefaultTreeModel
 {  
+  /**  describe serialVersionUID here **/
+  private static final long serialVersionUID = -8143137480192378152L;
+
   private UserObjectTreeNode rootConfNode;
   private IB_FabricConf rootConf;
 

@@ -20,7 +20,7 @@ repositories {
        flatDir {
         dirs '../curses-java-api/build/distributions/'
         dirs '../lc-jcommon/build/distributions/'
-        dirs '../ldapotp-java-api/build/distributions/'
+        dirs '../ldapotp-java-api/build/dist/'
         dirs '../lc-jsecure-client-server/build/distributions/'
         dirs '../opensm-client-server/build/distributions/'
         dirs userJarRepo + '/gitOmsJars/'
@@ -120,6 +120,9 @@ renameJar << {
 jar {
   dependsOn incrementBuildNumber
   dependsOn makeDistro
+  from("$projectDir/src/main/java") {
+      include 'gov/llnl/lc/smt/images/**'
+   }
     doFirst {
        manifest {
               attributes('Gradle-Version':  gradle.gradleVersion,

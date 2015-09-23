@@ -73,9 +73,9 @@ import javax.swing.tree.TreePath;
 
 public class FabricTreeModel implements TreeModel
 {  
-  private FabricTreeNode rootVertexNode;
-  private IB_Vertex rootVertex;
-  private boolean rootReal = false;
+  protected UserObjectTreeNode rootVertexNode;
+  protected IB_Vertex rootVertex;
+  protected boolean rootReal = false;
 
   @Override
   public Object getRoot()
@@ -88,17 +88,17 @@ public class FabricTreeModel implements TreeModel
     return rootVertex;
   }
 
-  public FabricTreeModel(FabricTreeNode rootVertexNode)
+  public FabricTreeModel(UserObjectTreeNode RootVertexNode)
   {
     super();
-    this.rootVertexNode = rootVertexNode;
-    rootVertex = (IB_Vertex)rootVertexNode.getUserObject();
+    rootVertexNode = RootVertexNode;
+    NameValueNode nvn = (NameValueNode)RootVertexNode.getUserObject();
+    rootVertex = (IB_Vertex)nvn.getMemberObject();
   }
 
   public FabricTreeModel(IB_Vertex root)
   {
-    rootVertex = root;
-    rootVertexNode = new FabricTreeNode(root, true);
+    this(new UserObjectTreeNode(new NameValueNode((root == null ? "": root.getName()), root ), true));
  }
 
   public FabricTreeModel(HashMap <String, IB_Vertex> VertexMap, String RootName)
@@ -127,7 +127,7 @@ public class FabricTreeModel implements TreeModel
       for (Entry<String, IB_Vertex> entry : topLevel.entrySet())
       {
         IB_Vertex v = entry.getValue();
-        // create an artifical edge between them (make up some port numbers)
+        // create an artificial edge between them (make up some port numbers)
         OSM_Port rp= new OSM_Port(null, null, OSM_NodeType.SW_NODE);
         rp.setPortNumber(rootPortNum++);
         OSM_Port vp= new OSM_Port(null, null, OSM_NodeType.SW_NODE);
@@ -139,7 +139,8 @@ public class FabricTreeModel implements TreeModel
       
       // now I have a full VertexMap, so create all the VetexTreeNodes from the top down
       rootVertex = top;
-      rootVertexNode = new FabricTreeNode(top, true);
+      NameValueNode vmn = new NameValueNode("", top);
+      rootVertexNode = new UserObjectTreeNode(vmn, true);
       addChildNodes(rootVertexNode, topLevel, VertexMap);
     }
     else if (topLevel.size() == 1)
@@ -154,7 +155,8 @@ public class FabricTreeModel implements TreeModel
       }
       topLevel = IB_Vertex.getVertexMapAtDepth(VertexMap, maxDepth -1);
       rootVertex = top;
-      rootVertexNode = new FabricTreeNode(top, true);
+      NameValueNode vmn = new NameValueNode("", top);
+      rootVertexNode = new UserObjectTreeNode(vmn, true);
       addChildNodes(rootVertexNode, topLevel, VertexMap);
     }
     else
@@ -163,13 +165,14 @@ public class FabricTreeModel implements TreeModel
       System.exit(-1);
     }    
  }
-
-  private FabricTreeNode addChildNodes(FabricTreeNode parent, HashMap <String, IB_Vertex> neighborMap, HashMap <String, IB_Vertex> vertexMap)
+  private UserObjectTreeNode addChildNodes(UserObjectTreeNode parent, HashMap <String, IB_Vertex> neighborMap, HashMap <String, IB_Vertex> vertexMap)
   {
-    IB_Vertex pv = (IB_Vertex) parent.getUserObject();
+    NameValueNode nvn = (NameValueNode) parent.getUserObject();
+    IB_Vertex pv = (IB_Vertex) nvn.getMemberObject();
     int myDepth = pv.getDepth(); // add neighbors with lower depth
+    HashMap <String, IB_Vertex> NeighborMap = IB_Vertex.sortVertexMap(neighborMap, true);
 
-    for (Entry<String, IB_Vertex> entry : neighborMap.entrySet())
+    for (Entry<String, IB_Vertex> entry : NeighborMap.entrySet())
     {
       // by definition, its my neighbor, so connected to me
       // its my child if its depth is lower
@@ -177,7 +180,8 @@ public class FabricTreeModel implements TreeModel
       if(v.getDepth() == (myDepth -1))
       {
         // direct child, create and add it
-        FabricTreeNode vtn = new FabricTreeNode(v, true);
+        NameValueNode vmn = new NameValueNode("", v);
+        UserObjectTreeNode vtn = new UserObjectTreeNode(vmn, true);
         parent.add(vtn);
         // logger.severe("Adding children at level: " + nn.getDepth());
 
@@ -209,20 +213,20 @@ public class FabricTreeModel implements TreeModel
   @Override
   public int getChildCount(Object parent)
   {
-    FabricTreeNode p = (FabricTreeNode)parent;    
+    UserObjectTreeNode p = (UserObjectTreeNode)parent;    
     return getChildSet(parent).size();
   }
   
-  private Set <FabricTreeNode> getChildSet(Object parentNode)
+  private Set <UserObjectTreeNode> getChildSet(Object parentNode)
   {
-    FabricTreeNode p = (FabricTreeNode)parentNode;    
+    UserObjectTreeNode p = (UserObjectTreeNode)parentNode;    
     IB_Vertex parent = (IB_Vertex)rootVertexNode.getUserObject();
     
     // we are building the nodes and vertexes here
 
     HashMap <String, IB_Vertex> neighbors = parent.getNeighborMap();
     
-    Set <FabricTreeNode> childSet = new HashSet <FabricTreeNode> ();
+    Set <UserObjectTreeNode> childSet = new HashSet <UserObjectTreeNode> ();
     
     int pDepth = parent.getDepth();  // this is my depth
     int nDepth = 0;
@@ -238,7 +242,8 @@ public class FabricTreeModel implements TreeModel
 //        System.err.println("My Depth: " + pDepth + ", Neighbor Depth: "+ nDepth);    
 
         // looks like a child to me
-        childSet.add(new FabricTreeNode(v, true));
+        NameValueNode vmn = new NameValueNode("", v);
+        childSet.add(new UserObjectTreeNode(vmn, true));
         
       }
     }
@@ -251,7 +256,7 @@ public class FabricTreeModel implements TreeModel
   @Override
   public boolean isLeaf(Object node)
   {
-    FabricTreeNode n = (FabricTreeNode)node;
+    UserObjectTreeNode n = (UserObjectTreeNode)node;
     IB_Vertex v = (IB_Vertex)n.getUserObject();
     int depth = v.getDepth();
     // true if the nodes depth is 0

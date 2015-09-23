@@ -76,6 +76,9 @@ import javax.swing.tree.TreePath;
 
 public abstract class AbstractPortTreeModel extends DefaultTreeModel
 {  
+  /**  describe serialVersionUID here **/
+  private static final long serialVersionUID = 7041172025275589590L;
+
   protected UserObjectTreeNode rootPortNode;
   protected IB_Vertex rootVertex;
   protected OSM_Port rootPort;

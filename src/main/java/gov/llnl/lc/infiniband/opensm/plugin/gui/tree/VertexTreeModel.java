@@ -692,7 +692,6 @@ public class VertexTreeModel extends DefaultTreeModel
       IB_Edge e = rootVertex.getEdge(portNum);
       if(e != null)
       {
-        
         PortTreeModel ptm = new PortTreeModel(rootVertex, e);
         parent.add(ptm.getRootNode());
       }

@@ -55,12 +55,11 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.tree;
 
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
-
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
+@Deprecated
 public class FabricTreeNode extends DefaultMutableTreeNode
 {
 
@@ -80,7 +79,7 @@ public class FabricTreeNode extends DefaultMutableTreeNode
    * @param userObject
    * @param allowsChildren
    ***********************************************************/
-  public FabricTreeNode(Object userObject, boolean allowsChildren)
+  public FabricTreeNode(NameValueNode userObject, boolean allowsChildren)
   {
     // the userObject is of type "IB_Vertex"
     super(userObject, allowsChildren);
@@ -107,9 +106,9 @@ public class FabricTreeNode extends DefaultMutableTreeNode
   @Override
   public String toString()
   {
-    IB_Vertex v = (IB_Vertex)this.getUserObject();
+    NameValueNode n = (NameValueNode)this.getUserObject();
     
-    return v.getName();
+    return n.toString();
   }
 
   

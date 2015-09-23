@@ -73,6 +73,9 @@ import javax.swing.border.TitledBorder;
  **********************************************************************/
 public class FabricDiscoveryPanel extends JPanel implements CommonLogger
 {
+  /**  describe serialVersionUID here **/
+  private static final long serialVersionUID = 1350831346922123272L;
+
   // contains a collection of JXTreeTables, each representing a different fabric
   public FabricDiscoveryPanel()
   {

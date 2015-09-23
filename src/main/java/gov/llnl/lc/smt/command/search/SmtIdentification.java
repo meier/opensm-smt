@@ -187,7 +187,7 @@ public class SmtIdentification extends SmtCommand
     String subCommand    = null;
     Map<String,String> map = smtConfig.getConfigMap();
     
-    IB_Guid g = getNodeGuid(config);
+    IB_Guid g  = getNodeGuid(config);
     int  pNum = getPortNumber(config);
     int  pKey = getPartitionKey(config);
     int  mLid = getMulticastLid(config);
@@ -420,7 +420,6 @@ public class SmtIdentification extends SmtCommand
     }
      return null;
   }
-
 
   private int getPortNumber(SmtConfig config)
   {
