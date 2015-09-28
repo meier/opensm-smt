@@ -65,6 +65,7 @@ import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
 import gov.llnl.lc.logging.CommonLogger;
 
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
@@ -386,6 +387,70 @@ public class SystemTreeModel extends FabricTreeModel implements CommonLogger
     if(common.length() >= minSame)
       return common;
     return name1;
+  }
+
+  /************************************************************
+   * Method Name:
+   *  getSystemGuidString
+  **/
+  /**
+   * Describe the method here
+   *
+   * @see     describe related java objects
+   *
+   * @param tn
+   * @return
+   ***********************************************************/
+  public static String getSystemGuidString(UserObjectTreeNode node)
+  {
+    NameValueNode nvn = getNameValueNode(node, "guid");
+    if(nvn != null)
+      return (String)nvn.getMemberObject();
+    return null;
+  }
+  
+  public static String getSystemNameString(UserObjectTreeNode node)
+  {
+    NameValueNode nvn = getNameValueNode(node, "name");
+    if(nvn != null)
+      return (String)nvn.getMemberObject();
+    return null;
+  }
+  
+  public String getSystemNameString()
+  {
+    return rootVertex.getName();
+  }
+  
+  public static NameValueNode getNameValueNode(UserObjectTreeNode node, String name)
+  {
+    // given a parent node, look for the child node with the given name
+    //     must match exactly or return null
+    for (Enumeration <UserObjectTreeNode> c = node.children(); c.hasMoreElements() ;)
+    {
+      UserObjectTreeNode uotn = (UserObjectTreeNode)c.nextElement();
+      NameValueNode tst = (NameValueNode)uotn.getUserObject();
+      if(name.equals(tst.getMemberName()))
+        return tst;
+     }
+    return null;
+  }
+
+  /************************************************************
+   * Method Name:
+   *  getVertexList
+  **/
+  /**
+   * Describe the method here
+   *
+   * @see     describe related java objects
+   *
+   * @return
+   ***********************************************************/
+  public ArrayList<IB_Vertex> getVertexList()
+  {
+    ArrayList<IB_Vertex> vl = new ArrayList<IB_Vertex>(VertexMap.values());
+    return vl;
   }
   
 }

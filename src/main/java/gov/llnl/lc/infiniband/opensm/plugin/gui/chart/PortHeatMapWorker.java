@@ -57,8 +57,8 @@ package gov.llnl.lc.infiniband.opensm.plugin.gui.chart;
 
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Depth;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
 import gov.llnl.lc.logging.CommonLogger;
-import gov.llnl.lc.smt.command.SmtCommand;
 import gov.llnl.lc.smt.data.SMT_UpdateService;
 import gov.llnl.lc.smt.event.SmtMessage;
 import gov.llnl.lc.smt.event.SmtMessageType;
@@ -66,6 +66,7 @@ import gov.llnl.lc.smt.manager.MessageManager;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.EnumSet;
 
 import javax.swing.SwingWorker;
@@ -87,27 +88,30 @@ public class PortHeatMapWorker extends SwingWorker<Void, Void> implements Common
 {
   private PortHeatMapPlotPanel PlotPanel;
   private EnumSet<IB_Depth> IncludedDepths;
+  private ArrayList<IB_Vertex> IncludedNodes;
   private OMS_Collection History;
   private boolean UseService = false;        // if true, use the SmtService, if false, use default file
 
   public PortHeatMapWorker(PortHeatMapPlotPanel portHeatMapPlotPanel)
   {
-    this(portHeatMapPlotPanel, null, false);
+    this(portHeatMapPlotPanel, null, null, false);
   }
 
-  public PortHeatMapWorker(PortHeatMapPlotPanel portHeatMapPlotPanel, EnumSet<IB_Depth> includedDepths, boolean useService)
+  public PortHeatMapWorker(PortHeatMapPlotPanel portHeatMapPlotPanel, ArrayList<IB_Vertex> includedNodes, EnumSet<IB_Depth> includedDepths, boolean useService)
   {
     super();
     PlotPanel      = portHeatMapPlotPanel;
+    IncludedNodes = includedNodes;
     IncludedDepths = includedDepths;
     UseService     = useService;
     History        = null;
   }
 
-  public PortHeatMapWorker(PortHeatMapPlotPanel portHeatMapPlotPanel, EnumSet<IB_Depth> includedDepths, OMS_Collection history)
+  public PortHeatMapWorker(PortHeatMapPlotPanel portHeatMapPlotPanel, ArrayList<IB_Vertex> includedNodes, EnumSet<IB_Depth> includedDepths, OMS_Collection history)
   {
     super();
     PlotPanel      = portHeatMapPlotPanel;
+    IncludedNodes = includedNodes;
     IncludedDepths = includedDepths;
     UseService     = false;
     History        = history;
@@ -129,16 +133,25 @@ public class PortHeatMapWorker extends SwingWorker<Void, Void> implements Common
     {
        SMT_UpdateService updateService = SMT_UpdateService.getInstance();
        History = updateService.getCollection();
-       pHeatMap = new PortHeatMapDataSet(History, IncludedDepths);
-    }
+       if(IncludedNodes != null)
+         pHeatMap = new PortHeatMapDataSet(History, IncludedNodes);
+       else
+         pHeatMap = new PortHeatMapDataSet(History, IncludedDepths);
+   }
     else if(History != null)
     {
+      if(IncludedNodes != null)
+        pHeatMap = new PortHeatMapDataSet(History, IncludedNodes);
+      else
         pHeatMap = new PortHeatMapDataSet(History, IncludedDepths);
     }
     else
     {
       // FIXME - eliminate this, for test purposes only
-      pHeatMap = new PortHeatMapDataSet(SmtCommand.convertSpecialFileName("%h/scripts/OsmScripts/SmtScripts/sierra3H.his"), IncludedDepths);
+      if(IncludedNodes != null)
+        pHeatMap = new PortHeatMapDataSet("%h/scripts/OsmScripts/SmtScripts/sierra3H.his", IncludedNodes);
+      else
+        pHeatMap = new PortHeatMapDataSet("%h/scripts/OsmScripts/SmtScripts/sierra3H.his", IncludedDepths);
     }
 //    logger.fine("Finished creating dataset");
 //    logger.fine("Max X: " + pHeatMap.getMaximumXValue());

@@ -2225,7 +2225,6 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
         	sysGuid = new IB_Guid((String)obj);
             // TODO FIXME - make the TreeModel and panel dynamically updatable, so that
             // I don't have to go through the Manager
-            String tabName = "SYS: " + sysGuid.toColonString();
             
             // how many nodes are associated with this system image guid?
             ArrayList<IB_Guid> guidList = OMS.getFabric().getNodeGuidsForSystemGuid(sysGuid);
@@ -2251,6 +2250,8 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
             SystemTreePanel vtp = new SystemTreePanel();
             vtp.setTreeModel(treeModel);
              
+            String tabName = "SYS: " + treeModel.getSystemNameString();
+//            String tabName = "SYS: " + sysGuid.toColonString();
             JScrollPane scroller = new JScrollPane(vtp);
             scroller.setName(tabName);
             if (UpdateService != null)
@@ -2917,12 +2918,19 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
       SMT_AnalysisType sType = (SMT_AnalysisType) event.getContextObject();
       String selectionDescription = "";  // length needs to be empty
       Boolean addHeatMapPanel = false;
+      SystemTreeModel model = null;
       
       // the selected event should be a boolean (add or remove the panel)
        
       Object o = event.getSelectedObject();
       if((o != null) && (o instanceof Boolean))
         addHeatMapPanel = (Boolean)o;  // boolean indicating to create a new one, or destroy old one
+      
+      if((o != null) && (o instanceof SystemTreeModel))
+      {
+        model = (SystemTreeModel)o;
+        addHeatMapPanel = true;
+      }
       
        // create one of the various heat map panels
       if(SMT_AnalysisType.SMT_HMAP_TYPES.contains(sType))
@@ -2943,6 +2951,11 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
           else if(SMT_AnalysisType.SMT_HMAP_SW_PORTS.equals(sType))
           {
             sap = new SMT_AnalysisPanel(sType, IB_Depth.IBD_SWITCH_NODES);
+          }
+          else if(SMT_AnalysisType.SMT_HMAP_SYS_PORTS.equals(sType))
+          {
+            tabName = "HM: " + model.getSystemNameString() + " Ports";
+            sap = new SMT_AnalysisPanel(sType, model);
           }
           Analysis_Mgr.addSMT_AnalysisChangeListener(sap);
           JScrollPane scrollPaneAnal = new JScrollPane(sap);

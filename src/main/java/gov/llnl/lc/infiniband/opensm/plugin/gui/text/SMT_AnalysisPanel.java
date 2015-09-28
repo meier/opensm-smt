@@ -64,6 +64,7 @@ import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionEvent;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.chart.PortHeatMapPlotPanel;
+import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.SystemTreeModel;
 import gov.llnl.lc.logging.CommonLogger;
 import gov.llnl.lc.smt.SmtConstants;
 import gov.llnl.lc.smt.data.SMT_AnalysisChangeListener;
@@ -74,6 +75,7 @@ import gov.llnl.lc.smt.manager.SMT_AnalysisUpdater;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.EnumSet;
 
 import javax.swing.JEditorPane;
@@ -102,6 +104,7 @@ public class SMT_AnalysisPanel extends JPanel implements SMT_AnalysisChangeListe
   private RT_Path Path = null;
   
   private EnumSet<IB_Depth> IncludedDepths = null;
+  private ArrayList<IB_Vertex> IncludedNodes    = null;
 
   
   private JEditorPane ePane;
@@ -288,6 +291,23 @@ public class SMT_AnalysisPanel extends JPanel implements SMT_AnalysisChangeListe
 
       IncludedDepths = (EnumSet<IB_Depth>) obj;
       add(new PortHeatMapPlotPanel(history, IncludedDepths));
+      return;
+    }
+    else if(type.equals(SMT_AnalysisType.SMT_HMAP_SYS_PORTS) && (obj instanceof SystemTreeModel))
+    {
+      // TODO - this is not an editor pane, so should probably be implemented different, just
+      //        wedge the HeatMap Panel in here
+      //
+      
+      // The HeatMap is static, don't try to update it with new stuff
+      SMT_UpdateService updateService = SMT_UpdateService.getInstance();
+      OMS_Collection history = updateService.getCollection();
+      SystemTreeModel model = (SystemTreeModel)obj;
+
+//      String sysName = model.getSystemNameString();
+//      System.err.println("The system name is2: (" + sysName + ")");
+      IncludedNodes = model.getVertexList();
+      add(new PortHeatMapPlotPanel(history, IncludedNodes));
       return;
     }
     else if (obj != null)

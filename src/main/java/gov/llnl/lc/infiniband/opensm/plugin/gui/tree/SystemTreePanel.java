@@ -127,7 +127,7 @@ public void setTreeRootNode(UserObjectTreeNode root)
     tree.setModel(tm);
   }
   else
-    logger.severe("The DefaultTreeModel for the NodeTreePanel is null");
+    logger.severe("The DefaultTreeModel for the SystemTreePanel is null");
 }
 
 public UserObjectTreeNode getTreeRootNode()
@@ -215,13 +215,12 @@ public UserObjectTreeNode getTreeRootNode()
         if(isTreeNodeSelected(e))
         {
           // do nothing
-          System.err.println("deliberately not showing a popup at this location");
+          System.err.println("SystemTreePanel: deliberately not showing a popup at this location");
         }
         else if(e.isPopupTrigger())
         {
-          // out in the open, so okay to show general purpose popup
-          System.err.println("The popup trigger");
-//          showPortMenu(e);
+          // out in the open, so okay to show general purpose popup for the heatmap or utilize
+           showSystemMenu(e);
         }
       }
     });
@@ -268,6 +267,8 @@ public UserObjectTreeNode getTreeRootNode()
       }
     return false;
   }
+
+  // this is simple, comapre, advanced, advanced compare
   
 //  protected void showPortCounterMenu(MouseEvent e)
 //  {
@@ -281,14 +282,20 @@ public UserObjectTreeNode getTreeRootNode()
 //    PortCounterPopupMenu menu = new PortCounterPopupMenu(Model, pcn, getHistorySize());
 //    menu.show(tree, pathBounds.x, pathBounds.y + pathBounds.height);
 //  }
-//  
-//  protected void showPortMenu(MouseEvent e)
-//  {
-//    // this is private, all checks already passed (see isCounterSelected())
-//    PortTreePopupMenu menu = new PortTreePopupMenu();
-//    menu.show(tree, e.getX(), e.getY());
-//  }
-//  
+// 
+  
+  // this is just utilization
+  
+  protected void showSystemMenu(MouseEvent e)
+  {
+    // this is private, all checks already passed (see isCounterSelected())
+    SystemTreePopupMenu menu = new SystemTreePopupMenu();
+    
+    // give the popup menu a copy of the Model, just in case
+    menu.setSystemTreeModel(Model);
+    menu.show(tree, e.getX(), e.getY());
+  }
+  
     public static void main(String[] args) throws Exception
     {
     }

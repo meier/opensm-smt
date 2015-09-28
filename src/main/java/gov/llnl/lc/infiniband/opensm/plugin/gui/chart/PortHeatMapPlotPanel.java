@@ -57,6 +57,7 @@ package gov.llnl.lc.infiniband.opensm.plugin.gui.chart;
 
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Depth;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
 import gov.llnl.lc.logging.CommonLogger;
 import gov.llnl.lc.time.TimeStamp;
 
@@ -64,6 +65,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Paint;
+import java.util.ArrayList;
 import java.util.EnumSet;
 
 import javax.swing.BorderFactory;
@@ -135,12 +137,22 @@ public class PortHeatMapPlotPanel extends MultiPlotPanel implements CommonLogger
 
   public PortHeatMapPlotPanel(OMS_Collection history, EnumSet<IB_Depth> includedDepths)
   {
+    this(history, null, includedDepths);
+  }
+
+  public PortHeatMapPlotPanel(OMS_Collection history, ArrayList<IB_Vertex> includedNodes)
+  {
+    this(history, includedNodes, null);
+  }
+
+  private PortHeatMapPlotPanel(OMS_Collection history, ArrayList<IB_Vertex> includedNodes, EnumSet<IB_Depth> includedDepths)
+  {
     super(new BorderLayout());
     
     // creates the main chart panel, which creates the PortHeatMapDataSet
     // (so all the data has been initialized here, available for all subsequent actions)
     overallDimension = new java.awt.Dimension(900, 500);
-    heatPanel = (ChartPanel) createHeatPanel(history, includedDepths);
+    heatPanel = (ChartPanel) createHeatPanel(history, includedNodes, includedDepths);
     heatPanel.setPreferredSize(overallDimension);
     
     // add the vertical and horizontal crosshairs
@@ -227,12 +239,12 @@ public class PortHeatMapPlotPanel extends MultiPlotPanel implements CommonLogger
    *
    * @return A panel.
    */
-  public JPanel createHeatPanel(OMS_Collection history, EnumSet<IB_Depth> includedDepths)
+  public JPanel createHeatPanel(OMS_Collection history, ArrayList<IB_Vertex> includedNodes, EnumSet<IB_Depth> includedDepths)
   {
     // this will return quickly, it uses a swing worker to
     // develop the dataset, which can take considerable time
     // so a dummy chart is returned, to be fixed later
-    createHeatChart(new XYSeriesCollection(), history, includedDepths);
+    createHeatChart(new XYSeriesCollection(), history, includedNodes, includedDepths);
     heatChart.addChangeListener(this);
     ChartPanel panel = new ChartPanel(heatChart);
     panel.setFillZoomRectangle(true);
@@ -341,12 +353,12 @@ public class PortHeatMapPlotPanel extends MultiPlotPanel implements CommonLogger
    *
    * @return A chart.
    */
-  private JFreeChart createHeatChart(XYDataset dataset2, OMS_Collection history, EnumSet<IB_Depth> includedDepths)
+  private JFreeChart createHeatChart(XYDataset dataset2, OMS_Collection history, ArrayList<IB_Vertex> includedNodes, EnumSet<IB_Depth> includedDepths)
   {
     heatChart = ChartFactory.createScatterPlot("Port Activity (heat map)", TimeAxisLabel, PortAxisLabel, dataset2, PlotOrientation.VERTICAL, true, false, false);
 
 //    worker = new PortHeatMapWorker(this, IB_Depth.IBD_COMPUTE_NODES, false);
-    worker = new PortHeatMapWorker(this, includedDepths, history);
+    worker = new PortHeatMapWorker(this, includedNodes, includedDepths, history);
 //    worker = new PortHeatMapWorker(this, IB_Depth.IBD_SWITCH_NODES, false);
 //    worker = new PortHeatMapWorker(this, EnumSet.range(IB_Depth.IBD_SW3, IB_Depth.IBD_SW4), false);
     worker.execute();

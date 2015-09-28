@@ -64,7 +64,7 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 
 /**********************************************************************
- * Describe purpose and responsibility of PortHeatMapPlotPanel
+ * Describe purpose and responsibility of MultiPlotPanel
  * <p>
  * @see  related classes and interfaces
  *

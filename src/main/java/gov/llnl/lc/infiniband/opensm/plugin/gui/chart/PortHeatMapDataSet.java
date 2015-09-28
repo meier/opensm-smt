@@ -55,6 +55,7 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.chart;
 
+import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricAnalyzer;
@@ -65,6 +66,7 @@ import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port;
 import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_PortChange;
 import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_PortRate;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Depth;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.data.HM_Port;
 import gov.llnl.lc.logging.CommonLogger;
 import gov.llnl.lc.smt.command.SmtCommand;
@@ -73,6 +75,7 @@ import gov.llnl.lc.time.TimeStamp;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -84,20 +87,21 @@ public class PortHeatMapDataSet implements HeatMapDataset, CommonLogger
   OMS_Collection omsHistory = null;
 
   /** the file, where the collection came from **/
-  String fileName           = SmtCommand.convertSpecialFileName("%h/scripts/OsmScripts/SmtScripts/sierra3H.his");
+//  String fileName           = SmtCommand.convertSpecialFileName("%h/scripts/OsmScripts/SmtScripts/sierra3H.his");
   
-  public EnumSet<IB_Depth> IncludedDepths;
+  private EnumSet<IB_Depth> IncludedDepths;
+  
+  private ArrayList<IB_Vertex> IncludedNodes;
+  private ArrayList<IB_Guid>   IncludedGuids;
 
   /** the Y values **/
   public SortedSet<HM_Port> FilteredAndSortedPorts = new TreeSet<HM_Port>();
   
   /** the number of levels, and the size **/
-  public int LevelSize [] = new int [IB_Depth.MAX_IB_DEPTH];
+  private int LevelSize [] = new int [IB_Depth.MAX_IB_DEPTH];
   
   /** the X values **/
   ArrayList<Long> timeInMillis = new ArrayList<Long>();
-  
-//  private OSM_FabricAnalyzer fabricAnalyzer = null;
   
   private double [][] ZValues;
   
@@ -118,7 +122,7 @@ public class PortHeatMapDataSet implements HeatMapDataset, CommonLogger
    * @see     describe related java objects
    *
    ***********************************************************/
-  public PortHeatMapDataSet(String filename, EnumSet<IB_Depth> includedDepths)
+  public PortHeatMapDataSet(String fileName, EnumSet<IB_Depth> includedDepths)
   {
     OMS_Collection history = null;
     try
@@ -133,19 +137,46 @@ public class PortHeatMapDataSet implements HeatMapDataset, CommonLogger
    }
    logger.severe("Done reading the file: " + fileName);
    
-   createMapDataSet(history, includedDepths);
+    createMapDataSet(history, null, includedDepths);
+  }
+
+  public PortHeatMapDataSet(String fileName, ArrayList<IB_Vertex> includedNodes)
+  {
+    OMS_Collection history = null;
+    try
+   {
+     history = OMS_Collection.readOMS_Collection(fileName);
+   }
+   catch (Exception e)
+   {
+     logger.severe("Couldn't open the file: " + fileName);
+     e.printStackTrace();
+     System.exit(0);
+   }
+   logger.severe("Done reading the file: " + fileName);
+   
+    createMapDataSet(history, includedNodes, null);
+  }
+
+  public PortHeatMapDataSet(OMS_Collection history, ArrayList<IB_Vertex> includedNodes)
+  {
+    createMapDataSet(history, includedNodes, null);
   }
 
   public PortHeatMapDataSet(OMS_Collection history, EnumSet<IB_Depth> includedDepths)
   {
-    createMapDataSet(history, includedDepths);
+    createMapDataSet(history, null, includedDepths);
   }
 
   
-  private void createMapDataSet(OMS_Collection history, EnumSet<IB_Depth> includedDepths)
+  private void createMapDataSet(OMS_Collection history, ArrayList<IB_Vertex> includedNodes, EnumSet<IB_Depth> includedDepths)
   {
      omsHistory     = history;
      IncludedDepths = includedDepths;
+     IncludedNodes  = includedNodes;
+     
+     // by default, prefer using depths
+     boolean byDepth = includedDepths != null ? true: false;
      
      // this is time consuming, especially if you scan the ENTIRE history
      // normally, it is not necessary to scan the entire history, so safe to use FALSE
@@ -155,36 +186,50 @@ public class PortHeatMapDataSet implements HeatMapDataset, CommonLogger
 
     // may only want a subset of ALL of the ports, filter out unwanted
     // ** puts in FilteredAndSortedPorts **
-    filterPorts(sortedPorts);
+    filterPorts(sortedPorts, byDepth);
     
     // z axis is the % utilization of the port
     calculateZvalues(FilteredAndSortedPorts);
   }
   
-  private boolean filterPorts(SortedSet<HM_Port> sortedPorts)
+  private boolean filterPorts(SortedSet<HM_Port> sortedPorts, boolean byDepth)
   {
+    if((!byDepth) && (IncludedNodes != null))
+    {
+      IncludedGuids = new ArrayList<IB_Guid>();
+      // update the guid list from th vertices
+      for( IB_Vertex v: IncludedNodes)
+        IncludedGuids.add(v.getGuid());
+//      System.err.println("The size of the guid list is: " + IncludedGuids.size());
+    }
+    
     Iterator<HM_Port> it = sortedPorts.iterator();
     while(it.hasNext())
     {
       HM_Port hmp = (HM_Port)it.next();
 
       // conditionally add this HM_Port, if it passes the filter
-    if(include(hmp))
+    if(include(hmp, byDepth))
       FilteredAndSortedPorts.add(hmp);
 
     }
     return true;
   }
 
-  private boolean include(HM_Port hmp)
+  private boolean include(HM_Port hmp, boolean byDepth)
   {
     // return true, if this HM_Port should be included
     // in the sorted list (NOT_FILTERED)
     //
+    // include either by depth, or by specific port list
+    //
     // return false, if this HM_Port would be filtered out
     
-    if(IncludedDepths != null)
+    if((byDepth) && (IncludedDepths != null))
       return IncludedDepths.contains(hmp.getIB_Depth());
+    
+    if(IncludedGuids != null)
+      return IncludedGuids.contains(hmp.getNode().getNodeGuid());
     
     return true;
   }
@@ -574,6 +619,56 @@ public class PortHeatMapDataSet implements HeatMapDataset, CommonLogger
     }
     return "null";
   }
+  
+  
+
+  /************************************************************
+   * Method Name:
+   *  getIncludedDepths
+   **/
+  /**
+   * Returns the value of includedDepths
+   *
+   * @return the includedDepths
+   *
+   ***********************************************************/
+  
+  public EnumSet<IB_Depth> getIncludedDepths()
+  {
+    return IncludedDepths;
+  }
+
+  /************************************************************
+   * Method Name:
+   *  getIncludedNodes
+   **/
+  /**
+   * Returns the value of includedNodes
+   *
+   * @return the includedNodes
+   *
+   ***********************************************************/
+  
+  public List<IB_Vertex> getIncludedNodes()
+  {
+    return IncludedNodes;
+  }
+
+  /************************************************************
+   * Method Name:
+   *  getLevelSize
+   **/
+  /**
+   * Returns the value of levelSize
+   *
+   * @return the levelSize
+   *
+   ***********************************************************/
+  
+  public int[] getLevelSize()
+  {
+    return LevelSize;
+  }
 
   public boolean isValid()
   {
@@ -584,6 +679,12 @@ public class PortHeatMapDataSet implements HeatMapDataset, CommonLogger
             !(this.getMaximumZValue() > this.getMinimumZValue()) )
             return false;
     return true;
+  }
+  
+  public int getNumPortsMapped()
+  {
+    // this corresponds to the data set size
+    return FilteredAndSortedPorts.size();
   }
 
 }

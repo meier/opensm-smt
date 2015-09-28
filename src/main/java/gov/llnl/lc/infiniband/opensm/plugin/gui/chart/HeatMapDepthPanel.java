@@ -135,9 +135,10 @@ public class HeatMapDepthPanel extends JPanel
     else
     {
       int numLevels = 0;
-      for(int i = 0; i < HeatMap.LevelSize.length; i++)
+      int LevelSize [] = HeatMap.getLevelSize();
+      for(int i = 0; i < LevelSize.length; i++)
       {
-        if(HeatMap.LevelSize[i] > 0)
+        if(LevelSize[i] > 0)
           numLevels++;
       }
       
@@ -147,32 +148,38 @@ public class HeatMapDepthPanel extends JPanel
       // add the checkboxes
       for(int j = 0; j < numLevels; j++)
       {
-        String label = "Level " + j + ": " + HeatMap.LevelSize[j] + " ports";
+        String label = "Level " + j + ": " + LevelSize[j] + " ports";
         JCheckBox levelCB = new JCheckBox(label);
         levelCB.setBackground(backgroundColor);
         levelCB.setEnabled(false);  // just for display, never selectable
         
-        tPorts += HeatMap.LevelSize[j];
+        tPorts += LevelSize[j];
         
-        EnumSet<IB_Depth> includedDepths = HeatMap.IncludedDepths;
+        EnumSet<IB_Depth> includedDepths = HeatMap.getIncludedDepths();
         if(includedDepths != null)
         {
           IB_Depth d = IB_Depth.get(j);
           if(includedDepths.contains(d))
           {
             levelCB.setSelected(true);
-            sPorts += HeatMap.LevelSize[j];
+            sPorts += LevelSize[j];
           }
          }
         else
-          System.err.println("Cant determine inclusive");
+        {
+          // probably a list of ports or vertex, not depths
+          //System.err.println("Cant determine inclusive");
+        }
         
         add(levelCB);
         }
     }
     /* now add the totals */
     JLabel totalLabel = new JLabel("Total Ports: " + tPorts);
+    if(HeatMap != null)
+      sPorts = HeatMap.getNumPortsMapped();
     JLabel selectedLabel = new JLabel("Selected Ports: " + sPorts);
+//    JLabel selectedLabel = new JLabel("Selected Ports: " + HeatMap.getNumPortsMapped());
     add(selectedLabel);
     add(totalLabel);
 

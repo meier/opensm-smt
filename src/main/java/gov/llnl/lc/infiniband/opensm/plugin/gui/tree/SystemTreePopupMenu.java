@@ -48,9 +48,9 @@
  * National Security, LLC, and shall not be used for advertising or product
  * endorsement purposes.
  *
- *        file: PortTreePopupMenu.java
+ *        file: SystemTreePopupMenu.java
  *
- *  Created on: Oct 31, 2013
+ *  Created on: Sep 31, 2015
  *      Author: meier3
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.tree;
@@ -74,7 +74,7 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeModel;
 
 /**********************************************************************
- * Describe purpose and responsibility of PortTreePopupMenu
+ * Describe purpose and responsibility of SystemTreePopupMenu
  * <p>
  * @see  related classes and interfaces
  *
@@ -82,20 +82,32 @@ import javax.swing.tree.DefaultTreeModel;
  * 
  * @version Oct 31, 2013 9:52:24 AM
  **********************************************************************/
-public class PortTreePopupMenu extends JPopupMenu implements ActionListener, CommonLogger
+public class SystemTreePopupMenu extends JPopupMenu implements ActionListener, CommonLogger
 {
   /**  describe serialVersionUID here **/
-  private static final long serialVersionUID = -1343922054514589747L;
+  private static final long serialVersionUID = 3837174107559442026L;
   
-  static final String MsgUtilize = SMT_AnalysisType.SMT_UTILIZATION.getAnalysisName();
+  private SystemTreeModel Model;
+  
+//  static final String MsgUtilize = "UTILIZE";
+//  static final String MsgHeatMap = "HeatMap";
+  
+static final String MsgUtilize = SMT_AnalysisType.SMT_UTILIZATION.getAnalysisName();
+static final String MsgHeatMap = SMT_AnalysisType.SMT_HEAT_MAP.getAnalysisName();
   JMenuItem anItem;
+  JMenuItem hmItem;
   
-  public PortTreePopupMenu()
+  public SystemTreePopupMenu()
   {
-      anItem = new JMenuItem(MsgUtilize);
-      add(anItem);
-      anItem.addActionListener(this);
-  }
+    anItem = new JMenuItem(MsgUtilize);
+    add(anItem);
+    anItem.addActionListener(this);
+    
+    hmItem = new JMenuItem(MsgHeatMap);
+    add(hmItem);
+    hmItem.addActionListener(this);
+    
+   }
   
   /************************************************************
    * Method Name:
@@ -117,21 +129,22 @@ public class PortTreePopupMenu extends JPopupMenu implements ActionListener, Com
   @Override
   public void actionPerformed(ActionEvent e)
   {
-    if (e.getActionCommand().equals(MsgUtilize))
+    if (e.getActionCommand().equals(MsgHeatMap))
     {
+      // send the array list of vertices for this system guid
       if (e.getSource() instanceof JMenuItem)
       {
         JMenuItem src = (JMenuItem) e.getSource();
         Container cont = src.getParent();
-        if (cont instanceof PortTreePopupMenu)
+        if (cont instanceof SystemTreePopupMenu)
         {
-          PortTreePopupMenu ptpm = (PortTreePopupMenu) cont;
+          SystemTreePopupMenu ptpm = (SystemTreePopupMenu) cont;
           Component comp = ptpm.getInvoker();
           if (comp instanceof JTree)
           {
             JTree tree = (JTree) comp;
 
-            // I think the Model is of type, PortTreeModel, check for that
+            // I think the Model is of type, SystemTreeModel, check for that
             if (tree.getModel() instanceof DefaultTreeModel)
             {
               DefaultTreeModel dtm = (DefaultTreeModel) tree.getModel();
@@ -139,21 +152,90 @@ public class PortTreePopupMenu extends JPopupMenu implements ActionListener, Com
               if (dtm.getRoot() instanceof UserObjectTreeNode)
               {
                 UserObjectTreeNode tn = (UserObjectTreeNode) dtm.getRoot();
+                String sysGuid = SystemTreeModel.getSystemGuidString(tn);
+//                System.err.println("The system guid is: (" + sysGuid + ")");
+//                String sysName = SystemTreeModel.getSystemNameString(tn);
+//                System.err.println("The system name is: (" + sysName + ")");
+                if(Model != null)
+                {
+                  MessageManager.getInstance().postMessage(
+                      new SmtMessage(SmtMessageType.SMT_MSG_INFO, "Popup a panel for showing the System Guid Heat Map"));
+                  
+                  // craft a selection event that contains necessary info for this utilization event
+                  GraphSelectionManager.getInstance().updateAllListeners(new IB_GraphSelectionEvent(this, SMT_AnalysisType.SMT_HMAP_SYS_PORTS, Model));
+               }
 
-                MessageManager.getInstance().postMessage(
-                    new SmtMessage(SmtMessageType.SMT_MSG_INFO,
-                        "Popup a panel for showing the Port Utilization (" + PortTreeModel.getGuidString(tn)
-                            + ") [" + PortTreeModel.getPortNum(tn) + "]"));
-                
-                // craft a selection event that contains necessary info for this utilization event
-                GraphSelectionManager.getInstance().updateAllListeners(new IB_GraphSelectionEvent(this, SMT_AnalysisType.SMT_PORT_UTILIZATION, PortTreeModel.getPortAddressString(tn)));
+               }
+            }
+          }
+        }
+      }
 
-              }
+    }
+    
+    if (e.getActionCommand().equals(MsgUtilize))
+    {
+      if (e.getSource() instanceof JMenuItem)
+      {
+        System.err.println("Selected utilize");
+        JMenuItem src = (JMenuItem) e.getSource();
+        Container cont = src.getParent();
+        if (cont instanceof SystemTreePopupMenu)
+        {
+          SystemTreePopupMenu ptpm = (SystemTreePopupMenu) cont;
+          Component comp = ptpm.getInvoker();
+          if (comp instanceof JTree)
+          {
+            JTree tree = (JTree) comp;
+
+            // I think the Model is of type, SystemTreeModel, check for that
+            if (tree.getModel() instanceof DefaultTreeModel)
+            {
+              DefaultTreeModel dtm = (DefaultTreeModel) tree.getModel();
+
+              if (dtm.getRoot() instanceof UserObjectTreeNode)
+              {
+                UserObjectTreeNode tn = (UserObjectTreeNode) dtm.getRoot();
+                String sysGuid = SystemTreeModel.getSystemGuidString(tn);
+//                System.err.println("The system guid is: (" + sysGuid + ")");
+//                String sysName = SystemTreeModel.getSystemNameString(tn);
+//                System.err.println("The system name is: (" + sysName + ")");
+                if(Model != null)
+                {
+                  // provide a "utilization" analysis for this core system switch assembly
+                  
+//                MessageManager.getInstance().postMessage(
+//                new SmtMessage(SmtMessageType.SMT_MSG_INFO,
+//                    "Popup a panel for showing the System Utilization (" + SystemTreeModel.getName(tn)
+//                        + ") [" + SystemTreeModel.getSystemGuidString(tn) + "]"));
+//            
+//            // craft a selection event that contains necessary info for this utilization event
+//            GraphSelectionManager.getInstance().updateAllListeners(new IB_GraphSelectionEvent(this, SMT_AnalysisType.SMT_PORT_UTILIZATION, PortTreeModel.getPortAddressString(tn)));
+               }
+
+               }
             }
           }
         }
       }
     }
+  }
+
+  /************************************************************
+   * Method Name:
+   *  setSystemTreeModel
+  **/
+  /**
+   * Describe the method here
+   *
+   * @see     describe related java objects
+   *
+   * @param model
+   ***********************************************************/
+  public void setSystemTreeModel(SystemTreeModel model)
+  {
+    Model = model;
+    
   }
 
 }
