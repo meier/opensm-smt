@@ -104,6 +104,7 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
   private PortCounterName PortCounter = null;
   private OSM_Stats MAD_Stats = null;
   private MAD_Counter MADCounter = null;
+  private boolean Utilization = false;
   
   public SimpleXY_ChartPanel(JFreeChart chart)
   {
@@ -143,8 +144,10 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
       MAD_Stats = (OSM_Stats)userObject;
     if(userElement instanceof MAD_Counter)
       MADCounter = (MAD_Counter)userElement;
-      
-
+    
+    if((XY_PlotType.ADV_PORT_UTIL_PLUS.equals(type)))
+      Utilization = true;
+    
     
     
     // create the first simple plot of the absolute counter values, quick
@@ -264,6 +267,13 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
     if(MADCounter != null)
     {
       ChartTitle = MADCounter.getName() + " [" + osm.getFabricName() + "]";
+      FrameTitle = ChartTitle;
+    }
+    
+    if(Utilization)
+    {
+      System.err.println("initializing titles for Utilization");
+      ChartTitle = "Port Utilization" + " [" + osm.getFabricName() + "]";
       FrameTitle = ChartTitle;
     }
     
@@ -445,12 +455,6 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
       axis2.setAutoRangeIncludesZero(false);
       plot.setRangeAxis(1, axis2);
       
-//      XYDataset dataset2 = createDeltaDataset(deltaHistory, PortCounter, PortCounterAxisLabel.DELTA.getName());
-//      plot.setDataset(1, dataset2);
-//      plot.mapDatasetToRangeAxis(1, 1);
-//      XYItemRenderer renderer2 = new StandardXYItemRenderer();
-//      plot.setRenderer(1, renderer2);
-//      
       XYDataset dataset2 = createDeltaDataset(deltaHistory, MADCounter, PortCounterAxisLabel.DELTA.getName());
       plot.setDataset(1, dataset2);
       plot.mapDatasetToRangeAxis(1, 1);

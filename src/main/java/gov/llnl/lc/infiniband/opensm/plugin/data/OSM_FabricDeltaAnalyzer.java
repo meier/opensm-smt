@@ -105,6 +105,7 @@ public class OSM_FabricDeltaAnalyzer implements CommonLogger
   
   private LinkedHashMap<String, PFM_PortRate>   PortRates;
   
+  private OSM_NodeType IncludedTypes;                 // all ports, only switch to switch ports, or only CA ports
   private BinList<PFM_PortRate> UtilizationRateBins;
   
   private SummaryStatistics RateStats;
@@ -142,7 +143,7 @@ public class OSM_FabricDeltaAnalyzer implements CommonLogger
 
   public OSM_FabricDeltaAnalyzer(OSM_Fabric fabric1, OSM_Fabric fabric2, int numBins)
   {
-    this(new OSM_FabricDelta(fabric1, fabric2), numBins);
+    this(new OSM_FabricDelta(fabric1, fabric2), numBins, OSM_NodeType.UNKNOWN);
   }
 
   /************************************************************
@@ -156,7 +157,7 @@ public class OSM_FabricDeltaAnalyzer implements CommonLogger
    *
    * @param delta
    ***********************************************************/
-  public OSM_FabricDeltaAnalyzer(OSM_FabricDelta delta, int numBins)
+  public OSM_FabricDeltaAnalyzer(OSM_FabricDelta delta, int numBins, OSM_NodeType includeTypes)
   {
     super();
     Delta = delta;
@@ -169,14 +170,14 @@ public class OSM_FabricDeltaAnalyzer implements CommonLogger
     logger.severe("CREATING FABRIC ANALYZER");
     FabAnalizer = new OSM_FabricAnalyzer(Delta.getFabric2());
 
-    init(numBins, VertexMap, EdgeMap, FabAnalizer);
+    init(numBins, VertexMap, EdgeMap, FabAnalizer, includeTypes);
   }
 
   public OSM_FabricDeltaAnalyzer(OSM_FabricDelta delta, int numBins, LinkedHashMap <String, IB_Vertex> vertexMap, LinkedHashMap <String, IB_Edge> edgeMap, OSM_FabricAnalyzer fabAnalizer)
   {
     super();
     Delta = delta;
-    init(numBins, vertexMap, edgeMap, fabAnalizer);
+    init(numBins, vertexMap, edgeMap, fabAnalizer, OSM_NodeType.UNKNOWN);
   }
 
   /************************************************************
@@ -192,7 +193,12 @@ public class OSM_FabricDeltaAnalyzer implements CommonLogger
    ***********************************************************/
   public OSM_FabricDeltaAnalyzer(OSM_FabricDelta delta)
   {
-     this(delta, DEFAULT_NUM_BINS);
+     this(delta, OSM_NodeType.UNKNOWN);
+   }
+
+  public OSM_FabricDeltaAnalyzer(OSM_FabricDelta delta, OSM_NodeType includeTypes)
+  {
+     this(delta, DEFAULT_NUM_BINS, includeTypes);
    }
 
 
@@ -212,17 +218,18 @@ public class OSM_FabricDeltaAnalyzer implements CommonLogger
     return Delta;
   }
   
-  private boolean init(int numBins, LinkedHashMap <String, IB_Vertex> vertexMap, LinkedHashMap <String, IB_Edge> edgeMap, OSM_FabricAnalyzer fabAnalizer)
+  private boolean init(int numBins, LinkedHashMap <String, IB_Vertex> vertexMap, LinkedHashMap <String, IB_Edge> edgeMap, OSM_FabricAnalyzer fabAnalizer, OSM_NodeType includeTypes)
   {
     VertexMap              = vertexMap;
     EdgeMap                = edgeMap;
     FabAnalizer            = fabAnalizer;
+    IncludedTypes          = includeTypes;
     logger.warning("Initializing the Delta Analyzer with new instance");
     
     // use the methods from the TopAnalyzer to find differences (traffic and errors)
     
     ActiveTrafficPorts = TopAnalyzer.calculateActiveTrafficPorts(-1, Delta.getPortsWithTrafficChange());
-    UtilizationRateBins = getFabricRateUtilizationBins(numBins);
+    UtilizationRateBins = getFabricRateUtilizationBins(numBins, includeTypes);
     AllPortErrors = TopAnalyzer.calculateActiveErrorPorts(-1, Delta.getPortsWithErrorChange());
     
     AllLinkErrors = TopAnalyzer.calculateActiveErrorLinks(-1, AllPortErrors, edgeMap);
@@ -239,6 +246,52 @@ public class OSM_FabricDeltaAnalyzer implements CommonLogger
     if (value != null && value.length() > length)
       value = value.substring(0, length);
     return value;
+  }
+  
+  public static boolean isSwitchPort(OSM_FabricDelta d, PFM_Port p)
+  {
+    OSM_Fabric f = d.getFabric2();
+    OSM_Node n = f.getOSM_Node(p.getNodeGuid());
+    return n.isSwitch();
+  }
+
+  public static boolean includeThisPort(OSM_FabricDelta d, PFM_Port p, OSM_NodeType includeTypes)
+  {
+    // return true if includeTypes == OSM_NodeType.UNKNOWN
+    if(OSM_NodeType.UNKNOWN.equals(includeTypes))
+    {
+//      System.out.println("Port");
+      return true;      
+    }
+    
+    // what types of ports are connected to each other
+    OSM_Fabric f = d.getFabric2();
+    String key = OSM_Fabric.getOSM_PortKey(p.node_guid, p.port_num);
+    OSM_Port port = f.getOSM_Port(key);
+    IB_Guid rguid = new IB_Guid(port.sbnPort.linked_node_guid);
+    
+    OSM_Node rn = f.getOSM_Node(rguid);
+    boolean isLocalSwitchPort  = isSwitchPort(d, p);
+    boolean isRemoteSwitchPort = rn.isSwitch();
+
+    // if includeTypes == OSM_NodeType.SW_NODE, return true only if this port is a switch port AND is
+    //                                          connected to another switch
+    if(OSM_NodeType.SW_NODE.equals(includeTypes) &&
+        (isLocalSwitchPort && isRemoteSwitchPort))
+    {
+//      System.out.println("SW Port");
+      return true;
+    }
+
+    // if includeTypes == OSM_NodeType.CA_NODE, return true if this port is a ca port OR is
+    //                                          connected to another ca port
+    if(OSM_NodeType.CA_NODE.equals(includeTypes) &&
+        (!isLocalSwitchPort || !isRemoteSwitchPort))
+    {
+//      System.out.println("CA Port");
+      return true;
+    }
+    return false;
   }
 
   /************************************************************
@@ -1561,10 +1614,12 @@ public class OSM_FabricDeltaAnalyzer implements CommonLogger
   
   
   
-    private BinList<PFM_PortRate>  getFabricRateUtilizationBins(int numBins)
+    private BinList<PFM_PortRate>  getFabricRateUtilizationBins(int numBins, OSM_NodeType includeTypes)
     {
     // assume I have a Delta, and I want to compute the BW's and put them
     // in a fixed number of bins.
+      
+      // only include the ports from the specified node types.  if unknown, include all
    
     // the object to return, should be the specified number of bins
     BinList<PFM_PortRate> UtilizationBins = new BinList<PFM_PortRate>();
@@ -1599,27 +1654,34 @@ public class OSM_FabricDeltaAnalyzer implements CommonLogger
    {
       PFM_PortChange pc = eMapEntry.getValue();
       String key = eMapEntry.getKey();
-      PFM_PortRate   pr = new PFM_PortRate(pc);
-      PortRates.put(key, pr);
+      // what type of node is this port from??
+      boolean sPortType = isSwitchPort(getDelta(), pc.getPort1());
       
-      // FIXME - decide which way is more correct
-      
-      // use xmit data by default or Max ??
-//      double U = getPortUtilization(pr, PFM_Port.PortCounterName.xmit_data);
-      double U = getMaxPortUtilization(pr);
-      RateStats.addValue(U);
-     
-     // put this PortChange in the desired bin
-     for(int k = BinSize; k < 100; k+= BinSize)
-     {
-       if(U < (double) k)
+      // only add this value if the port change is from the desired type (or no desired type specified)
+      if(includeThisPort(getDelta(), pc.getPort1(), includeTypes))
+      {
+        PFM_PortRate   pr = new PFM_PortRate(pc);
+        PortRates.put(key, pr);
+              
+        // FIXME - decide which way is more correct
+        
+        // use xmit data by default or Max ??
+        double U = getPortUtilization(pr, PFM_Port.PortCounterName.xmit_data);
+        //double U = getMaxPortUtilization(pr);
+        
+        RateStats.addValue(U);
+       
+       // put this PortChange in the desired bin
+       for(int k = BinSize; k < 100; k+= BinSize)
        {
-         UtilizationBins.add(pr, Integer.toString(k));
-         break;
+         if(U < (double) k)
+         {
+           UtilizationBins.add(pr, Integer.toString(k));
+           break;
+         }
        }
+      }
      }
-      
-    }
     return UtilizationBins;
     }
 
@@ -1640,7 +1702,7 @@ public class OSM_FabricDeltaAnalyzer implements CommonLogger
    ***********************************************************/
   public static void main(String[] args) throws FileNotFoundException, IOException, ClassNotFoundException
   {
-    OSM_FabricDelta ofd = OSM_FabricDelta.readFabricDelta("/home/meier3/scripts/OsmScripts/SmtScripts/cabDelta.delta");
+    OSM_FabricDelta ofd = OSM_FabricDelta.readFabricDelta("/home/meier3/omsHistoryRepo/cab/201509251054.data.his");
     OSM_FabricDeltaAnalyzer ofda = new OSM_FabricDeltaAnalyzer(ofd);
     ofda.getFabricRateUtilizationBins();
     PortCounterName pcn = PFM_Port.PortCounterName.xmit_data;

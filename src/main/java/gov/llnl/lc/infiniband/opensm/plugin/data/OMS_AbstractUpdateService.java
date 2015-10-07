@@ -57,6 +57,7 @@ package gov.llnl.lc.infiniband.opensm.plugin.data;
 
 import gov.llnl.lc.infiniband.opensm.plugin.net.OsmSession;
 import gov.llnl.lc.logging.CommonLogger;
+import gov.llnl.lc.smt.SmtConstants;
 import gov.llnl.lc.smt.command.SmtCommandType;
 import gov.llnl.lc.smt.props.SmtProperty;
 import gov.llnl.lc.time.TimeStamp;
@@ -73,7 +74,7 @@ import java.util.concurrent.TimeUnit;
  * 
  * @version Aug 28, 2013 8:24:22 AM
  **********************************************************************/
-public abstract class OMS_AbstractUpdateService implements Runnable, OMS_Updater, CommonLogger
+public abstract class OMS_AbstractUpdateService implements OMS_Updater, Runnable, CommonLogger
 {
   /** the synchronization object **/
   protected static Boolean semaphore            = new Boolean( true );
@@ -388,6 +389,15 @@ public abstract class OMS_AbstractUpdateService implements Runnable, OMS_Updater
   public synchronized String getFile()
   {
     return serviceProps.getProperty(SmtProperty.SMT_OMS_FILE.name());
+  }
+  
+  public synchronized String getOMS_Source()
+  {
+    /** return the file name, or the port number **/
+    String method = serviceProps.getProperty(SmtProperty.SMT_OMS_FILE.name());
+    if(SmtConstants.SMT_NO_FILE.equals(method))
+      method = getHost() + ":" + getPort();
+    return method;
   }
   
   public synchronized String getConfigFile()

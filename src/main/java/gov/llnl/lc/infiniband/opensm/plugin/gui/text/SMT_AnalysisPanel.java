@@ -64,6 +64,7 @@ import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionEvent;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.chart.PortHeatMapPlotPanel;
+import gov.llnl.lc.infiniband.opensm.plugin.gui.chart.PortUtilizationPanel;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.SystemTreeModel;
 import gov.llnl.lc.logging.CommonLogger;
 import gov.llnl.lc.smt.SmtConstants;
@@ -308,6 +309,21 @@ public class SMT_AnalysisPanel extends JPanel implements SMT_AnalysisChangeListe
 //      System.err.println("The system name is2: (" + sysName + ")");
       IncludedNodes = model.getVertexList();
       add(new PortHeatMapPlotPanel(history, IncludedNodes));
+      return;
+    }
+    else if(type.equals(SMT_AnalysisType.SMT_UTILIZATION))
+    {
+      // TODO - this is not an editor pane, so should probably be implemented different, just
+      //        wedge the Utilization Panel in here
+      //
+      
+      System.err.println("SMT_Analysis: Utilization Panel");
+      
+      // The Utilization Graph is static, don't try to update it with new stuff
+      SMT_UpdateService updateService = SMT_UpdateService.getInstance();
+      OMS_Collection history = updateService.getCollection();
+
+      add(new PortUtilizationPanel(history));
       return;
     }
     else if (obj != null)

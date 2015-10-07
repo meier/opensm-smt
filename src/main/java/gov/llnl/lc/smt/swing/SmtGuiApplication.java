@@ -1852,6 +1852,12 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
       handled = handleUtilizationSelected(source, event);
       logger.severe("Done handling utilization");
       }
+      else if(sType.equals(SMT_AnalysisType.SMT_UTILIZATION))
+      {
+      System.err.println("Got a Utilization Event");
+      handled = handleUtilizationSelected(source, event);
+     logger.severe("Done handling utilization");
+      }
       else if(sType.equals(SMT_AnalysisType.SMT_ROUTE_PATH))
      {
        handled = handleRoutePathSelected(source, event);
@@ -2789,6 +2795,32 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
        scrollPaneAnal.setName(tabName);
        this.addToCenter(scrollPaneAnal);
         handled = true;
+     }
+      
+      // create universal PortUtilizationPlotPanel
+      else if(sType.equals(SMT_AnalysisType.SMT_UTILIZATION))
+      {
+        boolean addUtilizationPanel = true;
+        
+        System.err.println("UTILIZATION for the SYSTEM");
+        String tabName = "Util: " + OMS.getFabricName();  // this needs to be unique among all tabs in the center pane
+        
+        if(addUtilizationPanel)
+        {
+          SMT_AnalysisPanel sap = new SMT_AnalysisPanel(sType);
+          JScrollPane scrollPaneAnal = new JScrollPane(sap);
+           
+         // this should be the name of the heat map
+          scrollPaneAnal.setName(tabName);
+          Boolean b = this.addToCenter(scrollPaneAnal, true, true);
+          handled = true;
+        }
+        else
+        {
+          // attempt to remove
+          Boolean b = removeNamedFromCenter(tabName);
+          handled = true;
+         }
      }
       
       handled = true;

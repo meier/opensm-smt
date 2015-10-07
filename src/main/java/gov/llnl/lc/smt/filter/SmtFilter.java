@@ -69,7 +69,13 @@ import java.util.ArrayList;
 import java.util.Map;
 
 /**********************************************************************
- * Describe purpose and responsibility of WhiteAndBlackListFilter
+ * A simple string filter, that utilizes a white list (allowed) and
+ * black list (denied) to implement the filter.  Additionally, a list
+ * of files can be used to describe the white and black lists.
+ * 
+ * Once constructed, the primary way to use the filter is by the test
+ * isFiltered(String).
+ * 
  * <p>
  * @see  related classes and interfaces
  *
@@ -86,8 +92,6 @@ public class SmtFilter implements gov.llnl.lc.logging.CommonLogger
   
   // the files used to create the Filter
   protected java.util.ArrayList<String> FileList     = new java.util.ArrayList<String>();
-
-  
 
   /************************************************************
    * Method Name:
@@ -299,6 +303,18 @@ public class SmtFilter implements gov.llnl.lc.logging.CommonLogger
     return (SmtFilter.passListCheck(test, WhiteList, BlackList));
   }
 
+  /************************************************************
+   * Method Name:
+   *  isFiltered
+  **/
+  /**
+   * Returns TRUE if the test string would be filtered (rejected) out.
+   *
+   * @see     #passListCheck(String)
+   *
+   * @param test
+   * @return
+   ***********************************************************/
   public boolean isFiltered(String test)
   {
     return SmtFilter.isFiltered(test, WhiteList, BlackList);

@@ -77,7 +77,15 @@ public enum XY_PlotType
   MAD_COUNTER(              4, "MAD Counter",           "MAD Counter"),    
   MAD_COUNTER_PLUS(         5, "MAD Counter",           "MAD Counter Comparison"),    
   ADV_MAD_COUNTER(          6, "MAD Counter",           "MAD Counter with Table"),    
-  ADV_MAD_COUNTER_PLUS(     7, "MAD Counter",           "MAD Counter Comparison with Table");    
+  ADV_MAD_COUNTER_PLUS(     7, "MAD Counter",           "MAD Counter Comparison with Table"),    
+  EVENT_COUNTER(            8, "EVENT Counter",         "EVENT Counter"),    
+  EVENT_COUNTER_PLUS(       9, "EVENT Counter",         "EVENT Counter Comparison"),    
+  ADV_EVENT_COUNTER(       10, "EVENT Counter",         "EVENT Counter with Table"),    
+  ADV_EVENT_COUNTER_PLUS(  11, "EVENT Counter",         "EVENT Counter Comparison with Table"),    
+  PORT_UTIL(               12, "Port Utilization",      "Port Utilization"),    
+  PORT_UTIL_PLUS(          13, "Port Utilization",      "Port Utilization Comparison"),    
+  ADV_PORT_UTIL(           14, "Port Utilization",      "Port Utilization with Table"),    
+  ADV_PORT_UTIL_PLUS(      15, "Port Utilization",      "Port Utilization Comparison with Table");    
 
     public static final EnumSet<XY_PlotType> XYPLOT_ALL_TYPES  = EnumSet.allOf(XY_PlotType.class);
     public static final EnumSet<XY_PlotType> XYPLOT_MAD_TYPES  = EnumSet.range(MAD_COUNTER, ADV_MAD_COUNTER_PLUS);

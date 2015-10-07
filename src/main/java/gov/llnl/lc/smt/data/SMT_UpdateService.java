@@ -367,7 +367,7 @@ public class SMT_UpdateService extends SMT_AbstractUpdateService implements Time
     if(osmService != null)
       fabric = osmService.getFabricName();
     
-    return command + " for (" + fabric + ") using [" + getFile() + "]";
+    return command + " for (" + fabric + ") using [" + getOMS_Source() + "]";
   }
 
  @Override

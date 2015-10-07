@@ -930,7 +930,7 @@ public abstract class SmtCommand implements SmtCommandInterface, SmtConstants, C
     boolean reuse = re_use.toLowerCase().startsWith("t") || re_use.toLowerCase().startsWith("y");
     boolean wrap = sWrap.toLowerCase().startsWith("t") || sWrap.toLowerCase().startsWith("y");
     boolean once = sOnce.toLowerCase().startsWith("t") || sOnce.toLowerCase().startsWith("y");
-    boolean playable = sPlay.toLowerCase().startsWith("t") || sOnce.toLowerCase().startsWith("y");
+    boolean playable = sPlay.toLowerCase().startsWith("t") || sPlay.toLowerCase().startsWith("y");
 
     String file = convertSpecialFileName(map.get(SmtProperty.SMT_READ_OMS_HISTORY.getName()));
     if (file != null)
@@ -1305,8 +1305,10 @@ public abstract class SmtCommand implements SmtCommandInterface, SmtConstants, C
   protected boolean usingSMT_Updater()
   {
     boolean smt = false;
-    // only return true if this is the SmtGui command
+    // only return true if this is the SmtGui command, or the SmtUtilize command
     if (SmtProperty.SMT_GUI_COMMAND.getPropertyName().compareTo(this.getClass().getName()) == 0)
+      smt = true;
+    if (SmtProperty.SMT_UTILIZE_COMMAND.getPropertyName().compareTo(this.getClass().getName()) == 0)
       smt = true;
     return smt;
   }

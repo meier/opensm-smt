@@ -82,7 +82,7 @@ public enum SMT_AnalysisType
   SMT_FABRIC_DETAILS(       30, "Fabric Details",                      "FabDetails",              "a directive to use the default if necessary"),
   SMT_GRAPH(               996, "Graph",                             "Graph",              "a directive to use the default if necessary"),
   SMT_OVERVIEW(            997, "Overview",                             "Summary",              "a directive to use the default if necessary"),
-  SMT_UTILIZATION(         998, "Utilization",                          "General",              "a directive to use the default if necessary"),
+  SMT_UTILIZATION(         998, "Utilization",                          "",              "a directive to use the default if necessary"),
   SMT_ROUTING(             994, "Routing",                          "General",              "a directive to use the default if necessary"),
   SMT_DETAILS(             995, "Details",                          "General",              "a directive to use the default if necessary"),
   SMT_HEAT_MAP(            996, "Heat Map",                          "General",              "a directive to use the default if necessary"),

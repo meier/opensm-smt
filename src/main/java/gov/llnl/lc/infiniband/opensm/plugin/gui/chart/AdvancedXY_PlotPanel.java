@@ -170,8 +170,6 @@ public class AdvancedXY_PlotPanel extends XY_PlotPanel implements ChangeListener
       this.setTitle(((SimpleXY_PlotPanel)pPanel).getTitle());
     }
     initChart(pPanel);
-
-    
   }
 
   public AdvancedXY_PlotPanel(XY_PlotType type, Object userObject, Object userElement)

@@ -89,6 +89,7 @@ public enum SmtCommandType
   SMT_HELP_CMD(          215, "smt-help",    "gov.llnl.lc.smt.command.help.SmtHelp",              "help",     "h",  "cmd args", "a gui help tool"),
   SMT_MCAST_CMD(         216, "smt-multicast","gov.llnl.lc.smt.command.route.SmtMulticast",       "multicast","m",  "cmd args", "a multicast group tool"),
   SMT_PART_CMD(          217, "smt-partition","gov.llnl.lc.smt.command.route.SmtPartition",       "partition","part","cmd args","a partition tool"),
+  SMT_UTILIZE_CMD(       218, "smt-utilize", "gov.llnl.lc.smt.command.utilize.SmtUtilize",        "utilize",  "util","cmd args","show bandwitdh utilization"),
   SMT_PRIV_CMD(          220, "smt-priv",    "gov.llnl.lc.smt.command.privileged.SmtPrivileged",  "priv",    "pv",  "cmd args", "a set of privileged commands"),
   SMT_ALIAS_CMD(         300, "smt-config",  "gov.llnl.lc.smt.command.config.SmtConfig",          "config",  "c",   "cmd args", "checks or modifies the SMT configuration"),
   SMT_CONSOLE_MGR(       301, "smt-console", "gov.llnl.lc.smt.command.console.SmtConsoleManager", "console", "con", "cmd args", "a curses application for viewing OMS information"),

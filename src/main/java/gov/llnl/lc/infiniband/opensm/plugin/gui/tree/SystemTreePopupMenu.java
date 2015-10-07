@@ -182,40 +182,12 @@ static final String MsgHeatMap = SMT_AnalysisType.SMT_HEAT_MAP.getAnalysisName()
         Container cont = src.getParent();
         if (cont instanceof SystemTreePopupMenu)
         {
-          SystemTreePopupMenu ptpm = (SystemTreePopupMenu) cont;
-          Component comp = ptpm.getInvoker();
-          if (comp instanceof JTree)
-          {
-            JTree tree = (JTree) comp;
-
-            // I think the Model is of type, SystemTreeModel, check for that
-            if (tree.getModel() instanceof DefaultTreeModel)
-            {
-              DefaultTreeModel dtm = (DefaultTreeModel) tree.getModel();
-
-              if (dtm.getRoot() instanceof UserObjectTreeNode)
-              {
-                UserObjectTreeNode tn = (UserObjectTreeNode) dtm.getRoot();
-                String sysGuid = SystemTreeModel.getSystemGuidString(tn);
-//                System.err.println("The system guid is: (" + sysGuid + ")");
-//                String sysName = SystemTreeModel.getSystemNameString(tn);
-//                System.err.println("The system name is: (" + sysName + ")");
-                if(Model != null)
-                {
-                  // provide a "utilization" analysis for this core system switch assembly
-                  
-//                MessageManager.getInstance().postMessage(
-//                new SmtMessage(SmtMessageType.SMT_MSG_INFO,
-//                    "Popup a panel for showing the System Utilization (" + SystemTreeModel.getName(tn)
-//                        + ") [" + SystemTreeModel.getSystemGuidString(tn) + "]"));
-//            
-//            // craft a selection event that contains necessary info for this utilization event
-//            GraphSelectionManager.getInstance().updateAllListeners(new IB_GraphSelectionEvent(this, SMT_AnalysisType.SMT_PORT_UTILIZATION, PortTreeModel.getPortAddressString(tn)));
-               }
-
-               }
-            }
-          }
+          // right now I don't care about where it came from, just trigger the system utilization panel
+          MessageManager.getInstance().postMessage(
+              new SmtMessage(SmtMessageType.SMT_MSG_INFO, "Popup a panel for showing the Port Utilization Panel"));
+          
+          // craft a selection event that contains necessary info for this utilization event
+          GraphSelectionManager.getInstance().updateAllListeners(new IB_GraphSelectionEvent(this, SMT_AnalysisType.SMT_UTILIZATION, Model));
         }
       }
     }

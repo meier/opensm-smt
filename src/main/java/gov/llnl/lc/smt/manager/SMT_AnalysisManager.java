@@ -59,6 +59,7 @@ import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Updater;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDelta;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDeltaAnalyzer;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_NodeType;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.text.OMS_UpdateListenerPanel;
 import gov.llnl.lc.logging.CommonLogger;
@@ -114,6 +115,9 @@ public class SMT_AnalysisManager implements SMT_AnalysisUpdater, Runnable, Commo
   
   /** the previous Fabric **/
   private static OSM_Fabric oldOsmFabric = null;
+  
+  /** analyze ALL, Switch to Switch, or just CA ports **/
+  private OSM_NodeType IncludedTypes = OSM_NodeType.UNKNOWN;                 // by default, include all ports
   
   /** the analyzer that contains the results **/
   private static OSM_FabricDeltaAnalyzer DeltaAnalysis = null;
@@ -272,6 +276,40 @@ public class SMT_AnalysisManager implements SMT_AnalysisUpdater, Runnable, Commo
      }
       
    /************************************************************
+     * Method Name:
+     *  getIncludedTypes
+     **/
+    /**
+     * Returns the value of includedTypes
+     *
+     * @return the includedTypes
+     *
+     ***********************************************************/
+    
+    public synchronized OSM_NodeType getIncludedTypes()
+    {
+      return IncludedTypes;
+    }
+
+    /************************************************************
+     * Method Name:
+     *  setIncludedTypes
+     **/
+    /**
+     * Sets the value of includedTypes which can be either UNKNOWN,
+     * meaning analyze ALL ports, SW_NODE meaning only switch to
+     * switch ports, or CA_NODE which means only port to or from a
+     * channel adapter.
+     *
+     * @param includedTypes the includedTypes to set
+     *
+     ***********************************************************/
+    public synchronized void setIncludedTypes(OSM_NodeType includedTypes)
+    {
+      IncludedTypes = includedTypes;
+    }
+
+  /************************************************************
    * Method Name:
    *  addSMT_AnalysisChangeListener
    **/
@@ -392,7 +430,7 @@ public class SMT_AnalysisManager implements SMT_AnalysisUpdater, Runnable, Commo
         // skip analysis if the only listener is the watchdog panel
         if ((DeltaAnalysis == null) || (getNumListeners() != 1) || !(Analysis_Listeners.get(0) instanceof OMS_UpdateListenerPanel))
         {
-          DeltaAnalysis = new OSM_FabricDeltaAnalyzer(osmFabricDelta);
+          DeltaAnalysis = new OSM_FabricDeltaAnalyzer(osmFabricDelta, IncludedTypes);
         }
         // always notify the listeners, (even if I skipped the analysis)
         updateAllListeners();

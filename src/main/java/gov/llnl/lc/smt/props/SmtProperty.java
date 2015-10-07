@@ -169,6 +169,7 @@ public enum SmtProperty implements Serializable, NetworkConstants
   SMT_FABRIC_CONFIG_FILE(     206, "gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Configuration",         "readConfig",                "toInfo", "toTimeString", "the file of the configuration file"),
   SMT_FABRIC_CONFIG_CMD(      212, "SmtFabric.ibFabricConfig",                                            "fabricConfig",             "fC", "toTimeString", "displays the ibfabricconf.xml"),
   SMT_NODE_MAP_CMD(           213, "SmtFabric.nodeNameMap",                                               "nodeNameMap",              "nM", "toTimeString", "displays the ib-node-name-map"),
+  SMT_UTILIZE_COMMAND(        214, "gov.llnl.lc.smt.command.utilize.SmtUtilize",    "utilize",               "u",      "file name", "the file of the configuration file"),
   SMT_TOP_COMMAND(            220, "gov.llnl.lc.smt.command.top.SmtTop",            "top",                       "t",      "file name", "the file of the configuration file"),
   SMT_TOP_NUMBER(             221, "SmtTop.number",                                 "topNum",                "tN", "# top lines", "the number of top result lines"),
   SMT_NODE_TRAFFIC(           222, "SmtTop.nodeTraffic",                            "nodeTraffic",           "nT", "# top lines", "the number of top result lines"),
