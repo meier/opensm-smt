@@ -89,9 +89,6 @@ public class SystemTreePopupMenu extends JPopupMenu implements ActionListener, C
   
   private SystemTreeModel Model;
   
-//  static final String MsgUtilize = "UTILIZE";
-//  static final String MsgHeatMap = "HeatMap";
-  
 static final String MsgUtilize = SMT_AnalysisType.SMT_UTILIZATION.getAnalysisName();
 static final String MsgHeatMap = SMT_AnalysisType.SMT_HEAT_MAP.getAnalysisName();
   JMenuItem anItem;
@@ -177,7 +174,6 @@ static final String MsgHeatMap = SMT_AnalysisType.SMT_HEAT_MAP.getAnalysisName()
     {
       if (e.getSource() instanceof JMenuItem)
       {
-        System.err.println("Selected utilize");
         JMenuItem src = (JMenuItem) e.getSource();
         Container cont = src.getParent();
         if (cont instanceof SystemTreePopupMenu)
@@ -207,7 +203,6 @@ static final String MsgHeatMap = SMT_AnalysisType.SMT_HEAT_MAP.getAnalysisName()
   public void setSystemTreeModel(SystemTreeModel model)
   {
     Model = model;
-    
   }
 
 }

@@ -1854,7 +1854,6 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
       }
       else if(sType.equals(SMT_AnalysisType.SMT_UTILIZATION))
       {
-      System.err.println("Got a Utilization Event");
       handled = handleUtilizationSelected(source, event);
      logger.severe("Done handling utilization");
       }
@@ -1891,8 +1890,6 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
       
       if(!handled)
         logger.severe("Unhandled SMT_Analysis Type: " + sType.getAnalysisName());
-
-        
     }
     
     if ((event.getSelectedObject() instanceof IB_Vertex) && !handled)
@@ -2802,7 +2799,6 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
       {
         boolean addUtilizationPanel = true;
         
-        System.err.println("UTILIZATION for the SYSTEM");
         String tabName = "Util: " + OMS.getFabricName();  // this needs to be unique among all tabs in the center pane
         
         if(addUtilizationPanel)

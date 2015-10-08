@@ -91,6 +91,7 @@ public class SimpleXY_PlotPanel extends XY_PlotPanel
   public SimpleXY_PlotPanel(XY_PlotType type, Object userObject, Object userElement)
   {
     this(new SimpleXY_ChartPanel(type, userObject, userElement));
+    this.type = type;
   }
 
 }

@@ -61,12 +61,16 @@ import java.util.Map;
 
 public enum PortCounterAxisLabel
 {
-  COUNTS(      0,             "counts",    "absolute value",  "register value"),    
-  DELTA(       1,             "delta",     "change/period",   "difference between samples"),    
-  RCV_DELTA(   2,             "rcv delta", "change/period",   "difference between samples"),    
-  XMT_DELTA(   3,             "xmit delta","change/period",   "difference between samples"),    
+  COUNTS(      0,             "counts",      "absolute value",  "register value"),    
+  DELTA(       1,             "delta",       "change/period",   "difference between samples"),    
+  RCV_DELTA(   2,             "rcv delta",   "change/period",   "difference between samples"),    
+  XMT_DELTA(   3,             "xmit delta",  "change/period",   "difference between samples"),    
   RATE(        4,             "rate",        "MB/s", "transfer speed"),    
-  UTILIZATION( 5,             "utilization", "% Max", "percentage of maximum rate");    
+  UTILIZATION( 5,             "utilization", "% Max", "percentage of maximum rate"),    
+  UTIL_AVE(    6,             "ave",         "% of full BW", "percentage of maximum rate"),    
+  UTIL_STD_DEV(7,             "std dev",     "% of full BW", "percentage of maximum rate"),    
+  UTIL_MIN(    8,             "min",         "% of full BW", "percentage of maximum rate"),    
+  UTIL_MAX(    9,             "max",         "% of full BW", "percentage of maximum rate");    
 
   public static final EnumSet<PortCounterAxisLabel> PFM_ALL_COUNTER_LABELS = EnumSet.allOf(PortCounterAxisLabel.class);
   

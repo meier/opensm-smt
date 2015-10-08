@@ -69,6 +69,7 @@ public abstract class XY_PlotPanel extends JPanel
   
   protected ChartPanel            chartPanel;
   protected String                title;
+  protected XY_PlotType           type;
   
   public XY_PlotPanel()
   {
@@ -95,5 +96,12 @@ public abstract class XY_PlotPanel extends JPanel
   {
     this.title = title;
   }
+  
+  XY_PlotType getType()
+  {
+    return type;
+  }
+  
+
 
 }

@@ -59,8 +59,10 @@ import gov.llnl.lc.infiniband.opensm.plugin.data.MAD_Counter;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDelta;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDeltaAnalyzer;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDeltaCollection;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Node;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_NodeType;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Port;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Stats;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
@@ -74,10 +76,12 @@ import gov.llnl.lc.smt.manager.MessageManager;
 import gov.llnl.lc.time.TimeStamp;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 import javax.swing.SwingWorker;
 
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.ChartUtilities;
@@ -88,6 +92,7 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.title.TextTitle;
+import org.jfree.data.Range;
 import org.jfree.data.time.FixedMillisecond;
 import org.jfree.data.time.RegularTimePeriod;
 import org.jfree.data.time.TimeSeries;
@@ -105,7 +110,7 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
   private OSM_Stats MAD_Stats = null;
   private MAD_Counter MADCounter = null;
   private boolean Utilization = false;
-  
+
   public SimpleXY_ChartPanel(JFreeChart chart)
   {
     super(chart);
@@ -117,7 +122,6 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
     super(null);
     // TODO Auto-generated constructor stub
   }
-  
   
   
   public SimpleXY_ChartPanel(XY_PlotType type, Object userObject, Object userElement)
@@ -148,8 +152,6 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
     if((XY_PlotType.ADV_PORT_UTIL_PLUS.equals(type)))
       Utilization = true;
     
-    
-    
     // create the first simple plot of the absolute counter values, quick
     JFreeChart chart = createChart(type, userObject, userElement);
     
@@ -172,17 +174,19 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
     
     SimplePlotWorker worker = new SimplePlotWorker(chart);
     worker.execute();
-
-    
-    
   }
   
   
- private boolean isCompare()
- {
-   return false;
- }
- 
+  public boolean isUtilizationType()
+  {
+    return Utilization;
+  }
+  
+  private boolean isCompare()
+  {
+    return false;
+  }
+  
  private boolean isErrorType()
  {
    return false;
@@ -228,11 +232,13 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
     // the primary dataset of the desired counter which will be axis1  
     XYDataset dataset1 = createDataset(history, userObject, userElement);
     
+    String axisLabel = isUtilizationType() ? PortCounterAxisLabel.UTIL_AVE.getName(): PortCounterAxisLabel.COUNTS.getName();
+    
     // setup the chart for the desired counter
-      JFreeChart chart = ChartFactory.createTimeSeriesChart(
+    JFreeChart chart = ChartFactory.createTimeSeriesChart(
           getChartTitle(),
           "Time of Day",
-          PortCounterAxisLabel.COUNTS.getName(),
+          axisLabel,
           dataset1,
           true,
           true,
@@ -270,9 +276,11 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
       FrameTitle = ChartTitle;
     }
     
-    if(Utilization)
+    String axisLabel = isUtilizationType() ? PortCounterAxisLabel.UTIL_AVE.getName(): PortCounterAxisLabel.COUNTS.getName();
+    TSeries.setKey(axisLabel);
+    
+    if(isUtilizationType())
     {
-      System.err.println("initializing titles for Utilization");
       ChartTitle = "Port Utilization" + " [" + osm.getFabricName() + "]";
       FrameTitle = ChartTitle;
     }
@@ -296,39 +304,67 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
       // need to set the Frame and Chart titles here
       initTitles(history.getOMS(0));
       
-    // iterate through the collection, and build up a time series
-    for(int j = 0; j < history.getSize(); j++)
-    {
-      OpenSmMonitorService osm = history.getOMS(j);
-      
       // the dataset is a timeseries collection
+      double dValue = 0.0;
       long lValue = 0;
       TimeStamp ts = null;
       RegularTimePeriod ms = null;
       
-      if(Port != null)
+      // iterate through the deltas (if rate based), or OMS's if counter based
+      if(isUtilizationType())
       {
-      // find the desired port counter, in this instance
-      OSM_Port p = osm.getFabric().getOSM_Ports().get(OSM_Port.getOSM_PortKey(Port));
-      lValue = p.pfmPort.getCounter(PortCounter);
-      ts = p.pfmPort.getCounterTimeStamp();
-      
-      }
-      else if(MAD_Stats != null)
-      {
-        // find the desired MAD counter, in this instance
-         lValue = MADCounter.getCounterValue(osm.getFabric().getOsmStats());
-        ts = osm.getFabric().getTimeStamp();
-        ts = osm.getTimeStamp();
-//        ts = osm.getPFM_TimeStamp();
+        OSM_NodeType aType = OSM_NodeType.UNKNOWN;
         
-       }
+        // create junk data, so the plot will appear quickly, while the worker works...
+
+        OSM_FabricDeltaCollection deltaHistory = history.getOSM_FabricDeltaCollection();
+        for(int j = 0; j < deltaHistory.getSize(); j++)
+        {
+          OSM_FabricDelta delta = deltaHistory.getOSM_FabricDelta(j);
+          dValue = 4.0;
+//          OSM_FabricDeltaAnalyzer DeltaAnalysis = new OSM_FabricDeltaAnalyzer(delta, aType);
+          
+//          dValue = DeltaAnalysis.getFabricRateUtilizationMean();
+          ts = delta.getTimeStamp();
+//          ts = DeltaAnalysis.getDeltaTimeStamp();
+
+          ms = new FixedMillisecond(ts.getTimeInMillis());
+          TSeries.addOrUpdate(ms, dValue);
+         }
+      }
       else
-        continue;
-      ms = new FixedMillisecond(ts.getTimeInMillis());
-//      TSeries.add(ms, (double)lValue);
-      TSeries.addOrUpdate(ms, (double)lValue);
-    }
+      {
+        // iterate through the collection, and build up a time series
+        for(int j = 0; j < history.getSize(); j++)
+        {
+          OpenSmMonitorService osm = history.getOMS(j);
+          
+          if(Port != null)
+          {
+          // find the desired port counter, in this instance
+          OSM_Port p = osm.getFabric().getOSM_Ports().get(OSM_Port.getOSM_PortKey(Port));
+          lValue = p.pfmPort.getCounter(PortCounter);
+          ts = p.pfmPort.getCounterTimeStamp();
+          
+          }
+          else if(MAD_Stats != null)
+          {
+            // find the desired MAD counter, in this instance
+             lValue = MADCounter.getCounterValue(osm.getFabric().getOsmStats());
+            ts = osm.getFabric().getTimeStamp();
+            ts = osm.getTimeStamp();
+//            ts = osm.getPFM_TimeStamp();
+            
+           }
+          else
+            continue;
+          ms = new FixedMillisecond(ts.getTimeInMillis());
+          
+          TSeries.addOrUpdate(ms, (double)lValue);
+        }
+      }
+      
+    
     TimeSeriesCollection dataset = new TimeSeriesCollection();
     dataset.addSeries(TSeries);
 
@@ -407,12 +443,11 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
     }
 
 
-
-
-
   private class SimplePlotWorker extends SwingWorker<Void, Void>
   {
     JFreeChart Chart = null;
+    ArrayList <SummaryStatistics> uStats = new ArrayList<SummaryStatistics>();
+    ArrayList <TimeStamp>         uTimes = new ArrayList<TimeStamp>();
     
     public SimplePlotWorker(JFreeChart chart)
     {
@@ -438,6 +473,11 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
       //    -- if traffic counter --
       // 3.  include rate and utilization values?
       //
+      //    -- if utilization plot
+      // 1.  ave utiliation
+      // 2.  std deviation
+      // 3.  max utilization
+      // 4.  min utilization
       
       // this is a SwingWorker thread from its pool, give it a recognizable name
       Thread.currentThread().setName("SimplePlotWorker");
@@ -448,8 +488,93 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
       OSM_FabricDeltaCollection deltaHistory = history.getOSM_FabricDeltaCollection();
 
       XYPlot plot = (XYPlot) Chart.getPlot();
+      
+      ChartUtilities.applyCurrentTheme(Chart);
+      
+      Color c1 = Color.black;
+      Color c2 = Color.blue;
+      
+      Color c3 = Color.green;
+      Color c4 = Color.magenta;
+      
+      Color ce = Color.red;
  
       // AXIS 2 - the change, or delta value of the desired counter
+      if(isUtilizationType())
+      {
+        createUtilizationStats(deltaHistory);
+
+        int ndex = 0;
+         XYDataset dataset1 = createUtilDataset(uStats, uTimes, PortCounterAxisLabel.UTIL_AVE.getName());
+        plot.setDataset(ndex, dataset1);
+        NumberAxis axis1 = (NumberAxis)plot.getRangeAxis(ndex);
+        axis1.setAutoRangeIncludesZero(true);
+        
+        ndex++;
+        NumberAxis axis2 = new NumberAxis(PortCounterAxisLabel.UTIL_STD_DEV.getName());
+        axis2.setFixedDimension(10.0);
+        axis2.setAutoRangeIncludesZero(true);
+        plot.setRangeAxis(ndex, axis2);
+        
+        XYDataset dataset2 = createUtilDataset(uStats, uTimes, PortCounterAxisLabel.UTIL_STD_DEV.getName());
+        plot.setDataset(ndex, dataset2);
+        plot.mapDatasetToRangeAxis(ndex, ndex);
+        XYItemRenderer renderer2 = new StandardXYItemRenderer();
+        plot.setRenderer(ndex, renderer2);
+        
+        ndex++;
+        NumberAxis axis3 = new NumberAxis(PortCounterAxisLabel.UTIL_MAX.getName());
+        axis3.setFixedDimension(10.0);
+        axis3.setAutoRangeIncludesZero(true);
+        plot.setRangeAxis(ndex, axis3);
+        
+        XYDataset dataset3 = createUtilDataset(uStats, uTimes, PortCounterAxisLabel.UTIL_MAX.getName());
+        plot.setDataset(ndex, dataset3);
+        plot.mapDatasetToRangeAxis(ndex, ndex);
+        Range r = plot.getDataRange(axis3);
+        double uBound = r.getUpperBound();
+
+        XYItemRenderer renderer3 = new StandardXYItemRenderer();
+        plot.setRenderer(ndex, renderer3);
+        
+        ndex++;
+        NumberAxis axis4 = new NumberAxis(PortCounterAxisLabel.UTIL_MIN.getName());
+        axis4.setFixedDimension(10.0);
+        axis4.setAutoRangeIncludesZero(true);
+        axis4.setRange(0.0, 1.0);
+        plot.setRangeAxis(ndex, axis4);
+        
+        XYDataset dataset4 = createUtilDataset(uStats, uTimes, PortCounterAxisLabel.UTIL_MIN.getName());
+        plot.setDataset(ndex, dataset4);
+        plot.mapDatasetToRangeAxis(ndex, ndex);
+        XYItemRenderer renderer4 = new StandardXYItemRenderer();
+        plot.setRenderer(ndex, renderer4);
+        
+        // use the same axis scale for all
+        axis1.setRange(0.0, uBound);
+        axis2.setRange(0.0, uBound);
+        axis3.setRange(0.0, uBound);
+        axis4.setRange(0.0, uBound);
+
+         // change the series and axis colours after the theme has
+        // been applied...
+        plot.getRenderer().setSeriesPaint(0, c1);
+
+        renderer2.setSeriesPaint(0, c2);
+        axis2.setLabelPaint(c2);
+        axis2.setTickLabelPaint(c2);
+        
+        renderer3.setSeriesPaint(0, ce);
+        axis3.setLabelPaint(ce);
+        axis3.setTickLabelPaint(ce);
+        
+        renderer4.setSeriesPaint(0, c4);
+        axis4.setLabelPaint(c4);
+        axis4.setTickLabelPaint(c4);
+      }
+      else
+      {
+        
       NumberAxis axis2 = new NumberAxis(PortCounterAxisLabel.DELTA.getName());
       axis2.setFixedDimension(10.0);
       axis2.setAutoRangeIncludesZero(false);
@@ -538,15 +663,7 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
 //            plot.setRenderer(3, renderer4);
           }
         }
-        ChartUtilities.applyCurrentTheme(Chart);
-        
-        Color c1 = Color.black;
-        Color c2 = Color.blue;
-        
-        Color c3 = Color.green;
-        Color c4 = Color.magenta;
-        
-        Color ce = Color.red;
+       
              
         if(isErrorType())
           c2 = ce;
@@ -569,10 +686,97 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
           axis4.setLabelPaint(c4);
           axis4.setTickLabelPaint(c4);
         }
+      }
 
       return null;
     }
     
+    /************************************************************
+     * Method Name:
+     *  createUtilDataset
+    **/
+    /**
+     * Describe the method here
+     *
+     * @see     describe related java objects
+     *
+     * @param uStats2
+     * @param uTimes2
+     * @param name
+     * @return
+     ***********************************************************/
+    private XYDataset createUtilDataset(ArrayList<SummaryStatistics> uStats2, ArrayList<TimeStamp> uTimes2, String seriesName)
+    {
+      // TODO Auto-generated method stub
+      if((uStats2 != null) && (uTimes2 != null))
+      {
+        // they must be the same size
+        TimeStamp[]         tA = uTimes2.toArray(new TimeStamp[uTimes2.size()]);
+        SummaryStatistics[] sA = uStats2.toArray(new SummaryStatistics[uStats2.size()]);
+
+        if(sA.length != tA.length)
+        {
+          System.err.println("Arrays are of different length, not possible! Utilization Array in SimpleXY_Chart");
+          System.exit(0);
+        }
+        
+        TimeSeries series = new TimeSeries(seriesName);
+        double dValue = 0.0;
+        TimeStamp ts = null;
+        RegularTimePeriod ms = null;
+
+        // loop through the arrays, and create the desired dataset
+        for(int i = 0; i < tA.length; i++)
+        {
+          if(PortCounterAxisLabel.UTIL_STD_DEV.getName().equals(seriesName))
+            dValue = sA[i].getStandardDeviation();
+          else if(PortCounterAxisLabel.UTIL_MAX.getName().equals(seriesName))
+            dValue = sA[i].getMax();
+          else if(PortCounterAxisLabel.UTIL_MIN.getName().equals(seriesName))
+            dValue = sA[i].getMin();
+          else if(PortCounterAxisLabel.UTIL_AVE.getName().equals(seriesName))
+            dValue = sA[i].getMean();
+          
+          ts = tA[i];
+          ms = new FixedMillisecond(ts.getTimeInMillis());
+          series.addOrUpdate(ms, dValue);
+        }
+        
+        TimeSeriesCollection dataset = new TimeSeriesCollection();
+        dataset.addSeries(series);
+        return dataset;
+      }
+      System.err.println("Null Data");
+      return null;
+    }
+
+    /************************************************************
+     * Method Name:
+     *  createUtilizationStats
+    **/
+    /**
+     * Describe the method here
+     *
+     * @see     describe related java objects
+     *
+     * @param deltaHistory
+     ***********************************************************/
+    private void createUtilizationStats(OSM_FabricDeltaCollection deltaHistory)
+    {
+      OSM_NodeType aType = OSM_NodeType.UNKNOWN;
+
+      MessageManager.getInstance().postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INFO, " building utilization statistics, please be patient..."));
+      for(int j = 0; j < deltaHistory.getSize(); j++)
+      {
+        OSM_FabricDelta delta = deltaHistory.getOSM_FabricDelta(j);
+        OSM_FabricDeltaAnalyzer DeltaAnalysis = new OSM_FabricDeltaAnalyzer(delta, aType);
+        
+        SummaryStatistics stats = DeltaAnalysis.getFabricUtilizationStats();
+        uStats.add(stats);
+        uTimes.add(DeltaAnalysis.getDeltaTimeStamp());
+       }
+    }
+
     @Override
     public void done()
     {

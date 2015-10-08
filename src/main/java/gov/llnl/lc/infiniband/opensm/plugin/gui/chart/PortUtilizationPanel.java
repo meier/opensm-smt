@@ -82,12 +82,6 @@ import org.jfree.ui.RefineryUtilities;
  **********************************************************************/
 public class PortUtilizationPanel extends JPanel implements CommonLogger, ChangeListener, ChartChangeListener
 {
-  /**  describe serialVersionUID here **/
-  private static final long serialVersionUID = -2906701417391455581L;
-  
-  private PortUtilizationWorker worker;
-  private PortUtilizationDataSet pUtilDataSet;
-  
   XY_PlotPanel thePanel;
   XY_PlotType  theType = XY_PlotType.ADV_PORT_UTIL_PLUS;
 
@@ -114,24 +108,6 @@ public class PortUtilizationPanel extends JPanel implements CommonLogger, Change
   public XY_PlotPanel createUtilizationPanel(OMS_Collection history)
   {
     XY_PlotPanel panel =  new AdvancedXY_PlotPanel(theType, history, null);
-//  worker = new PortUtilizationWorker(this, IB_Depth.IBD_COMPUTE_NODES, false);
-  worker = new PortUtilizationWorker(this, history);
-//  worker = new PortUtilizationWorker(this, IB_Depth.IBD_SWITCH_NODES, false);
-//  worker = new PortUtilizationWorker(this, EnumSet.range(IB_Depth.IBD_SW3, IB_Depth.IBD_SW4), false);
-  worker.execute();
-  
-  // use the following, if you don't want to use a swingworker, but remember
-  // that makes it in-line, or serial, so the stuff that would normally happen
-  // in the background, and probably later, happens right now, or first
-//  try
-//  {
-//    worker.doInBackground();
-//    worker.done();
-//  }
-//  catch (Exception e)
-//  {
-//    e.printStackTrace();
-//  }
   return panel;
 
   }
@@ -172,11 +148,6 @@ public class PortUtilizationPanel extends JPanel implements CommonLogger, Change
     demo.pack();
     RefineryUtilities.centerFrameOnScreen(demo);
     demo.setVisible(true);
-  }
-
-  public void setUtilizationDataSet(PortUtilizationDataSet dataSet)
-  {
-    pUtilDataSet = dataSet;
   }
 
   public XY_PlotPanel getPlotPanel()

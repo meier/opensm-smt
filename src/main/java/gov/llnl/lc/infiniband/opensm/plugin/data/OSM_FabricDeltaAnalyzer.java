@@ -986,6 +986,11 @@ public class OSM_FabricDeltaAnalyzer implements CommonLogger
     return Long.toString(maxRate) + " " + units.getName() + "/s";
   }
   
+  public SummaryStatistics getFabricUtilizationStats()
+  {
+    return RateStats;
+  }
+
   public double getFabricRateUtilizationMean()
   {
     // assume fully constructed, just return the total utilization number

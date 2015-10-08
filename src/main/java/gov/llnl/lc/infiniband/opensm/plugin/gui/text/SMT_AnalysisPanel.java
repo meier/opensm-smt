@@ -316,10 +316,7 @@ public class SMT_AnalysisPanel extends JPanel implements SMT_AnalysisChangeListe
       // TODO - this is not an editor pane, so should probably be implemented different, just
       //        wedge the Utilization Panel in here
       //
-      
-      System.err.println("SMT_Analysis: Utilization Panel");
-      
-      // The Utilization Graph is static, don't try to update it with new stuff
+       // The Utilization Graph is static, don't try to update it with new stuff
       SMT_UpdateService updateService = SMT_UpdateService.getInstance();
       OMS_Collection history = updateService.getCollection();
 

@@ -156,11 +156,11 @@ public class PortUtilizationWorker extends SwingWorker<Void, Void> implements Co
       logger.severe("Invalid Utilization data set, check OMS Collection (empty or null)");
       MessageManager.getInstance().postMessage(
           new SmtMessage(SmtMessageType.SMT_MSG_SEVERE, "Invalid Utilization Data Set, check OMS Collection (empty or null)"));
-      PlotPanel.setUtilizationDataSet(null);
+//      PlotPanel.setUtilizationDataSet(null);
       return null;
     }
 
-    PlotPanel.setUtilizationDataSet(pUtilDataSet);
+//    PlotPanel.setUtilizationDataSet(pUtilDataSet);
 
     Range fixedXRange = new Range(0, pUtilDataSet.getMaximumXValue()); // time #
     Range fixedYRange = new Range(0, pUtilDataSet.getMaximumYValue()); // port #

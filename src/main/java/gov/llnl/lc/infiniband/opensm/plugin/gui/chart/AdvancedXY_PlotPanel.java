@@ -69,7 +69,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.TableCellRenderer;
 
-import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.event.ChartProgressEvent;
@@ -95,7 +94,6 @@ public class AdvancedXY_PlotPanel extends XY_PlotPanel implements ChangeListener
   private JSlider               slider;
   
   private int CrossHairDomainIndex;
-
 
   /************************************************************
    * Method Name:
@@ -168,6 +166,7 @@ public class AdvancedXY_PlotPanel extends XY_PlotPanel implements ChangeListener
     if(pPanel instanceof SimpleXY_PlotPanel)
     {
       this.setTitle(((SimpleXY_PlotPanel)pPanel).getTitle());
+      type = ((SimpleXY_PlotPanel)pPanel).getType();
     }
     initChart(pPanel);
   }
@@ -184,24 +183,24 @@ public class AdvancedXY_PlotPanel extends XY_PlotPanel implements ChangeListener
   {
     this.plotPanel = pPanel;
     this.chartPanel = pPanel.getChartPanel();
-    this.plotPanel = pPanel;
-    this.chartPanel = pPanel.getChartPanel();
     if(pPanel instanceof SimpleXY_PlotPanel)
     {
       this.setTitle(((SimpleXY_PlotPanel)pPanel).getTitle());
     }
 
-
-    ChartPanel plot1 = this.chartPanel;
-    boolean includeExtra = false;
+    JFreeChart chart      = chartPanel.getChart();
+    XYPlot plot = (XYPlot) chart.getPlot();
     
-    // normally just counts and delta counts, but can include more
-    int numRows = includeExtra ? MAX_DATASETS: MAX_DATASETS/2;
+    // how many data sets will there be (may not exist yet, cause swing worker may still be constructing them)
+    int numRows = 2;  // enough for counts, and delta counts
+    if((XY_PlotType.ADV_PORT_UTIL_PLUS.equals(getType())))
+      numRows = 4;
+    boolean includeExtra = numRows > MAX_DATASETS/2 ? true: false;
+    
     int rowSize = includeExtra ? MAX_DS_SIZE: MAX_DS_SIZE/2 + 19;  // extra for padding
     NumDataSets = numRows;
 
-    this.chartPanel = plot1;
-    JFreeChart chart      = plot1.getChart();
+    // build the table model from the data sets, then build the table and slider
     
      // see "chartProgress()" method
     chart.addProgressListener(this);
@@ -241,7 +240,7 @@ public class AdvancedXY_PlotPanel extends XY_PlotPanel implements ChangeListener
     dashboard.add(this.slider, BorderLayout.SOUTH);
     add(dashboard, BorderLayout.SOUTH);
     
-     XYPlot plot = (XYPlot) chart.getPlot();
+//     XYPlot plot = (XYPlot) chart.getPlot();
     
   plot.setDomainCrosshairLockedOnData(true);
   plot.setRangeCrosshairVisible(false);
