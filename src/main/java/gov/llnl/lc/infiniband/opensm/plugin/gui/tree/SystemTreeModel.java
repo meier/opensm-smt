@@ -360,6 +360,7 @@ public class SystemTreeModel extends FabricTreeModel implements CommonLogger
     int minSame = 3;
     
     // case insensitive, but return lower case
+    // strip spaces and special characters from end
     
     // handle special first case, when don't have two to compare
     if((name1 == null) || (name1.length() < minSame))
@@ -385,7 +386,14 @@ public class SystemTreeModel extends FabricTreeModel implements CommonLogger
     // if they have nothing in common, then just return the original (first) name
     
     if(common.length() >= minSame)
-      return common;
+    {
+      // don't allow backslashes, colons or semi-colons at the end
+      String match = common.trim();
+      int len = match.length();
+      if(match.endsWith(":") || match.endsWith(";") || match.endsWith("/") || match.endsWith("."))
+        return match.substring(0, len-1);
+      return match;
+    }
     return name1;
   }
 
