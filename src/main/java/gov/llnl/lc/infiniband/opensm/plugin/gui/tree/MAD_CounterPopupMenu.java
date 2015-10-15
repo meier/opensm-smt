@@ -166,7 +166,7 @@ public class MAD_CounterPopupMenu extends JPopupMenu implements ActionListener, 
       String sourceText = ((JMenuItem)e.getSource()).getText();
       
       // get the plot type based on the Text
-      XY_PlotType type = XY_PlotType.getPlotTypeFromMenuLabel(false, sourceText);
+      XY_PlotType type = XY_PlotType.getPlotTypeFromMenuLabel(this, sourceText);
       
       JFrame plot = new XY_PlotFrame(type, MAD_Stats, MadCounter);
       

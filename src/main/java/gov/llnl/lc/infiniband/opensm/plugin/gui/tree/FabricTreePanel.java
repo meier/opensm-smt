@@ -93,7 +93,6 @@ import javax.swing.tree.TreePath;
 
 public class FabricTreePanel extends JPanel implements OSM_ServiceChangeListener, ActionListener, TreeSelectionListener, CommonLogger
 {
-
   /** describe serialVersionUID here **/
   private static final long serialVersionUID = -5560944667279679964L;
   private static final SMTFabricTreeCellRenderer NodeCellRenderer = new SMTFabricTreeCellRenderer(true);
@@ -164,23 +163,6 @@ public class FabricTreePanel extends JPanel implements OSM_ServiceChangeListener
     return UserObjectTreeNode.getTreeRootNode(tree);
   }
   
-  
-
-  /************************************************************
-   * Method Name:
-   *  getGraphUpdater
-   **/
-  /**
-   * Returns the value of graphUpdater
-   *
-   * @return the graphUpdater
-   *
-   ***********************************************************/
-  
-//  public IB_GraphSelectionUpdater getGraphUpdater()
-//  {
-//    return GraphUpdater;
-//  }
 
   private void initTree()
   {
@@ -377,7 +359,6 @@ public class FabricTreePanel extends JPanel implements OSM_ServiceChangeListener
             new SmtMessage(SmtMessageType.SMT_MSG_INFO, "Fabric Graph )"));
       }
     }
-
   }
 
   @Override
@@ -392,7 +373,7 @@ public class FabricTreePanel extends JPanel implements OSM_ServiceChangeListener
     // only send out if this is NOT the root vertex, representing the fabric
     nvn = (NameValueNode) getTreeRootNode().getUserObject();
     IB_Vertex r = (IB_Vertex) nvn.getMemberObject();
-
+    
     if(!(v.equals(r)))
        GraphSelectionManager.getInstance().updateAllListeners(new IB_GraphSelectionEvent(thisPanel, v, v));
   }

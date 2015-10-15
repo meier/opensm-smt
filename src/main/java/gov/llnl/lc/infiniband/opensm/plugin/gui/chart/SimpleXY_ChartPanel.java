@@ -68,11 +68,15 @@ import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Stats;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
 import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port.PortCounterName;
 import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_PortChange;
+import gov.llnl.lc.infiniband.opensm.plugin.event.OSM_EventStats;
+import gov.llnl.lc.infiniband.opensm.plugin.event.OsmEvent;
 import gov.llnl.lc.logging.CommonLogger;
+import gov.llnl.lc.smt.command.fabric.SmtFabricStructure;
 import gov.llnl.lc.smt.data.SMT_UpdateService;
 import gov.llnl.lc.smt.event.SmtMessage;
 import gov.llnl.lc.smt.event.SmtMessageType;
 import gov.llnl.lc.smt.manager.MessageManager;
+import gov.llnl.lc.smt.manager.SMT_AnalysisType;
 import gov.llnl.lc.time.TimeStamp;
 
 import java.awt.Color;
@@ -109,6 +113,11 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
   private PortCounterName PortCounter = null;
   private OSM_Stats MAD_Stats = null;
   private MAD_Counter MADCounter = null;
+  private OSM_EventStats EventStats = null;
+  private OsmEvent EventType = null;
+  
+  private OMS_Collection History;
+  private SMT_AnalysisType AnalysisType;
   private boolean Utilization = false;
 
   public SimpleXY_ChartPanel(JFreeChart chart)
@@ -139,6 +148,7 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
     FrameTitle = "unknown frame title";
     ChartTitle = "unknown chart title";
     
+    // resolve the user objects for later use
     if(userObject instanceof OSM_Port)
       Port = (OSM_Port)userObject;
     if(userElement instanceof PortCounterName)
@@ -149,8 +159,18 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
     if(userElement instanceof MAD_Counter)
       MADCounter = (MAD_Counter)userElement;
     
-    if((XY_PlotType.ADV_PORT_UTIL_PLUS.equals(type)))
-      Utilization = true;
+    if(userObject instanceof OSM_EventStats)
+      EventStats = (OSM_EventStats)userObject;
+    if(userElement instanceof OsmEvent)
+      EventType = (OsmEvent)userElement;
+    
+    
+    // is this plot one of the port utilization plots
+    if(userObject instanceof OMS_Collection)
+      History = (OMS_Collection)userObject;
+    if(userElement instanceof SMT_AnalysisType)
+      AnalysisType = (SMT_AnalysisType)userElement;
+    Utilization = type.isUtilizationType();
     
     // create the first simple plot of the absolute counter values, quick
     JFreeChart chart = createChart(type, userObject, userElement);
@@ -177,9 +197,20 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
   }
   
   
+  public SMT_AnalysisType getAnalysisType()
+  {
+    return AnalysisType;
+  }
+  
   public boolean isUtilizationType()
   {
     return Utilization;
+  }
+  
+  public boolean isEventType()
+  {
+    // assume already determined
+    return EventType != null;
   }
   
   private boolean isCompare()
@@ -232,6 +263,7 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
     // the primary dataset of the desired counter which will be axis1  
     XYDataset dataset1 = createDataset(history, userObject, userElement);
     
+    // most axis are in counts (and delta counts) but utilization is in percentages
     String axisLabel = isUtilizationType() ? PortCounterAxisLabel.UTIL_AVE.getName(): PortCounterAxisLabel.COUNTS.getName();
     
     // setup the chart for the desired counter
@@ -244,8 +276,15 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
           true,
           false
       );
-
+    
+    if(isUtilizationType())
+    {
+      chart.addSubtitle(new TextTitle(AnalysisType.getAnalysisName() + " (" + deltaPeriod + " sec. delta)"));
+//      chart.addSubtitle(new TextTitle("number of ports"));      
+    }
+    else
       chart.addSubtitle(new TextTitle(type.getName() + " Activity (" + deltaPeriod + " sec. delta)"));
+
       XYPlot plot = (XYPlot) chart.getPlot();
       plot.setOrientation(PlotOrientation.VERTICAL);
       plot.setDomainPannable(true);
@@ -281,10 +320,17 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
     
     if(isUtilizationType())
     {
-      ChartTitle = "Port Utilization" + " [" + osm.getFabricName() + "]";
+      ChartTitle = "Port Bandwidth Utilization" + " [" + osm.getFabricName() + "]";
       FrameTitle = ChartTitle;
     }
     
+    if(EventType != null)
+    {
+      ChartTitle = EventType.getEventName() + " [" + osm.getFabricName() + "]";
+      FrameTitle = ChartTitle;
+    }
+    
+
     return true;
   }
   
@@ -313,6 +359,7 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
       // iterate through the deltas (if rate based), or OMS's if counter based
       if(isUtilizationType())
       {
+        // what type of analysis are we doing; SW-SW, ALL, or SW-CA??
         OSM_NodeType aType = OSM_NodeType.UNKNOWN;
         
         // create junk data, so the plot will appear quickly, while the worker works...
@@ -347,13 +394,20 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
           ts = p.pfmPort.getCounterTimeStamp();
           
           }
-          else if(MAD_Stats != null)
+          else if(MADCounter != null)
           {
             // find the desired MAD counter, in this instance
              lValue = MADCounter.getCounterValue(osm.getFabric().getOsmStats());
+             ts = osm.getFabric().getTimeStamp();
+//            ts = osm.getTimeStamp();
+            
+           }
+          else if(EventType != null)
+          {
+            // find the desired Event counter, in this instance
+            lValue = osm.getFabric().getOsmEventStats().getCounter(EventType);
             ts = osm.getFabric().getTimeStamp();
-            ts = osm.getTimeStamp();
-//            ts = osm.getPFM_TimeStamp();
+//          ts = osm.getTimeStamp();
             
            }
           else
@@ -363,7 +417,6 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
           TSeries.addOrUpdate(ms, (double)lValue);
         }
       }
-      
     
     TimeSeriesCollection dataset = new TimeSeriesCollection();
     dataset.addSeries(TSeries);
@@ -373,16 +426,19 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
     
     private XYDataset createDeltaDataset(OSM_FabricDeltaCollection deltaHistory,  Object userElement, String seriesName)
     {
-      PortCounterName portCounter = null;
-      MAD_Counter madCounter = null;
-      
-      if((Port != null) && (userElement instanceof PortCounterName))
-        portCounter = (PortCounterName)userElement;
-
-      if((MAD_Stats != null) && (userElement instanceof MAD_Counter))
-        madCounter = (MAD_Counter)userElement;
-
-      
+//      PortCounterName portCounter = null;
+//      MAD_Counter madCounter = null;
+//      OsmEvent osmEvent = null;
+//      
+//      if((Port != null) && (userElement instanceof PortCounterName))
+//        portCounter = (PortCounterName)userElement;
+//
+//      if((MAD_Stats != null) && (userElement instanceof MAD_Counter))
+//        madCounter = (MAD_Counter)userElement;
+//
+//      if((EventStats != null) && (userElement instanceof OsmEvent))
+//        osmEvent = (OsmEvent)userElement;
+//      
       TimeSeries series = new TimeSeries(seriesName);
 
       // iterate through the collection, and build up a time series
@@ -400,7 +456,7 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
         // find the desired port counter, in this instance
         LinkedHashMap<String, PFM_PortChange> pcL = delta.getPortChanges();
         PFM_PortChange pC = pcL.get(OSM_Port.getOSM_PortKey(Port));
-        lValue = pC.getDelta_port_counter(portCounter);
+        lValue = pC.getDelta_port_counter(PortCounter);
         ts = pC.getCounterTimeStamp();
         
         // correct for missing time periods
@@ -413,11 +469,28 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
           lValue /= deltaSeconds;
          }
         }
-        else if(MAD_Stats != null)
+        else if(MADCounter != null)
         {
           // find the desired MAD counter, in this instance
           OSM_Stats mStats = delta.getStatChanges();
           lValue = MADCounter.getCounterValue(mStats);
+          ts = delta.getTimeStamp();
+          
+          // correct for missing time periods
+          int deltaSeconds = delta.getDeltaSeconds();
+          long sweepPeriod = delta.getFabric2().getPerfMgrSweepSecs();
+          if(sweepPeriod < deltaSeconds)
+          {
+            // graph is reported as counts per period, so if the period is too long, interpolate
+            lValue *= sweepPeriod;
+            lValue /= deltaSeconds;
+           }
+         }
+        else if(EventType != null)
+        {
+          // find the desired Event counter, in this instance
+          OSM_EventStats eStats = delta.getEventChanges();
+          lValue = eStats.getCounter(EventType);
           ts = delta.getTimeStamp();
           
           // correct for missing time periods
@@ -448,6 +521,8 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
     JFreeChart Chart = null;
     ArrayList <SummaryStatistics> uStats = new ArrayList<SummaryStatistics>();
     ArrayList <TimeStamp>         uTimes = new ArrayList<TimeStamp>();
+    long NumPorts = 0;
+    long NumActivePorts = 0;
     
     public SimplePlotWorker(JFreeChart chart)
     {
@@ -502,10 +577,11 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
       // AXIS 2 - the change, or delta value of the desired counter
       if(isUtilizationType())
       {
+        // what type of analysis are we doing; SW-SW, ALL, or SW-CA??
         createUtilizationStats(deltaHistory);
 
         int ndex = 0;
-         XYDataset dataset1 = createUtilDataset(uStats, uTimes, PortCounterAxisLabel.UTIL_AVE.getName());
+        XYDataset dataset1 = createUtilDataset(uStats, uTimes, PortCounterAxisLabel.UTIL_AVE.getName());
         plot.setDataset(ndex, dataset1);
         NumberAxis axis1 = (NumberAxis)plot.getRangeAxis(ndex);
         axis1.setAutoRangeIncludesZero(true);
@@ -571,16 +647,28 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
         renderer4.setSeriesPaint(0, c4);
         axis4.setLabelPaint(c4);
         axis4.setTickLabelPaint(c4);
-      }
+        
+        }
       else
       {
+        // mad counters and event counters (most of this code is universal, only support 2 types now)
         
       NumberAxis axis2 = new NumberAxis(PortCounterAxisLabel.DELTA.getName());
       axis2.setFixedDimension(10.0);
       axis2.setAutoRangeIncludesZero(false);
       plot.setRangeAxis(1, axis2);
       
-      XYDataset dataset2 = createDeltaDataset(deltaHistory, MADCounter, PortCounterAxisLabel.DELTA.getName());
+      XYDataset dataset2 = null;
+      
+      if(MADCounter != null)
+      {
+        dataset2 = createDeltaDataset(deltaHistory, MADCounter, PortCounterAxisLabel.DELTA.getName());
+      }
+      else if (EventType != null)
+      {
+        dataset2 = createDeltaDataset(deltaHistory, EventType, PortCounterAxisLabel.DELTA.getName());
+      }
+      
       plot.setDataset(1, dataset2);
       plot.mapDatasetToRangeAxis(1, 1);
       XYItemRenderer renderer2 = new StandardXYItemRenderer();
@@ -763,7 +851,22 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
      ***********************************************************/
     private void createUtilizationStats(OSM_FabricDeltaCollection deltaHistory)
     {
-      OSM_NodeType aType = OSM_NodeType.UNKNOWN;
+      OSM_NodeType aType = OSM_NodeType.UNKNOWN;  // all nodes
+      aType = OSM_NodeType.CA_NODE;               // only compute nodes
+      aType = OSM_NodeType.SW_NODE;               // only switch nodes
+      
+      if(SMT_AnalysisType.SMT_UTIL_ALL_PORTS.equals(getAnalysisType()))
+        aType = OSM_NodeType.UNKNOWN;
+      if(SMT_AnalysisType.SMT_UTIL_SW_PORTS.equals(getAnalysisType()))
+        aType = OSM_NodeType.SW_NODE;
+      if(SMT_AnalysisType.SMT_UTIL_CA_PORTS.equals(getAnalysisType()))
+        aType = OSM_NodeType.CA_NODE;
+      
+
+
+      OSM_FabricDelta d = deltaHistory.getOSM_FabricDelta(0);
+      SmtFabricStructure fabStruct = new SmtFabricStructure(d.getFabric1());
+      NumActivePorts = fabStruct.getNumActivePorts();
 
       MessageManager.getInstance().postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INFO, " building utilization statistics, please be patient..."));
       for(int j = 0; j < deltaHistory.getSize(); j++)
@@ -773,6 +876,7 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
         
         SummaryStatistics stats = DeltaAnalysis.getFabricUtilizationStats();
         uStats.add(stats);
+        NumPorts = stats.getN();
         uTimes.add(DeltaAnalysis.getDeltaTimeStamp());
        }
     }
@@ -780,6 +884,10 @@ public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
     @Override
     public void done()
     {
+      if(isUtilizationType())
+      {
+      Chart.addSubtitle(new TextTitle(NumPorts + " of " + NumActivePorts + " active ports"));
+      }
       // completion notification
       logger.info( "Worker Done Building Plot");
       MessageManager.getInstance().postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INFO, "Worker Done Building Plot"));

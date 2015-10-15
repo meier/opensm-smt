@@ -177,7 +177,6 @@ public class AdvancedXY_PlotPanel extends XY_PlotPanel implements ChangeListener
   }
   
   
-  
 //  private void initChart(IB_Vertex vertex, OSM_Port port, PortCounterName portCounter, boolean includeExtra)
   private void initChart(XY_PlotPanel pPanel)
   {

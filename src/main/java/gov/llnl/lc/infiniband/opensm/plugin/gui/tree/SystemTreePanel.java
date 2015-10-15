@@ -89,64 +89,76 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+/**********************************************************************
+ * Describe purpose and responsibility of SystemTreePanel
+ * <p>
+ * @see  related classes and interfaces
+ *
+ * @author meier3
+ * 
+ * @version Oct 14, 2015 9:58:26 AM
+ **********************************************************************/
 public class SystemTreePanel extends JPanel implements OSM_ServiceChangeListener, CommonLogger, IB_GraphSelectionListener
 {
-/**  describe serialVersionUID here **/
-  private static final long serialVersionUID = 4208373232474907424L;
+  /**  describe serialVersionUID here **/
+  private static final long serialVersionUID = -3139763209628597241L;
 
-  //  private static final SMTUserObjectTreeCellRenderer SystemCellRenderer = new SMTUserObjectTreeCellRenderer(true);
-  private static final SMTFabricTreeCellRenderer SystemCellRenderer = new SMTFabricTreeCellRenderer(true);
-  
+  // private static final SMTUserObjectTreeCellRenderer SystemCellRenderer = new
+  // SMTUserObjectTreeCellRenderer(true);
+  private static final SMTFabricTreeCellRenderer SystemCellRenderer = new SMTFabricTreeCellRenderer(
+                                                                        true);
+
   /** this is the actual system image guid model **/
-  private SystemTreeModel Model;
-	
+  private SystemTreeModel                        Model;
+
   /** this is the tree used by the panel, for visualization **/
-  private JTree             tree;
-  
+  private JTree                                  tree;
+
   /** save a copy of myself for reference **/
-private SystemTreePanel thisPanel = this;
+  private SystemTreePanel                        thisPanel          = this;
 
-public JTree getTree()
-{
-  return tree;
-}
-
-public void setTree(JTree tree)
-{
-}
-
-public void setTreeRootNode(UserObjectTreeNode root)
-{
-  // creates the "tree" model, using the root node for the SystemTreeModel
-  DefaultTreeModel tm = new DefaultTreeModel(root);
-
-  if (tm != null)
+  public JTree getTree()
   {
-    // Do I have to recreate the tree, and put it here?
-    initTree();
-    tree.setModel(tm);
+    return tree;
   }
-  else
-    logger.severe("The DefaultTreeModel for the SystemTreePanel is null");
-}
 
-public UserObjectTreeNode getTreeRootNode()
-{
-  return UserObjectTreeNode.getTreeRootNode(tree);
-}
+  public void setTree(JTree tree)
+  {
+  }
 
-	
-	public SystemTreePanel()
-	{
-	  setBorder(new TitledBorder(null, "System Switch Tree", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-	  setLayout(new BorderLayout(0, 0));
-	  
-//    // put the graph in the panel, and tell the manager I need to listen for events
-	  /******************************redundant remove (see initTree) **********************************************************/   
+  public void setTreeRootNode(UserObjectTreeNode root)
+  {
+    // creates the "tree" model, using the root node for the SystemTreeModel
+    DefaultTreeModel tm = new DefaultTreeModel(root);
+
+    if (tm != null)
+    {
+      // Do I have to recreate the tree, and put it here?
+      initTree();
+      tree.setModel(tm);
+    }
+    else
+      logger.severe("The DefaultTreeModel for the SystemTreePanel is null");
+  }
+
+  public UserObjectTreeNode getTreeRootNode()
+  {
+    return UserObjectTreeNode.getTreeRootNode(tree);
+  }
+
+  public SystemTreePanel()
+  {
+    setBorder(new TitledBorder(null, "System Switch Tree", TitledBorder.LEADING, TitledBorder.TOP,
+        null, null));
+    setLayout(new BorderLayout(0, 0));
+
+    // // put the graph in the panel, and tell the manager I need to listen for
+    // events
+    /****************************** redundant remove (see initTree) **********************************************************/
     // create a brand new tree, and set it all up
     tree = new JTree();
-    
-    tree.setToolTipText("Explore System assemblies (core switches).");    
+
+    tree.setToolTipText("Explore System assemblies (core switches).");
     tree.setCellRenderer(SystemCellRenderer);
     tree.addTreeSelectionListener(new TreeSelectionListener()
     {
@@ -163,13 +175,14 @@ public UserObjectTreeNode getTreeRootNode()
       }
     });
     add(tree, BorderLayout.CENTER);
-    
-    /******************************redundant remove (see initTree) **********************************************************/   
-	}
+
+    /****************************** redundant remove (see initTree) **********************************************************/
+  }
+
   private void initTree()
   {
     // only called from setTreeRootNode()
-    
+
     // create the tree and add it to the panel, delete any old tree first
     if (tree != null)
     {
@@ -177,139 +190,101 @@ public UserObjectTreeNode getTreeRootNode()
       this.remove(tree);
     }
 
-      // create a brand new tree, and set it all up
-      tree = new JTree();
-      final SystemTreePanel thisPanel = this;
+    // create a brand new tree, and set it all up
+    tree = new JTree();
+    final SystemTreePanel thisPanel = this;
 
-      tree.setToolTipText("Explore System assemblies (core switches).");    
-      tree.setCellRenderer(SystemCellRenderer);
-      
-      tree.addTreeSelectionListener(new TreeSelectionListener()
-      {
-        public void valueChanged(TreeSelectionEvent arg0)
-        {
-          // arg is the tree, and lastSelectedPathComponent is the
-          // UserObjectTreeNode
-          if (tree.getLastSelectedPathComponent() instanceof UserObjectTreeNode)
-          {
-            UserObjectTreeNode tn = (UserObjectTreeNode) tree.getLastSelectedPathComponent();
-            NameValueNode vmn = (NameValueNode) tn.getUserObject();
-            vmn.getMemberObject();
-            // craft a selection event, for this vertex
-            IB_Vertex v = Model.getRootVertex();
-            GraphSelectionManager.getInstance().updateAllListeners(new IB_GraphSelectionEvent(thisPanel, v, tn));
-          }
-        }
-      });
-      
-      tree.addMouseListener ( new MouseAdapter ()
+    tree.setToolTipText("Explore System assemblies (core switches).");
+    tree.setCellRenderer(SystemCellRenderer);
+
+    tree.addTreeSelectionListener(new TreeSelectionListener()
     {
-      public void mousePressed(MouseEvent e)
+      public void valueChanged(TreeSelectionEvent arg0)
       {
-//        if(isCounterSelected(e))
-//        {
-//          // show the counter popup
-//           showPortCounterMenu(e);
-//        }
-//        else
-        if(isTreeNodeSelected(e))
+        // arg is the tree, and lastSelectedPathComponent is the
+        // UserObjectTreeNode
+        if (tree.getLastSelectedPathComponent() instanceof UserObjectTreeNode)
         {
-          // do nothing
-          System.err.println("SystemTreePanel: deliberately not showing a popup at this location");
-        }
-        else if(e.isPopupTrigger())
-        {
-          // out in the open, so okay to show general purpose popup for the heatmap or utilize
-           showSystemMenu(e);
+          UserObjectTreeNode tn = (UserObjectTreeNode) tree.getLastSelectedPathComponent();
+          NameValueNode vmn = (NameValueNode) tn.getUserObject();
+          // craft a selection event, for this vertex
+          IB_Vertex rv = Model.getRootVertex();
+          
+          if (vmn.getMemberName().equals("switch"))
+          {
+            // convert this to a vertex selection
+            IB_Vertex v = (IB_Vertex) vmn.getMemberObject();
+            // craft a selection event, for this vertex
+            GraphSelectionManager.getInstance().updateAllListeners(new IB_GraphSelectionEvent(thisPanel, rv, v));
+          }
+          else
+            GraphSelectionManager.getInstance().updateAllListeners(new IB_GraphSelectionEvent(thisPanel, rv, tn));
         }
       }
     });
-      
-      add(tree, BorderLayout.CENTER);
-    }
-  
-//  protected boolean isCounterSelected(MouseEvent e)
-//  {
-//    // is the selected component in the panel, a port counter?
-//    if (e.isPopupTrigger())
-//    {
-//      TreePath path = tree.getPathForLocation(e.getX(), e.getY());
-//      tree.setSelectionPath(path);
-//      UserObjectTreeNode tn = (UserObjectTreeNode) tree.getLastSelectedPathComponent();
-//      if (tn != null)
-//      {
-//        NameValueNode vmn = (NameValueNode) tn.getUserObject();
-//        PortCounterName pcn = PortCounterName.getByName(vmn.getMemberName());
-//        if ((pcn != null) && PortCounterName.PFM_ALL_COUNTERS.contains(pcn))
-//        {
-//          Rectangle pathBounds = tree.getUI().getPathBounds(tree, path);
-//
-//          if (pathBounds != null && pathBounds.contains(e.getX(), e.getY()))
-//            return true;
-//        }
-//      }
-//    }
-//    return false;
-//  }
-  
+
+    tree.addMouseListener(new MouseAdapter()
+    {
+      public void mousePressed(MouseEvent e)
+      {
+        if (isTreeNodeSelected(e))
+        {
+          // see value changed, or do nothing for now
+        }
+        else if (e.isPopupTrigger())
+        {
+          // out in the open, so okay to show general purpose popup for the
+          // heatmap or utilize
+          showSystemMenu(e);
+        }
+      }
+    });
+
+    add(tree, BorderLayout.CENTER);
+  }
+
   protected boolean isTreeNodeSelected(MouseEvent e)
   {
     // return true if the mouse was over ANY tree node when clicked
-      TreePath path = tree.getPathForLocation(e.getX(), e.getY());
-      tree.setSelectionPath(path);
-      UserObjectTreeNode tn = (UserObjectTreeNode) tree.getLastSelectedPathComponent();
-      if (tn != null)
-      {
-          Rectangle pathBounds = tree.getUI().getPathBounds(tree, path);
+    TreePath path = tree.getPathForLocation(e.getX(), e.getY());
+    tree.setSelectionPath(path);
+    UserObjectTreeNode tn = (UserObjectTreeNode) tree.getLastSelectedPathComponent();
+    if (tn != null)
+    {
+      Rectangle pathBounds = tree.getUI().getPathBounds(tree, path);
 
-          if (pathBounds != null && pathBounds.contains(e.getX(), e.getY()))
-            return true;
-      }
+      if (pathBounds != null && pathBounds.contains(e.getX(), e.getY()))
+        return true;
+    }
     return false;
   }
 
-  // this is simple, comapre, advanced, advanced compare
-  
-//  protected void showPortCounterMenu(MouseEvent e)
-//  {
-//    // this is private, all checks already passed (see isCounterSelected())
-//    TreePath path = tree.getPathForLocation(e.getX(), e.getY());
-//    tree.setSelectionPath(path);
-//    UserObjectTreeNode tn = (UserObjectTreeNode) tree.getLastSelectedPathComponent();
-//    NameValueNode vmn = (NameValueNode) tn.getUserObject();
-//    PortCounterName pcn = PortCounterName.getByName(vmn.getMemberName());
-//    Rectangle pathBounds = tree.getUI().getPathBounds(tree, path);
-//    PortCounterPopupMenu menu = new PortCounterPopupMenu(Model, pcn, getHistorySize());
-//    menu.show(tree, pathBounds.x, pathBounds.y + pathBounds.height);
-//  }
-// 
-  
-  // this is just utilization
-  
+  // this is just utilization & heatmap
+
   protected void showSystemMenu(MouseEvent e)
   {
     // this is private, all checks already passed (see isCounterSelected())
     SystemTreePopupMenu menu = new SystemTreePopupMenu();
-    
+
     // give the popup menu a copy of the Model, just in case
     menu.setSystemTreeModel(Model);
     menu.show(tree, e.getX(), e.getY());
   }
-  
-    public static void main(String[] args) throws Exception
-    {
-    }
 
-    public SystemTreeModel getTreeModel()
-    {
-      return Model;
-     }
-    
-    public void setTreeModel(SystemTreeModel model)
-    {
-      Model = model;
-      setTreeRootNode((UserObjectTreeNode)model.getRoot());
-    }
+  public static void main(String[] args) throws Exception
+  {
+  }
+
+  public SystemTreeModel getTreeModel()
+  {
+    return Model;
+  }
+
+  public void setTreeModel(SystemTreeModel model)
+  {
+    Model = model;
+    setTreeRootNode((UserObjectTreeNode) model.getRoot());
+  }
 
   @Override
   public void valueChanged(IB_GraphSelectionUpdater source, IB_GraphSelectionEvent event)
@@ -317,12 +292,11 @@ public UserObjectTreeNode getTreeRootNode()
     if (event.getSource() instanceof IB_Vertex)
     {
       IB_Vertex myVertex = (IB_Vertex) event.getSource();
-      
+
       // do I want multiple frames, or reuse an existing one?
 
       JFrame frame = new JFrame();
       frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-//      frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       frame.setLocation(100, 50);
 
       if (myVertex == null)
@@ -339,33 +313,32 @@ public UserObjectTreeNode getTreeRootNode()
         System.err.println("The root has " + root.getChildCount() + " children");
       }
 
-//      setTreeRootNode(root);
-      
+      // setTreeRootNode(root);
+
       System.err.println("PTP: The vertex for this port is: " + myVertex.getName());
 
       Container container = this.getParent();
-      if(container == null)
+      if (container == null)
       {
         System.err.println("No container yet");
       }
       else
       {
-        if(container instanceof JFrame)
+        if (container instanceof JFrame)
           System.err.println("the container is a jframe");
-        if(container instanceof Container)
+        if (container instanceof Container)
           System.err.println("the container is a container");
-        if(container instanceof Panel)
+        if (container instanceof Panel)
           System.err.println("the container is a panel");
-        if(container instanceof JComponent)
+        if (container instanceof JComponent)
           System.err.println("the container is a jcomponent");
-        if(container instanceof JRootPane)
+        if (container instanceof JRootPane)
           System.err.println("the container is a jrootpane");
-        if(container instanceof JPanel)
+        if (container instanceof JPanel)
           System.err.println("the container is a jpanel");
-        if(container instanceof JInternalFrame)
+        if (container instanceof JInternalFrame)
           System.err.println("the container is a jinternalframe");
       }
-
 
       JScrollPane scroller = new JScrollPane(this);
       frame.getContentPane().add(scroller, BorderLayout.CENTER);
@@ -378,7 +351,7 @@ public UserObjectTreeNode getTreeRootNode()
   @Override
   public void osmFabricUpdate(OSM_Fabric osmFabric) throws Exception
   {
-    // TODO Auto-generated method stub    
+    // TODO Auto-generated method stub
   }
 
   @Override
@@ -404,8 +377,12 @@ public UserObjectTreeNode getTreeRootNode()
       setTreeModel(model);
 
       UserObjectTreeNode root = (UserObjectTreeNode) model.getRoot();
-      /** TODO - consider updateTreeNode (refer to other panels) to avoid NULL paint problems **/
-      setTreeRootNode(root);  // update will leave the state of the tree alone, while a set repaints (closes)
+      /**
+       * TODO - consider updateTreeNode (refer to other panels) to avoid NULL
+       * paint problems
+       **/
+      setTreeRootNode(root); // update will leave the state of the tree alone,
+                             // while a set repaints (closes)
 
     }
     else

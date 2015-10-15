@@ -100,6 +100,7 @@ public class SmtFabricStructure implements CommonLogger, SmtConstants
 {
 
   private     OpenSmMonitorService OMS = null;
+  private     OSM_Fabric Fabric = null;
   
   public SmtAttributeStructure Nodes;
   public SmtAttributeStructure Ports;
@@ -347,9 +348,8 @@ public class SmtFabricStructure implements CommonLogger, SmtConstants
   }
   
 
-  private boolean determinePortStructure()
+  private boolean determinePortStructure(OSM_Fabric Fabric)
   {
-    OSM_Fabric      Fabric               = OMS.getFabric();
     OSM_SysInfo SysInfo = Fabric.getOsmSysInfo();
 
     SBN_NodePortStatus tots = new SBN_NodePortStatus();
@@ -435,13 +435,8 @@ public class SmtFabricStructure implements CommonLogger, SmtConstants
 
   
 
-  private boolean determineFabricStructure()
+  private boolean determineFabricStructure(OSM_Fabric Fabric)
   {
-    // copy n paste from LinkStatistic Screen. Refer to it
-    OpenSmMonitorService oms = OMS;
-
-    OSM_Fabric Fabric = oms.getFabric();
-
     OSM_Nodes AllNodes = (Fabric == null) ? null : Fabric.getOsmNodes();
     OSM_Ports AllPorts = (Fabric == null) ? null : Fabric.getOsmPorts();
 
@@ -531,11 +526,11 @@ public class SmtFabricStructure implements CommonLogger, SmtConstants
     // lid  guid   name   num ports
     buff.append(" lid            guid               name/description         #ports" + SmtConstants.NEW_LINE);
     
-    for(SBN_Switch s: OMS.getFabric().getOsmSubnet().Switches)
+    for(SBN_Switch s: Fabric.getOsmSubnet().Switches)
     {
       IB_Guid g = new IB_Guid(s.guid);
-      String name = OMS.getFabric().getNameFromGuid(g);
-      int lid = OMS.getFabric().getLidFromGuid(g);
+      String name = Fabric.getNameFromGuid(g);
+      int lid = Fabric.getLidFromGuid(g);
       String format = "%5d  %20s  %30s  %3d";
       
       buff.append(String.format(format, lid, g.toColonString(), name, s.num_ports) + SmtConstants.NEW_LINE);
@@ -550,8 +545,6 @@ public class SmtFabricStructure implements CommonLogger, SmtConstants
     // lid  guid   name   num ports
     buff.append(" lid            guid               name/description         #ports" + SmtConstants.NEW_LINE);
 
-    OpenSmMonitorService oms = OMS;
-    OSM_Fabric Fabric = oms.getFabric();
     OSM_Nodes AllNodes = (Fabric == null) ? null : Fabric.getOsmNodes();
     ArrayList<SBN_Node> sbna = new ArrayList<SBN_Node>(Arrays.asList(AllNodes.getSubnNodes()));
     
@@ -560,8 +553,8 @@ public class SmtFabricStructure implements CommonLogger, SmtConstants
       if (OSM_NodeType.get(sn) == OSM_NodeType.CA_NODE)
       {
         IB_Guid g = new IB_Guid(sn.node_guid);
-        String name = OMS.getFabric().getNameFromGuid(g);
-        int lid = OMS.getFabric().getLidFromGuid(g);
+        String name = Fabric.getNameFromGuid(g);
+        int lid = Fabric.getLidFromGuid(g);
         String format = "%5d  %20s  %30s  %3d";
         
         buff.append(String.format(format, lid, g.toColonString(), name, sn.num_ports) + SmtConstants.NEW_LINE);
@@ -573,13 +566,19 @@ public class SmtFabricStructure implements CommonLogger, SmtConstants
   
   public String toServiceString()
   {
-    OSM_SysInfo SysInfo = OMS.getFabric().getOsmSysInfo();
-    OSM_Stats Stats     = OMS.getFabric().getOsmStats();
+    OSM_SysInfo SysInfo = Fabric.getOsmSysInfo();
+    OSM_Stats Stats     = Fabric.getOsmStats();
+    ObjectSession ParentSessionStatus  = null;
+    long time = 0;
+    OsmServerStatus RemoteServerStatus = null;
     
     /** from the admin interface **/
-    ObjectSession ParentSessionStatus  = OMS.getParentSessionStatus();
-    long time = OMS.getRemoteServerStatus().Server.getStartTime().getTimeInMillis();
-    OsmServerStatus RemoteServerStatus = OMS.getRemoteServerStatus();
+    if(OMS != null)
+    {
+      ParentSessionStatus  = OMS.getParentSessionStatus();
+      time = OMS.getRemoteServerStatus().Server.getStartTime().getTimeInMillis();
+      RemoteServerStatus = OMS.getRemoteServerStatus();
+    }
     
 //    System.err.println(new TimeStamp(time).toString());
 
@@ -618,7 +617,7 @@ public class SmtFabricStructure implements CommonLogger, SmtConstants
     else
       buff.append("The status of the remote server was unavailable" + SmtConstants.NEW_LINE);
    
-    TimeStamp tsf = OMS.getFabric().getTimeStamp();
+    TimeStamp tsf = Fabric.getTimeStamp();
     if(tsf != null)
     {
       buff.append("The most recent timestamp for the fabric data is: " + tsf + SmtConstants.NEW_LINE);
@@ -651,6 +650,27 @@ public class SmtFabricStructure implements CommonLogger, SmtConstants
     stringValue.append("</blockquote>");
     stringValue.append("<br>");
     return stringValue.toString();
+  }
+  
+  public long getNumActivePorts()
+  {
+    if (PortState != null)
+    {
+      for (SmtAttributeStructure lw : PortState)
+      {
+        if(lw.Name.equals("Active"))
+        {
+          // add them up
+          return (long)(lw.NumSwitches + lw.NumChannelAdapters);
+        }
+      }
+    }
+    return -1;
+  }
+
+  public long getNumTotalPorts()
+  {
+    return (long)( Ports == null ? -1: Ports.NumTotal);
   }
 
   public String toPortContent()
@@ -869,10 +889,16 @@ public class SmtFabricStructure implements CommonLogger, SmtConstants
    ***********************************************************/
   public SmtFabricStructure(OpenSmMonitorService oMS)
   {
-    super();
+    this(oMS.getFabric());
     OMS = oMS;
-    if(determineFabricStructure())
-      determinePortStructure();
+  }
+
+  public SmtFabricStructure(OSM_Fabric fabric)
+  {
+    super();
+    Fabric = fabric;
+    if(determineFabricStructure(Fabric))
+      determinePortStructure(Fabric);
   }
 
   /************************************************************

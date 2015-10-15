@@ -55,6 +55,9 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.chart;
 
+import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.Event_CounterPopupMenu;
+import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.MAD_CounterPopupMenu;
+
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -78,10 +81,10 @@ public enum XY_PlotType
   MAD_COUNTER_PLUS(         5, "MAD Counter",           "MAD Counter Comparison"),    
   ADV_MAD_COUNTER(          6, "MAD Counter",           "MAD Counter with Table"),    
   ADV_MAD_COUNTER_PLUS(     7, "MAD Counter",           "MAD Counter Comparison with Table"),    
-  EVENT_COUNTER(            8, "EVENT Counter",         "EVENT Counter"),    
-  EVENT_COUNTER_PLUS(       9, "EVENT Counter",         "EVENT Counter Comparison"),    
-  ADV_EVENT_COUNTER(       10, "EVENT Counter",         "EVENT Counter with Table"),    
-  ADV_EVENT_COUNTER_PLUS(  11, "EVENT Counter",         "EVENT Counter Comparison with Table"),    
+  EVENT_COUNTER(            8, "Event Counter",         "Event Counter"),    
+  EVENT_COUNTER_PLUS(       9, "Event Counter",         "Event Counter Comparison"),    
+  ADV_EVENT_COUNTER(       10, "Event Counter",         "Event Counter with Table"),    
+  ADV_EVENT_COUNTER_PLUS(  11, "Event Counter",         "Event Counter Comparison with Table"),    
   PORT_UTIL(               12, "Port Utilization",      "Port Utilization"),    
   PORT_UTIL_PLUS(          13, "Port Utilization",      "Port Utilization Comparison"),    
   ADV_PORT_UTIL(           14, "Port Utilization",      "Port Utilization with Table"),    
@@ -90,8 +93,10 @@ public enum XY_PlotType
     public static final EnumSet<XY_PlotType> XYPLOT_ALL_TYPES  = EnumSet.allOf(XY_PlotType.class);
     public static final EnumSet<XY_PlotType> XYPLOT_MAD_TYPES  = EnumSet.range(MAD_COUNTER, ADV_MAD_COUNTER_PLUS);
     public static final EnumSet<XY_PlotType> XYPLOT_PORT_TYPES = EnumSet.range(PORT_COUNTER, ADV_PORT_COUNTER_PLUS);
-    public static final EnumSet<XY_PlotType> XYPLOT_ADV_TYPES  = EnumSet.of(ADV_PORT_COUNTER, ADV_PORT_COUNTER_PLUS, ADV_MAD_COUNTER, ADV_MAD_COUNTER_PLUS);
-    public static final EnumSet<XY_PlotType> XYPLOT_PLUS_TYPES = EnumSet.of(PORT_COUNTER_PLUS, ADV_PORT_COUNTER_PLUS, MAD_COUNTER_PLUS, ADV_MAD_COUNTER_PLUS);
+    public static final EnumSet<XY_PlotType> XYPLOT_EVENT_TYPES = EnumSet.range(EVENT_COUNTER, ADV_EVENT_COUNTER_PLUS);
+    public static final EnumSet<XY_PlotType> XYPLOT_ADV_TYPES  = EnumSet.of(ADV_PORT_COUNTER, ADV_PORT_COUNTER_PLUS, ADV_MAD_COUNTER, ADV_MAD_COUNTER_PLUS,  ADV_EVENT_COUNTER, ADV_EVENT_COUNTER_PLUS);
+    public static final EnumSet<XY_PlotType> XYPLOT_PLUS_TYPES = EnumSet.of(PORT_COUNTER_PLUS, ADV_PORT_COUNTER_PLUS, MAD_COUNTER_PLUS, ADV_MAD_COUNTER_PLUS, EVENT_COUNTER_PLUS, ADV_EVENT_COUNTER_PLUS);
+    public static final EnumSet<XY_PlotType> XYPLOT_UTIL_TYPES  = EnumSet.range(PORT_UTIL, ADV_PORT_UTIL_PLUS);
     
     private static final Map<Integer,XY_PlotType> lookup = new HashMap<Integer,XY_PlotType>();
 
@@ -173,6 +178,16 @@ public enum XY_PlotType
        return XY_PlotType.XYPLOT_MAD_TYPES.contains(this);
      }
      
+     public boolean isEventCounter()
+     {
+       return XY_PlotType.XYPLOT_EVENT_TYPES.contains(this);
+     }
+     
+     public boolean isUtilizationType()
+     {
+       return XY_PlotType.XYPLOT_UTIL_TYPES.contains(this);
+     }
+     
      public String getMenuLabel()
      {
        if(isAdvanced())
@@ -186,24 +201,32 @@ public enum XY_PlotType
        return "Simple";
      }
 
-     public static XY_PlotType getPlotTypeFromMenuLabel(boolean isPortCounter, String menuLabel)
+     /************************************************************
+     * Method Name:
+     *  getPlotTypeFromMenuLabel
+    **/
+    /**
+     * Attempt to return the type of plot based on the menuLabel, and an object
+     * which represents the source of the query (Usually the type of PopUpMenu).
+     * The menuLabel is normally either advanced, advanced compare,
+     * or simple and simple compare.
+     * 
+     * The Object indicates if this is a PortCounter, EventCounter, or a MadCounter.
+     *
+     * @see     describe related java objects
+     *
+     * @param source
+     * @param menuLabel
+     * @return
+     ***********************************************************/
+    public static XY_PlotType getPlotTypeFromMenuLabel(Object source, String menuLabel)
      {
+      boolean isMadCounter = (source instanceof MAD_CounterPopupMenu);
+      boolean isPortCounter = !(source instanceof MAD_CounterPopupMenu);
+      boolean isEventCounter = (source instanceof Event_CounterPopupMenu);
        if((menuLabel != null) && (menuLabel.length() > 5))
        {
-         if(isPortCounter)
-         {
-           // restrict myself to the PortTypes
-           if(menuLabel.contains("Advanced"))
-           {
-             if(menuLabel.contains("Compare"))
-               return XY_PlotType.ADV_PORT_COUNTER_PLUS;
-             return XY_PlotType.ADV_PORT_COUNTER;
-           }
-           if(menuLabel.contains("Compare"))
-             return XY_PlotType.PORT_COUNTER_PLUS;
-           return XY_PlotType.PORT_COUNTER;
-         }
-         else
+         if(isMadCounter)
          {
            // restrict myself to the MAD Types
            if(menuLabel.contains("Advanced"))
@@ -216,10 +239,35 @@ public enum XY_PlotType
              return XY_PlotType.MAD_COUNTER_PLUS;
            return XY_PlotType.MAD_COUNTER;
          }
+         else if(isEventCounter)
+         {
+           // restrict myself to the Event Types
+           if(menuLabel.contains("Advanced"))
+           {
+             if(menuLabel.contains("Compare"))
+               return XY_PlotType.ADV_EVENT_COUNTER_PLUS;
+             return XY_PlotType.ADV_EVENT_COUNTER;
+           }
+           if(menuLabel.contains("Compare"))
+             return XY_PlotType.EVENT_COUNTER_PLUS;
+           return XY_PlotType.EVENT_COUNTER;
+         }
+         else if(isPortCounter)
+         {
+           // restrict myself to the PortTypes
+           if(menuLabel.contains("Advanced"))
+           {
+             if(menuLabel.contains("Compare"))
+               return XY_PlotType.ADV_PORT_COUNTER_PLUS;
+             return XY_PlotType.ADV_PORT_COUNTER;
+           }
+           if(menuLabel.contains("Compare"))
+             return XY_PlotType.PORT_COUNTER_PLUS;
+           return XY_PlotType.PORT_COUNTER;
+         }
        }
        return null;
       }
-
 
     public String getDescription()
     {

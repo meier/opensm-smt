@@ -248,6 +248,11 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
   private JCheckBoxMenuItem HmpSwPortsCBMI;
   private JCheckBoxMenuItem HmpAllPortsCBMI;
   
+  // Utilization Menu Items
+  private JCheckBoxMenuItem UtilCaPortsCBMI;
+  private JCheckBoxMenuItem UtilSwPortsCBMI;
+  private JCheckBoxMenuItem UtilAllPortsCBMI;
+  
   // Main HelpSet & Broker
   private HelpSet mainHS = null;
   private HelpBroker mainHB;
@@ -317,6 +322,9 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
   private boolean addToCenter(JScrollPane scrollPane, boolean exclusive, boolean selected)
   {
     int index = findNamedInCenter(scrollPane.getName());
+    JViewport vp = scrollPane.getViewport();
+
+    
     // if exclusive is true, only add if the name of the scrollPane is unique
     if(exclusive && (index > -1))
     {
@@ -337,6 +345,72 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
     // should this pane be brought to the front, or be selected?
     if(selected)
       centerTabbedPane.setSelectedComponent(scrollPane);
+    
+    // finally, if it has a checkboxmenuitem, make sure its true
+    if (vp.getComponent(0) instanceof SMT_AnalysisPanel)
+    {
+      SMT_AnalysisPanel panel = (SMT_AnalysisPanel) vp.getComponent(0);
+//      System.err.println("I have an analysis panel of type: " + panel.getType().getAnalysisName());
+      if(SMT_AnalysisType.SMT_HMAP_TYPES.contains(panel.getType()))
+      {
+        for(SMT_AnalysisType s : SMT_AnalysisType.SMT_HMAP_TYPES)
+        {
+          if(panel.getType().equals(s))
+          {
+            JCheckBoxMenuItem cbmi = null;
+            if(s.equals(SMT_AnalysisType.SMT_HMAP_CA_PORTS))
+              cbmi = HmpCaPortsCBMI;
+            else if(s.equals(SMT_AnalysisType.SMT_HMAP_SW_PORTS))
+              cbmi = HmpSwPortsCBMI;
+            else if(s.equals(SMT_AnalysisType.SMT_HMAP_ALL_PORTS))
+              cbmi = HmpAllPortsCBMI;
+            
+            // I want to set the checkbox value without triggering an event, which will lead back here
+            if(cbmi != null)
+            {
+              ItemListener[] listarray = cbmi.getItemListeners();
+              if(listarray.length > 0)
+              {
+                cbmi.removeItemListener(listarray[0]);
+                cbmi.setSelected(true);
+                cbmi.addItemListener(listarray[0]);
+              }              
+            }
+            break;
+          }
+         }
+      }
+      else if(SMT_AnalysisType.SMT_UTIL_PLOT_TYPES.contains(panel.getType()))
+      {
+        for(SMT_AnalysisType s : SMT_AnalysisType.SMT_UTIL_PLOT_TYPES)
+        {
+          if(panel.getType().equals(s))
+          {
+            JCheckBoxMenuItem cbmi = null;
+            if(s.equals(SMT_AnalysisType.SMT_UTIL_CA_PORTS))
+              cbmi = UtilCaPortsCBMI;
+            else if(s.equals(SMT_AnalysisType.SMT_UTIL_SW_PORTS))
+              cbmi = UtilSwPortsCBMI;
+            else if(s.equals(SMT_AnalysisType.SMT_UTIL_ALL_PORTS))
+              cbmi = UtilAllPortsCBMI;
+            
+            // I want to set the checkbox value without triggering an event, which will lead back here
+            if(cbmi != null)
+            {
+              ItemListener[] listarray = cbmi.getItemListeners();
+              if(listarray.length > 0)
+              {
+                cbmi.removeItemListener(listarray[0]);
+                cbmi.setSelected(true);
+                cbmi.addItemListener(listarray[0]);
+              }
+            }
+            break;
+          }
+         }
+      }
+    }
+    
     return true;
   }
 
@@ -1043,6 +1117,18 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
     HmpAllPortsCBMI.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_H, InputEvent.CTRL_MASK));
     mnHeatmap.add(HmpAllPortsCBMI);
     
+    JMenu mnUtilization = new JMenu("BW Utilization");
+    mnAnalyze.add(mnUtilization);
+    
+    UtilCaPortsCBMI = new JCheckBoxMenuItem("SW-CA Ports");
+    mnUtilization.add(UtilCaPortsCBMI);
+    
+    UtilSwPortsCBMI = new JCheckBoxMenuItem("SW-SW Ports");
+    mnUtilization.add(UtilSwPortsCBMI);
+    
+    UtilAllPortsCBMI = new JCheckBoxMenuItem("All Ports");
+    mnUtilization.add(UtilAllPortsCBMI);
+    
     JMenu mnNewMenu_2 = new JMenu("Window");
     mnNewMenu_2.setForeground(Color.WHITE);
     menuBar.add(mnNewMenu_2);
@@ -1637,6 +1723,38 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
       }
     });
 
+    // the Utilization checkbox event handlers
+    UtilCaPortsCBMI.addItemListener(new ItemListener() 
+    {
+      public void itemStateChanged(ItemEvent e)
+      {
+        JCheckBoxMenuItem item = (JCheckBoxMenuItem)e.getSource();
+        SmtGuiPreferences.setCheckBox(UtilCaPortsCBMI);
+        // generate a selection event to handle this here (see handleUtilizationSelected())
+        GraphSelectionManager.getInstance().updateAllListeners(new IB_GraphSelectionEvent(this, SMT_AnalysisType.SMT_UTIL_CA_PORTS, new Boolean(item.isSelected())));
+      }
+    });
+    UtilSwPortsCBMI.addItemListener(new ItemListener() 
+    {
+      public void itemStateChanged(ItemEvent e)
+      {
+        JCheckBoxMenuItem item = (JCheckBoxMenuItem)e.getSource();
+        SmtGuiPreferences.setCheckBox(UtilSwPortsCBMI);
+        // generate a selection event to handle this here (see handleUtilizationSelected())
+        GraphSelectionManager.getInstance().updateAllListeners(new IB_GraphSelectionEvent(this, SMT_AnalysisType.SMT_UTIL_SW_PORTS, new Boolean(item.isSelected())));
+      }
+    });
+    UtilAllPortsCBMI.addItemListener(new ItemListener() 
+    {
+      public void itemStateChanged(ItemEvent e)
+      {
+        JCheckBoxMenuItem item = (JCheckBoxMenuItem)e.getSource();
+        SmtGuiPreferences.setCheckBox(UtilAllPortsCBMI);
+        // generate a selection event to handle this here (see handleUtilizationSelected())
+        GraphSelectionManager.getInstance().updateAllListeners(new IB_GraphSelectionEvent(this, SMT_AnalysisType.SMT_UTIL_ALL_PORTS, new Boolean(item.isSelected())));
+      }
+    });
+
     
     // apply persistence "after" the ItemListener, so it will do the work of
     // adding or removing the panel
@@ -1856,6 +1974,12 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
       {
       handled = handleUtilizationSelected(source, event);
      logger.severe("Done handling utilization");
+      }
+      else if(SMT_AnalysisType.SMT_UTIL_PLOT_TYPES.contains(sType))
+      {
+        // one of the plot util checkbox types
+      handled = handleUtilizationSelected(source, event);
+     logger.severe("Done handling utilization plot");
       }
       else if(sType.equals(SMT_AnalysisType.SMT_ROUTE_PATH))
      {
@@ -2794,29 +2918,46 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
         handled = true;
      }
       
-      // create universal PortUtilizationPlotPanel
-      else if(sType.equals(SMT_AnalysisType.SMT_UTILIZATION))
+      // create universal PortUtilizationPlotPanel (can come from popup or menu check box items)
+      else if(( SMT_AnalysisType.SMT_UTIL_PLOT_TYPES.contains(sType)) || (sType.equals(SMT_AnalysisType.SMT_UTILIZATION)))
       {
         boolean addUtilizationPanel = true;
+        Object o = event.getSelectedObject();
+        if((o != null) && (o instanceof Boolean))
+          addUtilizationPanel = (Boolean)o;  // boolean indicating to create a new one, or destroy old one
         
-        String tabName = "Util: " + OMS.getFabricName();  // this needs to be unique among all tabs in the center pane
-        
-        if(addUtilizationPanel)
+        // SMT_UTILIZATION only comes from the special system guid panel, and should show SW-SW plot
+        // - do a conversion hack
+        if(sType.equals(SMT_AnalysisType.SMT_UTILIZATION))
         {
-          SMT_AnalysisPanel sap = new SMT_AnalysisPanel(sType);
-          JScrollPane scrollPaneAnal = new JScrollPane(sap);
-           
-         // this should be the name of the heat map
-          scrollPaneAnal.setName(tabName);
-          Boolean b = this.addToCenter(scrollPaneAnal, true, true);
-          handled = true;
+          sType = SMT_AnalysisType.SMT_UTIL_SW_PORTS;
+          addUtilizationPanel = true;
         }
-        else
+        
+        if(SMT_AnalysisType.SMT_UTIL_PLOT_TYPES.contains(sType))
         {
-          // attempt to remove
-          Boolean b = removeNamedFromCenter(tabName);
-          handled = true;
+         String tabName = sType.getName();  // this needs to be unique among all tabs in the center pane
+         if(addUtilizationPanel)
+         {
+           SMT_AnalysisPanel sap = new SMT_AnalysisPanel(sType);
+           JScrollPane scrollPaneAnal = new JScrollPane(sap);
+            
+          // this should be the name of the utilization map
+           scrollPaneAnal.setName(tabName);
+           Boolean b = this.addToCenter(scrollPaneAnal, true, true);
+           handled = true;
          }
+         else
+         {
+           // attempt to remove
+           Boolean b = removeNamedFromCenter(tabName);
+           handled = true;
+          }
+      }
+       else
+       {
+         logger.severe("This Utilization Plot Type (" + sType.getAnalysisName() + ") not handled yet");
+       }
      }
       
       handled = true;
@@ -2931,7 +3072,6 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
        
       handled = true;
     }
-    
     
     return handled;
   }
@@ -3056,6 +3196,15 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
 //        logger.info("A link > was selected");
 //        handled = handleLinkSelected(source, event);
 //      }
+      else if (vmn.getMemberName().equals("switch"))
+      {
+        logger.info("A switch was selected");
+//        // the member object is a vertex
+//         IB_Vertex v = (IB_Vertex) vmn.getMemberObject();
+//        // craft a selection event, for this vertex
+//        System.err.println("Sending off a Graph Selection Event for a root vertex and a tree node");
+//        GraphSelectionManager.getInstance().updateAllListeners(new IB_GraphSelectionEvent(this, v, v));
+      }
       else if (vmn.getMemberName().equals("link >"))
       {
         logger.info("A link > was selected");
@@ -3816,10 +3965,38 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
                 }
                }
             }
+            else if(SMT_AnalysisType.SMT_UTIL_PLOT_TYPES.contains(panel.getType()))
+            {
+              for(SMT_AnalysisType s : SMT_AnalysisType.SMT_UTIL_PLOT_TYPES)
+              {
+                if(panel.getType().equals(s))
+                {
+                  tabName = s.getName();
+                  
+                   JCheckBoxMenuItem cbmi = UtilCaPortsCBMI;
+                  if(s.equals(SMT_AnalysisType.SMT_UTIL_CA_PORTS))
+                    cbmi = UtilCaPortsCBMI;
+                  else if(s.equals(SMT_AnalysisType.SMT_UTIL_SW_PORTS))
+                    cbmi = UtilSwPortsCBMI;
+                  else if(s.equals(SMT_AnalysisType.SMT_UTIL_ALL_PORTS))
+                    cbmi = UtilAllPortsCBMI;
+                  
+                  // I want to set the checkbox value without triggering an event, which will lead back here
+                  ItemListener[] listarray = cbmi.getItemListeners();
+                  if(listarray.length > 0)
+                  {
+                    cbmi.removeItemListener(listarray[0]);
+                    cbmi.setSelected(false);
+                    cbmi.addItemListener(listarray[0]);
+                  }
+                  break;
+                }
+               }
+            }
             else
             {
               // unhandled Analysis Panel event, should never get here
-              System.err.println("This is an SMT_AnalysisPanel of type: " + panel.getType().getAnalysisName());
+              System.err.println("Close Panel Not Handled! Should not get here!! This is an SMT_AnalysisPanel of type: " + panel.getType().getAnalysisName());
             }
           }
           else if (vp.getComponent(j) instanceof SimpleGraphControlPanel)

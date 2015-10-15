@@ -60,6 +60,7 @@ import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Updater;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_ServiceChangeListener;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
+import gov.llnl.lc.infiniband.opensm.plugin.event.OsmEvent;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionEvent;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionListener;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionUpdater;
@@ -86,6 +87,24 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+/**********************************************************************
+ * A JPanel that contains a tree and its model, representing information
+ * common to the "Subnet".  Usually considered "Detailed" information,
+ * this panel contains subtrees for the;
+ *   Subnet Manager
+ *   Subnet Administrator
+ *   Performance Manager
+ *   Event Counters
+ *   MAD Counters
+ *   OpenSM Monitoring Service
+ *   Configuration (options)
+ * <p>
+ * @see  gov.llnl.lc.infiniband.opensm.plugin.gui.tree.SubnetTreeModel
+ *
+ * @author meier3
+ * 
+ * @version Oct 8, 2015 3:21:51 PM
+ **********************************************************************/
 public class SubnetTreePanel extends JPanel implements OSM_ServiceChangeListener, CommonLogger, IB_GraphSelectionListener
 {
   /**  describe serialVersionUID here **/
@@ -97,7 +116,6 @@ public class SubnetTreePanel extends JPanel implements OSM_ServiceChangeListener
   private IB_GraphUpdater GraphUpdater;
   private SubnetTreeModel Model;
   private int HistorySize = 0;
-
 
   private FabricRootNodePopupMenu rootPopup = new FabricRootNodePopupMenu();
   
@@ -177,6 +195,10 @@ public class SubnetTreePanel extends JPanel implements OSM_ServiceChangeListener
         {
           showMadCounterMenu(e);
         }
+        else if(isEventSelected(e))
+        {
+          showEventCounterMenu(e);
+        }
         else if(isTreeNodeSelected(e))
         {
           // do nothing
@@ -221,17 +243,39 @@ public class SubnetTreePanel extends JPanel implements OSM_ServiceChangeListener
       {
         if(SubnetTreeModel.isMAD_Counter(tn))
           return true;
-//        
-//        if (SubnetTreeModel.isMAD_Counter(tn))
-//        {
-//          Rectangle pathBounds = tree.getUI().getPathBounds(tree, path);
-//
-//          if (pathBounds != null && pathBounds.contains(e.getX(), e.getY()))
-//            return true;
-//        }
       }
     }
     return false;
+  }
+
+  protected boolean isEventSelected(MouseEvent e)
+  {
+    // is the selected component in the panel, an Event counter?
+    if (e.isPopupTrigger())
+    {
+      TreePath path = tree.getPathForLocation(e.getX(), e.getY());
+      tree.setSelectionPath(path);
+      UserObjectTreeNode tn = (UserObjectTreeNode) tree.getLastSelectedPathComponent();
+       if (tn != null)
+      {
+        if(SubnetTreeModel.isEvent_Counter(tn))
+          return true;
+      }
+    }
+    return false;
+  }
+
+  protected OsmEvent getSelectedEvent(MouseEvent e)
+  {
+    // is the selected component in the panel, an Event counter?
+    if (e.isPopupTrigger())
+    {
+      TreePath path = tree.getPathForLocation(e.getX(), e.getY());
+      tree.setSelectionPath(path);
+      UserObjectTreeNode tn = (UserObjectTreeNode) tree.getLastSelectedPathComponent();
+      return SubnetTreeModel.getEvent_Counter(tn);
+    }
+    return null;
   }
 
   protected MAD_Counter getSelectedCounter(MouseEvent e)
@@ -254,6 +298,16 @@ public class SubnetTreePanel extends JPanel implements OSM_ServiceChangeListener
     tree.setSelectionPath(path);
     Rectangle pathBounds = tree.getUI().getPathBounds(tree, path);
     MAD_CounterPopupMenu menu = new MAD_CounterPopupMenu(Model, Model.getMAD_Stats(), getSelectedCounter(e), getHistorySize());
+    menu.show(tree, pathBounds.x, pathBounds.y + pathBounds.height);
+  }
+
+  protected void showEventCounterMenu(MouseEvent e)
+  {
+    // this is private, all checks already passed (see isEventSelected())
+    TreePath path = tree.getPathForLocation(e.getX(), e.getY());
+    tree.setSelectionPath(path);
+    Rectangle pathBounds = tree.getUI().getPathBounds(tree, path);
+    Event_CounterPopupMenu menu = new Event_CounterPopupMenu(Model, Model.getEvent_Stats(), getSelectedEvent(e), getHistorySize());
     menu.show(tree, pathBounds.x, pathBounds.y + pathBounds.height);
   }
 

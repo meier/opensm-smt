@@ -110,6 +110,11 @@ public class SubnetTreeModel extends DefaultTreeModel
     return OSM.getFabric().getOsmStats();
   }
   
+  public OSM_EventStats getEvent_Stats()
+  {
+    return OSM.getFabric().getOsmEventStats();
+  }
+  
 
   /************************************************************
    * Method Name:
@@ -984,6 +989,28 @@ public class SubnetTreeModel extends DefaultTreeModel
   public static boolean isMAD_Counter(UserObjectTreeNode node)
   {
     return (getMAD_Counter(node) != null) ? true: false;
+  }
+
+  public static boolean isEvent_Counter(UserObjectTreeNode node)
+  {
+    return (getEvent_Counter(node) != null) ? true: false;
+  }
+
+  public static OsmEvent getEvent_Counter(UserObjectTreeNode node)
+  {
+    if (node != null)
+    {
+      NameValueNode vmn = (NameValueNode) node.getUserObject();
+      String eName = vmn.getMemberName();
+      
+      // find the event, or return null
+      for(OsmEvent s : OsmEvent.OSM_STAT_EVENTS)
+      {
+        if(s.getEventName().equals(eName))
+          return s;
+       }
+    }
+    return null;
   }
 
   public static MAD_Counter getMAD_Counter(UserObjectTreeNode node)

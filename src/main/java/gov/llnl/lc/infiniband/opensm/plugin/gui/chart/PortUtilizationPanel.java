@@ -57,6 +57,7 @@ package gov.llnl.lc.infiniband.opensm.plugin.gui.chart;
 
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
 import gov.llnl.lc.logging.CommonLogger;
+import gov.llnl.lc.smt.manager.SMT_AnalysisType;
 
 import java.awt.BorderLayout;
 
@@ -83,7 +84,8 @@ import org.jfree.ui.RefineryUtilities;
 public class PortUtilizationPanel extends JPanel implements CommonLogger, ChangeListener, ChartChangeListener
 {
   XY_PlotPanel thePanel;
-  XY_PlotType  theType = XY_PlotType.ADV_PORT_UTIL_PLUS;
+  XY_PlotType  plotType = XY_PlotType.ADV_PORT_UTIL_PLUS;
+  SMT_AnalysisType analysisType = SMT_AnalysisType.SMT_UTIL_ALL_PORTS;
 
   private boolean        initial = true;
 
@@ -96,7 +98,23 @@ public class PortUtilizationPanel extends JPanel implements CommonLogger, Change
   {
     super(new BorderLayout());
     
-    thePanel = createUtilizationPanel(history);
+    thePanel = createUtilizationPanel(history, plotType, analysisType);
+    add(thePanel);
+  }
+
+  public PortUtilizationPanel(OMS_Collection history, SMT_AnalysisType aType)
+  {
+    super(new BorderLayout());
+    
+    thePanel = createUtilizationPanel(history, plotType, aType);
+    add(thePanel);
+  }
+
+  public PortUtilizationPanel(OMS_Collection history, XY_PlotType pType, SMT_AnalysisType aType)
+  {
+    super(new BorderLayout());
+    
+    thePanel = createUtilizationPanel(history, pType, aType);
     add(thePanel);
   }
 
@@ -105,11 +123,12 @@ public class PortUtilizationPanel extends JPanel implements CommonLogger, Change
    *
    * @return A panel.
    */
-  public XY_PlotPanel createUtilizationPanel(OMS_Collection history)
+  public XY_PlotPanel createUtilizationPanel(OMS_Collection history, XY_PlotType pType, SMT_AnalysisType aType)
   {
-    XY_PlotPanel panel =  new AdvancedXY_PlotPanel(theType, history, null);
-  return panel;
-
+    plotType = pType;
+    analysisType = aType;
+    XY_PlotPanel panel =  new AdvancedXY_PlotPanel(plotType, history, aType);
+    return panel;
   }
 
   public void stateChanged(ChangeEvent e)
@@ -157,7 +176,12 @@ public class PortUtilizationPanel extends JPanel implements CommonLogger, Change
 
   public XY_PlotType getPlotType()
   {
-    return theType;
+    return plotType;
+  }
+
+  public SMT_AnalysisType getAnalysisType()
+  {
+    return analysisType;
   }
 
  }

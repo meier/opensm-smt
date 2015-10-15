@@ -76,7 +76,8 @@ import javax.swing.tree.DefaultTreeModel;
 /**********************************************************************
  * Describe purpose and responsibility of SystemTreePopupMenu
  * <p>
- * @see  related classes and interfaces
+ * 
+ * @see related classes and interfaces
  *
  * @author meier3
  * 
@@ -84,43 +85,42 @@ import javax.swing.tree.DefaultTreeModel;
  **********************************************************************/
 public class SystemTreePopupMenu extends JPopupMenu implements ActionListener, CommonLogger
 {
-  /**  describe serialVersionUID here **/
+  /** describe serialVersionUID here **/
   private static final long serialVersionUID = 3837174107559442026L;
-  
-  private SystemTreeModel Model;
-  
-static final String MsgUtilize = SMT_AnalysisType.SMT_UTILIZATION.getAnalysisName();
-static final String MsgHeatMap = SMT_AnalysisType.SMT_HEAT_MAP.getAnalysisName();
-  JMenuItem anItem;
-  JMenuItem hmItem;
-  
+
+  private SystemTreeModel   Model;
+
+  static final String       MsgUtilize       = "BW "
+                                                 + SMT_AnalysisType.SMT_UTILIZATION
+                                                     .getAnalysisName();
+  static final String       MsgHeatMap       = SMT_AnalysisType.SMT_HEAT_MAP.getAnalysisName();
+  JMenuItem                 anItem;
+  JMenuItem                 hmItem;
+
   public SystemTreePopupMenu()
   {
     anItem = new JMenuItem(MsgUtilize);
     add(anItem);
     anItem.addActionListener(this);
-    
+
     hmItem = new JMenuItem(MsgHeatMap);
     add(hmItem);
     hmItem.addActionListener(this);
-    
-   }
-  
+  }
+
   /************************************************************
-   * Method Name:
-   *  main
+   * Method Name: main
    **/
   /**
    * Describe the method here
    *
-   * @see     describe related java objects
+   * @see describe related java objects
    *
    * @param args
    ***********************************************************/
   public static void main(String[] args)
   {
     // TODO Auto-generated method stub
-
   }
 
   @Override
@@ -148,28 +148,51 @@ static final String MsgHeatMap = SMT_AnalysisType.SMT_HEAT_MAP.getAnalysisName()
 
               if (dtm.getRoot() instanceof UserObjectTreeNode)
               {
-                UserObjectTreeNode tn = (UserObjectTreeNode) dtm.getRoot();
-                String sysGuid = SystemTreeModel.getSystemGuidString(tn);
-//                System.err.println("The system guid is: (" + sysGuid + ")");
-//                String sysName = SystemTreeModel.getSystemNameString(tn);
-//                System.err.println("The system name is: (" + sysName + ")");
-                if(Model != null)
+                //UserObjectTreeNode tn = (UserObjectTreeNode) dtm.getRoot();
+                //String sysGuid = SystemTreeModel.getSystemGuidString(tn);
+                // System.err.println("The system guid is: (" + sysGuid + ")");
+                // String sysName = SystemTreeModel.getSystemNameString(tn);
+                // System.err.println("The system name is: (" + sysName + ")");
+                if (Model != null)
                 {
                   MessageManager.getInstance().postMessage(
-                      new SmtMessage(SmtMessageType.SMT_MSG_INFO, "Popup a panel for showing the System Guid Heat Map"));
-                  
-                  // craft a selection event that contains necessary info for this utilization event
-                  GraphSelectionManager.getInstance().updateAllListeners(new IB_GraphSelectionEvent(this, SMT_AnalysisType.SMT_HMAP_SYS_PORTS, Model));
-               }
+                      new SmtMessage(SmtMessageType.SMT_MSG_INFO,
+                          "Popup a panel for showing the System Guid Heat Map"));
 
-               }
+                  // craft a selection event that contains necessary info for
+                  // this heat map event
+                  GraphSelectionManager.getInstance().updateAllListeners(
+                      new IB_GraphSelectionEvent(this, SMT_AnalysisType.SMT_HMAP_SYS_PORTS, Model));
+                }
+                else
+                {
+                  MessageManager.getInstance().postMessage(
+                      new SmtMessage(SmtMessageType.SMT_MSG_INFO,
+                          "Popup a panel for showing the Heat Map for all ports"));
+                  // no model, so assume all ports
+                  // craft a selection event that contains necessary info for
+                  // this heat map event
+                  GraphSelectionManager.getInstance().updateAllListeners(
+                      new IB_GraphSelectionEvent(this, SMT_AnalysisType.SMT_HMAP_ALL_PORTS, true));
+                  }
+              }
             }
+          }
+          else
+          {
+            MessageManager.getInstance().postMessage(
+                new SmtMessage(SmtMessageType.SMT_MSG_INFO,
+                    "Popup a panel for showing the Heat Map for all ports"));
+            // no model, so assume all ports
+            // craft a selection event that contains necessary info for
+            // this heat map event
+            GraphSelectionManager.getInstance().updateAllListeners(
+                new IB_GraphSelectionEvent(this, SMT_AnalysisType.SMT_HMAP_ALL_PORTS, true));
           }
         }
       }
-
     }
-    
+
     if (e.getActionCommand().equals(MsgUtilize))
     {
       if (e.getSource() instanceof JMenuItem)
@@ -178,25 +201,34 @@ static final String MsgHeatMap = SMT_AnalysisType.SMT_HEAT_MAP.getAnalysisName()
         Container cont = src.getParent();
         if (cont instanceof SystemTreePopupMenu)
         {
-          // right now I don't care about where it came from, just trigger the system utilization panel
+          // right now I don't care about where it came from, just trigger the
+          // system utilization panel
           MessageManager.getInstance().postMessage(
-              new SmtMessage(SmtMessageType.SMT_MSG_INFO, "Popup a panel for showing the Port Utilization Panel"));
+              new SmtMessage(SmtMessageType.SMT_MSG_INFO,
+                  "Popup a panel for showing the Port Utilization Panel"));
+
+          // craft a selection event that contains necessary info for this
+          // utilization event
           
-          // craft a selection event that contains necessary info for this utilization event
-          GraphSelectionManager.getInstance().updateAllListeners(new IB_GraphSelectionEvent(this, SMT_AnalysisType.SMT_UTILIZATION, Model));
+          // if Model is null, then it was never set with "setSystemTreeModel()"
+          // so assume we want a system wide all ports plot
+          
+          if(Model == null)
+            GraphSelectionManager.getInstance().updateAllListeners(new IB_GraphSelectionEvent(this, SMT_AnalysisType.SMT_UTIL_ALL_PORTS, true));
+          else
+            GraphSelectionManager.getInstance().updateAllListeners(new IB_GraphSelectionEvent(this, SMT_AnalysisType.SMT_UTILIZATION, Model));
         }
       }
     }
   }
 
   /************************************************************
-   * Method Name:
-   *  setSystemTreeModel
-  **/
+   * Method Name: setSystemTreeModel
+   **/
   /**
    * Describe the method here
    *
-   * @see     describe related java objects
+   * @see describe related java objects
    *
    * @param model
    ***********************************************************/

@@ -96,6 +96,9 @@ public enum SMT_AnalysisType
   SMT_HMAP_SW_PORTS(          39, "Heat Map for SW Ports",                 "HM:SW Ports",              "a directive to use the default if necessary"),
   SMT_HMAP_ALL_PORTS(         40, "Heat Map for ALL Ports",                "HM:All Ports",              "a directive to use the default if necessary"),
   SMT_HMAP_SYS_PORTS(         41, "Heat Map for System Ports",             "HM:System Ports",              "a directive to use the default if necessary"),
+  SMT_UTIL_CA_PORTS(          45, "Utilization Plot for SW - CA Ports",    "U:CA Ports",              "a directive to use the default if necessary"),
+  SMT_UTIL_SW_PORTS(          46, "Utilization Plot for SW - SW Ports",    "U:SW Ports",              "a directive to use the default if necessary"),
+  SMT_UTIL_ALL_PORTS(         47, "Utilization Plot for ALL Ports",        "U:All Ports",              "a directive to use the default if necessary"),
   SMT_LAST_ANALYSIS(       999, "AnalysisEnd",                          "EndOfList",                "always the end of the property list");
 
   /*
@@ -106,6 +109,7 @@ public enum SMT_AnalysisType
   public static final EnumSet<SMT_AnalysisType> SMT_UTILIZATION_TYPES = EnumSet.range(SMT_FABRIC_UTILIZATION, SMT_ROUTE_UTILIZATION);
   public static final EnumSet<SMT_AnalysisType> SMT_TOP_TYPES = EnumSet.range(SMT_FABRIC_TOP_NODES, SMT_FABRIC_ERROR_PORTS);
   public static final EnumSet<SMT_AnalysisType> SMT_HMAP_TYPES = EnumSet.range(SMT_HMAP_CA_PORTS, SMT_HMAP_SYS_PORTS);
+  public static final EnumSet<SMT_AnalysisType> SMT_UTIL_PLOT_TYPES = EnumSet.range(SMT_UTIL_CA_PORTS, SMT_UTIL_ALL_PORTS);
   public static final EnumSet<SMT_AnalysisType> SMT_TRAFFIC_TYPES = EnumSet.range(SMT_FABRIC_TOP_NODES, SMT_FABRIC_TOP_PORTS);
   public static final EnumSet<SMT_AnalysisType> SMT_ERROR_TYPES = EnumSet.range(SMT_FABRIC_ERROR_NODES, SMT_FABRIC_ERROR_PORTS);
    

@@ -210,12 +210,18 @@ public class SimpleCollapsableGraph extends JPanel
           {
             // craft a selection event, for this edge
             GraphSelectionManager.getInstance().updateAllListeners(new IB_GraphSelectionEvent(this, subject, edge));
-            System.err.println("SCG - edge selected: Color that peckerdoodle!");
+            MessageManager.getInstance().postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INFO,
+                 "SCG - edge selected: Color it!"));
+          }
+          else if(e.getStateChange() == ItemEvent.DESELECTED)
+          {
+            // this is deselected, do nothing
+            MessageManager.getInstance().postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INFO,
+                "SCG - edge deselected"));
           }
           else
           {
-            // this is deselected, do nothing
-            System.err.println("SCG - edge not selected: The edge itemEvent is: " + e.getStateChange());
+            System.err.println("SCG - edge not selected or deselected - unknown state change: The edge itemEvent is: " + e.getStateChange());
           }
         }
         else
