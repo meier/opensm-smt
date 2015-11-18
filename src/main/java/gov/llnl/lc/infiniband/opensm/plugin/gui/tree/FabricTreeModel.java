@@ -55,12 +55,17 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.tree;
 
+import gov.llnl.lc.infiniband.core.IB_Guid;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Node;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_NodeType;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Port;
+import gov.llnl.lc.infiniband.opensm.plugin.data.SBN_Node;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
+import gov.llnl.lc.util.BinList;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -101,18 +106,143 @@ public class FabricTreeModel implements TreeModel
     this(new UserObjectTreeNode(new NameValueNode((root == null ? "": root.getName()), root ), true));
  }
 
-  public FabricTreeModel(HashMap <String, IB_Vertex> VertexMap, String RootName)
+  public FabricTreeModel(HashMap <String, IB_Vertex> VertexMap, OSM_Fabric fabric)
   {
     // assume it already has depths?
     
     // this is the normal preferred way to construct the tree model
     
     // find the root, or roots, create a virtual root if necessary
+    String RootName = fabric.getFabricName();
     IB_Vertex top = null;
+    IB_Vertex sysVertex [] = null;
+    boolean haveTop = false;
+    
     int maxDepth = IB_Vertex.getMaxDepth(VertexMap);
     LinkedHashMap <String, IB_Vertex> topLevel = IB_Vertex.getVertexMapAtDepth(VertexMap, maxDepth);
     
-    if(topLevel.size() > 1)
+    // are there any core switches in this fabric?
+    fabric.createSystemGuidBins(false);
+    BinList <IB_Guid> guidBins = fabric.getSystemGuidBins();
+    if(guidBins.size() > 0)
+    {
+      sysVertex = new IB_Vertex[guidBins.size()];
+      
+      // create virtual Vertex for each guid, representing a core switch, and put them at the top (if only core switch)
+      // or one down from the top if more than one
+      
+      // for each system guid, create a vertex, and then attach the existing vertex (with matching sys guids) as children
+      int k=0;  // the core switch index
+      for(ArrayList <IB_Guid> gList: guidBins)
+      {
+        // create a dummy Vertex for each system guid, and give it the system guid
+        String sGuid = guidBins.getKey(k);
+        IB_Guid sysGuid = new IB_Guid(sGuid);
+        SystemTreeModel treeModel = new SystemTreeModel(fabric, sysGuid);
+        int numChildren = treeModel.getChildCount(treeModel.rootVertexNode);
+        int depth = treeModel.getRootVertex().getDepth();
+        maxDepth = depth;
+        String name = treeModel.getSystemNameString();
+        SBN_Node sn = new SBN_Node();
+        sn.node_guid = sysGuid.getGuid();
+        OSM_Node n = new OSM_Node(sn);     // null constructor for artificial node
+        sysVertex[k] = new IB_Vertex(n, depth, true, false, name);  // this is the core switch node
+      
+      // ASSUMPTION: core switches are part of the top most levels
+        // connect up the top level switches to these dummy Vertex
+        
+      int rootPortNum = 0;
+      int numAdded = 0;
+      for (Entry<String, IB_Vertex> entry : topLevel.entrySet())
+      {
+        IB_Vertex v = entry.getValue();
+        // connect this vertex if its one of my children
+        if(gList.contains(v.getGuid()))
+        {
+        // create an artificial edge between them (make up some port numbers)
+        OSM_Port rp= new OSM_Port(null, null, OSM_NodeType.SW_NODE);
+        rp.setPortNumber(rootPortNum++);
+        OSM_Port vp= new OSM_Port(null, null, OSM_NodeType.SW_NODE);
+        vp.setPortNumber(-1);        
+        
+        IB_Edge e = new IB_Edge(sysVertex[k], rp, v, vp);
+        sysVertex[k].addEdge(e);
+        numAdded++;
+        }
+      }
+      
+        k++;
+      }
+      
+      // if only a single sys guid, then done
+      // if more more than one sys guid, create a parent "fabric" vertex
+    }
+
+    HashMap <String, IB_Vertex> neighborMap = new LinkedHashMap <String, IB_Vertex>();
+
+    // done creating core switch nodes, and hooking them up
+    if((sysVertex != null) && (sysVertex.length > 0))
+    {
+      // if there are more than one core switches, then create a parent or top vertex for these
+      // otherwise just use the core switch vertex for the top level node
+      haveTop = true;
+      if(sysVertex.length == 1)
+      {
+        // make the single dummy core switch the top node
+        top = sysVertex[0];
+        rootVertex = top;
+        NameValueNode vmn = new NameValueNode("", top);
+        rootVertexNode = new UserObjectTreeNode(vmn, true);
+
+      }
+      else
+      {
+        // create a new top vertex to hold the multiple dummy core switches
+        OSM_Node n = new OSM_Node();                                // null constructor for artificial node
+        top = new IB_Vertex(n, maxDepth+1, true, false, RootName);  // this is the artificial root node
+        rootVertex = top;
+        NameValueNode vmn = new NameValueNode("", top);
+        rootVertexNode = new UserObjectTreeNode(vmn, true);
+
+        // connect the core switches
+        int rootPortNum = 0;
+        for(IB_Vertex s: sysVertex)
+        {
+          // create an artificial edge between them (make up some port numbers)
+          OSM_Port rp= new OSM_Port(null, null, OSM_NodeType.SW_NODE);
+          rp.setPortNumber(rootPortNum);
+          OSM_Port vp= new OSM_Port(null, null, OSM_NodeType.SW_NODE);
+          vp.setPortNumber(-1);        
+          
+          IB_Edge e = new IB_Edge(top, rp, s, vp);
+          top.addEdge(e);
+          
+          neighborMap.put(s.getKey(), s);
+          rootPortNum++;
+        }
+      }
+       
+    }
+    
+    
+    // if there are core switches, use them, otherwise just use the existing vertex
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    if(haveTop)
+    {
+      if((sysVertex != null) && (sysVertex.length > 1))
+        addChildNodes(rootVertexNode, neighborMap, VertexMap);
+      else
+        addChildNodes(rootVertexNode, topLevel, VertexMap);
+    }
+      else if(topLevel.size() > 1)
     {
       // there are many top level nodes, so must create an artificial (single) root node
       maxDepth++;
@@ -165,6 +295,8 @@ public class FabricTreeModel implements TreeModel
       System.exit(-1);
     }    
  }
+  
+  
   private UserObjectTreeNode addChildNodes(UserObjectTreeNode parent, HashMap <String, IB_Vertex> neighborMap, HashMap <String, IB_Vertex> vertexMap)
   {
     NameValueNode nvn = (NameValueNode) parent.getUserObject();
@@ -219,16 +351,26 @@ public class FabricTreeModel implements TreeModel
   
   private Set <UserObjectTreeNode> getChildSet(Object parentNode)
   {
+    // support both IB_Vertex and NamedValueNode parent objects
     UserObjectTreeNode p = (UserObjectTreeNode)parentNode;    
-    IB_Vertex parent = (IB_Vertex)rootVertexNode.getUserObject();
+    Object parent = rootVertexNode.getUserObject();
+    IB_Vertex pv       = null;
+    NameValueNode nvn = null;
+    if(parent instanceof IB_Vertex)
+      pv = (IB_Vertex)parent;
+    if(parent instanceof NameValueNode)
+      nvn = (NameValueNode)parent;
+    
+    if(nvn != null)
+      pv = (IB_Vertex)nvn.getMemberObject();
     
     // we are building the nodes and vertexes here
 
-    HashMap <String, IB_Vertex> neighbors = parent.getNeighborMap();
+    HashMap <String, IB_Vertex> neighbors = pv.getNeighborMap();
     
     Set <UserObjectTreeNode> childSet = new HashSet <UserObjectTreeNode> ();
     
-    int pDepth = parent.getDepth();  // this is my depth
+    int pDepth = pv.getDepth();  // this is my depth
     int nDepth = 0;
     
     for (Entry<String, IB_Vertex> entry : neighbors.entrySet())

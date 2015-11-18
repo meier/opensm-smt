@@ -2,8 +2,8 @@
 %define osm_config_dir etc/opensm-plugin
 
 Name:           	opensm-smt-java
-Version:        	2.0.0
-Release:        	49%{?dist}
+Version:        	2.00
+Release:        	51%{?dist}
 Summary:        	Subnet monitoring tools for OpenSM, that use the OpenSM Monitoring Service
 
 Group:          	Development/Libraries
@@ -14,8 +14,8 @@ BuildArch:      	noarch
 
 BuildRequires:  	java-devel >= 1:1.6.0
 Requires:       	java >= 1:1.6.0
-Requires:			opensm-client-server-java >= 2.0.0-53, llnl-ldapotp-clt-java >= 2.0.0-29
-BuildRequires:      opensm-client-server-java >= 2.0.0-53, llnl-ldapotp-clt-java >= 2.0.0-29
+Requires:			opensm-client-server-java >= 2.00-67, llnl-ldapotp-clt-java >= 2.00-33
+BuildRequires:      opensm-client-server-java >= 2.00-67, llnl-ldapotp-clt-java >= 2.00-33
 BuildRequires:  	jpackage-utils
 BuildRequires:  	ant >= 1.6
 
@@ -28,23 +28,10 @@ the OMS.  They are intended to be a somewhat higher level tool set than the
 normal diags and utils.
 See /usr/share/java/SubnetMonitorTool/bin/ for tools.
 
-%package javadoc
-Summary:        Javadocs for %{java_package_name}
-Group:          Documentation
-Requires:       jpackage-utils
-
-%description javadoc
-This package contains the SubnetMonitorTool documentation, and the
-typical installation location is /usr/share/javadoc/SubnetMonitorTool.  This
-documentation is in Javadoc style html, so you can simply point your browser
-at "file:///usr/share/javadoc/SubnetMonitorTool/index.html".
-
-
 %prep
 %setup -q
 
 %build
-
 
 %install
 [ "%{buildroot}" != "/" ] && rm -rf %{buildroot}
@@ -59,9 +46,6 @@ ln -s %{java_package_name}-*.jar %{java_package_name}.jar
 mkdir -p $RPM_BUILD_ROOT/%{osm_config_dir}
 mv $RPM_BUILD_ROOT%{_javadir}/%{java_package_name}/%{osm_config_dir} $RPM_BUILD_ROOT/etc
 
-mkdir -p $RPM_BUILD_ROOT%{_javadocdir}
-mv $RPM_BUILD_ROOT%{_javadir}/%{java_package_name}/docs $RPM_BUILD_ROOT%{_javadocdir}/%{java_package_name}
-
 %clean
 rm -rf $RPM_BUILD_ROOT
 
@@ -74,12 +58,10 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(755,root,root,755)
 %{_javadir}/%{java_package_name}/bin/*
 
-%files javadoc
-%defattr(644,root,root,755)
-%{_javadocdir}/%{java_package_name}
-
 
 %changelog
+* Wed Nov 18 2015 Tim Meier <meier3@llnl.gov> 2.0.0-51
+- support for EDR, system guids, and smt-utilize
 * Tue Jul 21 2015 Tim Meier <meier3@llnl.gov> 2.0.0-49
 - smt-route enhancements, plus feature to extract timestamps from history file
 * Wed May 20 2015 Tim Meier <meier3@llnl.gov> 2.0.0-47

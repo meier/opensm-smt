@@ -128,7 +128,7 @@ public class SystemTreeModel extends FabricTreeModel implements CommonLogger
       guidList.add(sysGuid); 
     }
     
-    // Build the Tree Model for System Image Guid, put it in a Tree Panel, put that in a Scroll Pane (in center) and hook it up as a listener
+    // Build the Tree Model for System Image Guid
     
     LinkedHashMap<String, IB_Vertex> vertexMap = IB_Vertex.createVertexMap(fabric, guidList);
     if((vertexMap == null) || (vertexMap.size() == 0))

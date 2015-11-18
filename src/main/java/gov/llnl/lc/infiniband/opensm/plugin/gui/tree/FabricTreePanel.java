@@ -55,10 +55,13 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.tree;
 
+import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Updater;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Node;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_ServiceChangeListener;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
+import gov.llnl.lc.infiniband.opensm.plugin.data.SBN_Node;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionEvent;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.SystemErrGraphListener;
@@ -70,6 +73,7 @@ import gov.llnl.lc.smt.event.SmtMessageType;
 import gov.llnl.lc.smt.manager.GraphSelectionManager;
 import gov.llnl.lc.smt.manager.MessageManager;
 import gov.llnl.lc.smt.manager.SMT_AnalysisType;
+import gov.llnl.lc.util.BinList;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
@@ -78,6 +82,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 import javax.swing.JFrame;
@@ -106,6 +111,8 @@ public class FabricTreePanel extends JPanel implements OSM_ServiceChangeListener
   private static final String FabOverview    = "Fabric Overview";
   private static final String FabGraph       = "Fabric Graph";
   private static final String FabUtilization = "Fabric " + SMT_AnalysisType.SMT_UTILIZATION.getAnalysisName();
+  
+  private OpenSmMonitorService OMS = null;
   
   public JTree getTree()
   {
@@ -137,6 +144,8 @@ public class FabricTreePanel extends JPanel implements OSM_ServiceChangeListener
           IB_Vertex v = (IB_Vertex) tn.getUserObject();
           logger.info("first one one");
         }
+         System.err.println("Something from tree action listener valueChanged()");
+
       }
     });
     add(tree, BorderLayout.CENTER);
@@ -233,6 +242,43 @@ public class FabricTreePanel extends JPanel implements OSM_ServiceChangeListener
     return false;
   }
   
+  protected boolean isSystemGuidNode(IB_Vertex v)
+  {
+    // return true if this vertex's node guid matches one of the system guids
+    if((OMS == null) || (v == null) || (v.getGuid() == null))
+    {
+      System.err.println("Cant determine SystemGuid ness");
+      if(OMS == null)
+        System.err.println("OMS is null");
+      if(v == null)
+        System.err.println("v is null");
+      else if(v.getGuid() == null)
+        System.err.println("vs guid is null");
+      return false;
+    }
+    
+    // are there any core switches in this fabric?
+    OSM_Fabric fabric = OMS.getFabric();
+    fabric.createSystemGuidBins(false);
+
+    BinList <IB_Guid> guidBins = fabric.getSystemGuidBins();
+    if(guidBins.size() < 1)
+      return false;
+    
+    // we have at least one core switch (a system guid associated with multiple node guids)
+    int k = 0;
+    for(ArrayList <IB_Guid> gList: guidBins)
+    {
+      // create a dummy Vertex for each system guid, and give it the system guid
+      String sGuid = guidBins.getKey(k);
+      IB_Guid sysGuid = new IB_Guid(sGuid);
+      if(v.getGuid().equals(sysGuid))
+        return true;
+      k++;
+    }
+    return false;
+  }
+  
 
   
   /************************************************************
@@ -262,7 +308,7 @@ public class FabricTreePanel extends JPanel implements OSM_ServiceChangeListener
     if (vertexMap == null)
       System.exit(-1);
     System.err.println("There are " + vertexMap.size() + " vertices");
-    FabricTreeModel treeModel = new FabricTreeModel(vertexMap, OMS.getFabricName());
+    FabricTreeModel treeModel = new FabricTreeModel(vertexMap, OMS.getFabric());
 
     UserObjectTreeNode root = (UserObjectTreeNode) treeModel.getRoot();
     if (root != null)
@@ -297,17 +343,18 @@ public class FabricTreePanel extends JPanel implements OSM_ServiceChangeListener
       throws Exception
   {
     FabricTreeModel model = null;
+    setOMS(osmService);
     
     // if the updater is an SMT_Updater, skip analysis, already done
     if(updater instanceof SMT_UpdateService)
-       model = new FabricTreeModel(((SMT_UpdateService)updater).getVertexMap(), osmService.getFabricName());
+       model = new FabricTreeModel(((SMT_UpdateService)updater).getVertexMap(), osmService.getFabric());
     else
     {
       LinkedHashMap<String, IB_Vertex> vertexMap = IB_Vertex.createVertexMap(osmService.getFabric());
       if (vertexMap == null)
         System.exit(-1);
       logger.info("There are " + vertexMap.size() + " vertices");
-      model = new FabricTreeModel(vertexMap, osmService.getFabricName());
+      model = new FabricTreeModel(vertexMap, osmService.getFabric());
     }
     
     UserObjectTreeNode root = (UserObjectTreeNode) model.getRoot();
@@ -359,6 +406,8 @@ public class FabricTreePanel extends JPanel implements OSM_ServiceChangeListener
             new SmtMessage(SmtMessageType.SMT_MSG_INFO, "Fabric Graph )"));
       }
     }
+    System.err.println("Something from actionPerformed");
+
   }
 
   @Override
@@ -374,14 +423,41 @@ public class FabricTreePanel extends JPanel implements OSM_ServiceChangeListener
     nvn = (NameValueNode) getTreeRootNode().getUserObject();
     IB_Vertex r = (IB_Vertex) nvn.getMemberObject();
     
-    if(!(v.equals(r)))
+    // is this vertex a system guid node?
+    if(isSystemGuidNode(v))
+    {
+      //generate a sys_guid event
+      NameValueNode snvn = new NameValueNode("sys_guid", v.getGuid().toColonString());
+      UserObjectTreeNode stn = new UserObjectTreeNode(snvn, false);
+      
+      GraphSelectionManager.getInstance().updateAllListeners(new IB_GraphSelectionEvent(thisPanel, v, stn));
+    }
+    else if(!(v.equals(r)))
        GraphSelectionManager.getInstance().updateAllListeners(new IB_GraphSelectionEvent(thisPanel, v, v));
+    else
+      logger.info("This looks like the dummy root node, do nothing");
   }
 }
 
   public void setRootNodePopup(FabricRootNodePopupMenu rootNodePopupMenu)
   {
     rootPopup = rootNodePopupMenu;
+  }
+
+  /************************************************************
+   * Method Name:
+   *  setOMS
+  **/
+  /**
+   * Describe the method here
+   *
+   * @see     describe related java objects
+   *
+   * @param oMS2
+   ***********************************************************/
+  public void setOMS(OpenSmMonitorService oms)
+  {
+    OMS = oms;
   }
 
 }

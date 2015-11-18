@@ -1359,13 +1359,14 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
       System.exit(-1);
     }
     Message_Mgr.postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INIT, "Building the FabricTreeModel from the VertexMap "));
-    FabricTreeModel treeModel = new FabricTreeModel(vertexMap, OMS.getFabricName());
+    FabricTreeModel treeModel = new FabricTreeModel(vertexMap, OMS.getFabric());
 
     Message_Mgr.postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INIT, "Initializing the FabricTreePanel"));
     UserObjectTreeNode root = (UserObjectTreeNode) treeModel.getRoot();
     FabricTreePanel vtp = new FabricTreePanel();
     vtp.setTreeRootNode(root);
     vtp.setRootNodePopup(getRootNodePopupMenu());
+    vtp.setOMS(OMS);
     
     // during development, use a system.err.println listener, for selection events
     // TODO remove once confident not necessary
@@ -1385,6 +1386,7 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
     
     JScrollPane scroller = new JScrollPane(vtp);
     scroller.setName(OMS.getFabricName());
+
     // now add this to the west tabbed pane and remove the original placeholder
     addToWest(scroller);
     removeFromWest(0);
@@ -2316,7 +2318,6 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
     // the event.graphEvent is the object that was selected
 
     boolean handled = false;  // return true if this method handled (consumed) this event
-    
     
     Object context  = event.getContextObject();    // this should be the IB_Vertex, or the switch node
     Object selected = event.getSelectedObject();   // this should be the UserObjectTreeNode, "sys_guid" object

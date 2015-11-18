@@ -7,9 +7,18 @@
 // Apply the java plugin to add support for Java
 apply plugin: 'java'
 
+// Apply the distribution plugin to build tar files for building rpms
+apply plugin: 'distribution'
+
 def mainClass  = "gov/llnl/lc/smt/command/SubnetMonitorTool"
 def bundleDescription = "Subnet Monitoring Tools for OpenSM, that use the OpenSM Monitoring Service"
 def userJarRepo = System.getProperty('user.home') + '/jarRepo'
+
+def specFileName = "${rootProject.name}" + ".spec"
+def distFileName = "opensm-smt-java"
+def buildDist    = 'build/dist'
+def srcDist      = 'src/dist'
+def nxtBuildNum  = "1"
 
 // In this section you declare where to find the dependencies of your project
 // and in this case, all subprojects should be at the same level as this
@@ -22,7 +31,7 @@ repositories {
         dirs '../lc-jcommon/build/distributions/'
         dirs '../ldapotp-java-api/build/dist/'
         dirs '../lc-jsecure-client-server/build/distributions/'
-        dirs '../opensm-client-server/build/distributions/'
+        dirs '../opensm-client-server/build/dist/'
         dirs userJarRepo + '/gitOmsJars/'
         dirs userJarRepo + '/gitSmtJars/'
    }
@@ -33,9 +42,9 @@ dependencies {
     // my dependent jars (see repos above, and leave off the .jar)
     compile name: 'jcurses'
     compile name: 'LcCommon'
-    compile name: 'JLdapOtpInterface'
+    compile name: 'JLdapOtpInterface-2.00'
     compile name: 'LcSecureClientServer'
-    compile name: 'OsmClientServer'
+    compile name: 'OsmClientServer-2.00'
     compile name: 'commons-cli'
     compile name: 'commons-collections-3.2.1'
     compile name: 'guava-18.0'
@@ -80,6 +89,23 @@ task makeDistro() << {
     }
 }
 
+distributions {
+    custom {
+        baseName = distFileName
+         
+        contents {
+//            from { 'src/dist/etc/' }
+            from { 'build/dist'}
+         }
+    }
+}
+
+customDistTar{
+//                archiveName distFileName + ".tar.gz"
+                compression = Compression.GZIP
+                extension = 'tar.gz'
+            }
+
 task incrementBuildNumber  {
   description 'increment the artifactBuildNumber in the gradle.properties file, and update the version accordingly'
   version = artifactMajorVersion + "-" + artifactReleaseNumber + "-b" + artifactBuildNumber
@@ -95,7 +121,8 @@ incrementBuildNumber  << {
   props.setProperty('artifactBuildNumber', nextbuildnum.toString())
   props.store(propsFile.newWriter(), null)
   props.load(propsFile.newDataInputStream())
-  version = artifactMajorVersion + "-" + artifactReleaseNumber + "-b" + nextbuildnum.toString()
+//  version = artifactMajorVersion + "-" + artifactReleaseNumber + "-b" + nextbuildnum.toString()
+  version = artifactMajorVersion
 }
 
 task renameJar (dependsOn: jar) {
@@ -106,13 +133,38 @@ renameJar << {
    String fname1 = "${rootProject.name}" + "-" + version + ".jar"
    String fname2 = "${rootProject.name}" + ".jar"
    String fromString = "${rootProject.libsDir}" + "/" +  fname1
-   String toString = "${rootProject.distsDir}"
+ //  String toString = "${rootProject.distsDir}"
+ //  println "Copying from: " + fromString + ", to: " + toString
+ //  copy {
+ //  from fromString
+ //  into toString
+ //  rename(fname1, fname2)
+ //  }
+   
+   String toString = "${buildDist}"
    println "Copying from: " + fromString + ", to: " + toString
    copy {
    from fromString
    into toString
-   rename(fname1, fname2)
    }
+   // copy all my scripts over, include in package
+   copy {
+   from "${srcDist}" + "/scripts"
+   into toString + "/bin"
+   }
+   // copy all my config files over, include in package
+   copy {
+   from "${srcDist}" + "/etc"
+   into toString + "/etc"
+   }
+   // copy all my 3rd party dependent jars over, include in package
+   copy {
+   into toString + "/lib"
+    from configurations.runtime
+   }
+   
+   
+   
 }
 
 
