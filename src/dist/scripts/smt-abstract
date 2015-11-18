@@ -1,6 +1,6 @@
 #!/bin/sh
 # file: smt-abstract
-# date: 2-25-2015 (tam)
+# date: 11-18-2015 (tam)
 #
 # generic convenience script for invoking subnet monitoring toos (SMT)
 # to personalize, see below;
@@ -31,7 +31,7 @@ SMT_HOME="%h/.smt"
 # SMT_CFG=$SMT_HOME/SubnetMonitorTool.config
 #
 JAVA_OPTS="-XX:MaxPermSize=512m -Xmx2048m -Xms1024m"
-CMD_OPTS=" -classpath .:$SMT_JARS/*:$SMT_JARS/lib/*:$OCS_JARS/*:$OCS_JARS/lib/*:$LCC_JARS/*:$LCC_JARS/lib/* -DNetworkProperties.file=$MY_PROPS -DKeyStoreProperties.file=$MY_PROPS -DAuthenticationProperties.file=$MY_PROPS -DAuthorizationProperties.file=$MY_PROPS -Djava.util.logging.config.file=$MY_PROPS"
+CMD_OPTS=" -classpath .:$SMT_JARS/*:$SMT_JARS/lib/* -DNetworkProperties.file=$MY_PROPS -DKeyStoreProperties.file=$MY_PROPS -DAuthenticationProperties.file=$MY_PROPS -DAuthorizationProperties.file=$MY_PROPS -Djava.util.logging.config.file=$MY_PROPS"
 #
 # typically, this script would be invoked by another script, which extends it
 # for a specific SMT command, for example;
