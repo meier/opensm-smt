@@ -108,7 +108,8 @@ customDistTar{
 
 task incrementBuildNumber  {
   description 'increment the artifactBuildNumber in the gradle.properties file, and update the version accordingly'
-  version = artifactMajorVersion + "-" + artifactReleaseNumber + "-b" + artifactBuildNumber
+//  version = artifactMajorVersion + "-" + artifactReleaseNumber + "-b" + artifactBuildNumber
+  version = artifactMajorVersion
 }
 
 incrementBuildNumber  << {
