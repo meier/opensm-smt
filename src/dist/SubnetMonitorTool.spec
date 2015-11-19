@@ -2,7 +2,7 @@
 %define osm_config_dir etc/opensm-plugin
 
 Name:           	opensm-smt-java
-Version:        	2.00
+Version:        	2.01
 Release:        	51%{?dist}
 Summary:        	Subnet monitoring tools for OpenSM, that use the OpenSM Monitoring Service
 
@@ -14,8 +14,8 @@ BuildArch:      	noarch
 
 BuildRequires:  	java-devel >= 1:1.6.0
 Requires:       	java >= 1:1.6.0
-Requires:			opensm-client-server-java >= 2.00-67, llnl-ldapotp-clt-java >= 2.00-33
-BuildRequires:      opensm-client-server-java >= 2.00-67, llnl-ldapotp-clt-java >= 2.00-33
+Requires:			opensm-client-server-java >= 2.01-69, llnl-ldapotp-clt-java >= 2.01-35
+BuildRequires:      opensm-client-server-java >= 2.01-69, llnl-ldapotp-clt-java >= 2.01-35
 BuildRequires:  	jpackage-utils
 BuildRequires:  	ant >= 1.6
 
@@ -60,6 +60,8 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Thu Nov 19 2015 Tim Meier <meier3@llnl.gov> 2.01-51
+- version 2.01 release 51
 * Wed Nov 18 2015 Tim Meier <meier3@llnl.gov> 2.0.0-51
 - support for EDR, system guids, and smt-utilize
 * Tue Jul 21 2015 Tim Meier <meier3@llnl.gov> 2.0.0-49

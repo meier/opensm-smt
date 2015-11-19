@@ -42,9 +42,9 @@ dependencies {
     // my dependent jars (see repos above, and leave off the .jar)
     compile name: 'jcurses'
     compile name: 'LcCommon'
-    compile name: 'JLdapOtpInterface-2.00'
+    compile name: 'JLdapOtpInterface-2.01'
     compile name: 'LcSecureClientServer'
-    compile name: 'OsmClientServer-2.00'
+    compile name: 'OsmClientServer-2.01'
     compile name: 'commons-cli'
     compile name: 'commons-collections-3.2.1'
     compile name: 'guava-18.0'
