@@ -14,7 +14,7 @@ def mainClass  = "gov/llnl/lc/smt/command/SubnetMonitorTool"
 def bundleDescription = "Subnet Monitoring Tools for OpenSM, that use the OpenSM Monitoring Service"
 def userJarRepo = System.getProperty('user.home') + '/jarRepo'
 
-def specFileName = "${rootProject.name}" + ".spec"
+def specFileName = "opensm-smt-java.spec"
 def distFileName = "opensm-smt-java"
 def buildDist    = 'build/dist'
 def srcDist      = 'src/dist'
@@ -94,7 +94,7 @@ distributions {
         baseName = distFileName
          
         contents {
-//            from { 'src/dist/etc/' }
+            from { 'src/dist' }
             from { 'build/dist'}
          }
     }
