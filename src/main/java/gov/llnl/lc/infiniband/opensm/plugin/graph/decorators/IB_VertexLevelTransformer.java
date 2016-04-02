@@ -55,6 +55,13 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.graph.decorators;
 
+import edu.uci.ics.jung.graph.UndirectedSparseMultigraph;
+import edu.uci.ics.jung.visualization.VisualizationViewer;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Node;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
+import gov.llnl.lc.util.BinList;
+
 import java.awt.Color;
 import java.awt.Paint;
 import java.util.ArrayList;
@@ -62,13 +69,6 @@ import java.util.Collection;
 import java.util.HashSet;
 
 import org.apache.commons.collections15.Transformer;
-
-import edu.uci.ics.jung.graph.UndirectedSparseMultigraph;
-import edu.uci.ics.jung.visualization.VisualizationViewer;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Node;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
-import gov.llnl.lc.util.BinList;
 
 public class IB_VertexLevelTransformer implements Transformer<IB_Vertex, Paint>
 {
@@ -225,12 +225,12 @@ public class IB_VertexLevelTransformer implements Transformer<IB_Vertex, Paint>
     return 0;
   }
 
-  public Paint transform(Object v)
-  {
-    int i = getDecoratorNumber(v);
-    return palette[i % palette.length];
-  }
-
+//  public Paint transform(Object v)
+//  {
+//    int i = getDecoratorNumber(v);
+//    return palette[i % palette.length];
+//  }
+//
   @Override
   public Paint transform(IB_Vertex v)
   {

@@ -224,10 +224,11 @@ public class IB_VertexFillTransformer implements Transformer<IB_Vertex, Paint>, 
     return 0;
   }
 
-  public Paint transform(Object v)
-  {
-    return IB_TransformerFactory.getPaint(getDecoratorNumber(v));
-  }
+//  public Paint transform(Object v)
+//  {
+//    return IB_TransformerFactory.getPaint(getDecoratorNumber(v));
+//  }
+
 
   public Paint transform(IB_Vertex v)
   {
