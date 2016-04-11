@@ -14,8 +14,6 @@ BuildArch:      	noarch
 
 BuildRequires:  	java-devel >= 1:1.6.0
 Requires:       	java >= 1:1.6.0
-Requires:			opensm-client-server-java >= 2.01-69, llnl-ldapotp-clt-java >= 2.01-35
-BuildRequires:      opensm-client-server-java >= 2.01-69, llnl-ldapotp-clt-java >= 2.01-35
 BuildRequires:  	jpackage-utils
 BuildRequires:  	ant >= 1.6
 
