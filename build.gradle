@@ -149,10 +149,10 @@ renameJar << {
    into toString
    }
    // copy all my scripts over, include in package
-   copy {
-   from "${srcDist}" + "/scripts"
-   into toString + "/bin"
-   }
+//   copy {
+//   from "${srcDist}" + "/bin"
+//   into toString + "/bin"
+//   }
    // copy all my config files over, include in package
    copy {
    from "${srcDist}" + "/etc"
@@ -163,8 +163,7 @@ renameJar << {
    into toString + "/lib"
     from configurations.runtime
    }
-   
-   
+     
    
 }
 
