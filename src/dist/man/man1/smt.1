@@ -1,0 +1,194 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "SMT" "1" "October 2016" "User Commands" "Subnet Monitoring Tools"
+.
+.SH "NAME"
+\fBsmt\fR \- the parent Subnet Monitoring Tool (\fBSMT\fR) command
+.
+.SH "SYNOPSIS"
+\fBsmt\fR [SUB COMMAND] [SUB COMMAND ARGS]
+.
+.SH "DESCRIPTION"
+This \fBSMT\fR command is really just a wrapper command, that collects all of the other SMT commands into a single tool suite\. This is a convenience command, intended primarily to perform the default operations for each sub\-command\.
+.
+.P
+Most of these sub\-commands provide basic \fBno argument\fR functionality\. When some form of \fBOMS SOURCE\fR is required, a default or persisted value can be used\.
+.
+.P
+In general, it is best to use the individual \fBSMT\fR commands when queries of any substantial nature are to be performed\.
+.
+.SH "SUB COMMANDS"
+The Subnet Monitoring Tools (\fBSMT\fR) are organized both by heirarchical objects and by function or capability\. Often times it is useful to start with a tool at the top of the heirachy\. The information gathered at that level can then help inform or direct lower level queries\.
+.
+.SS "Object based Commands"
+.
+.TP
+\fB\-\-server\fR, \fB\-srv\fR
+shows the status of the OpenSM Monitoring Service
+.
+.TP
+\fB\-\-fabric\fR, \fB\-f\fR
+provides a subnet status report (similar to \'status\' on the OpenSM console)
+.
+.TP
+\fB\-\-system\fR, \fB\-sys\fR
+discovers and shows any \fBsystems\fR in the fabric
+.
+.TP
+\fB\-\-node\fR, \fB\-n\fR
+shows the number and types of nodes in the fabric
+.
+.TP
+\fB\-\-port\fR, \fB\-p\fR
+shows the number and types of ports in the fabric
+.
+.TP
+\fB\-\-link\fR, \fB\-l\fR
+shows the number and types of links in the fabric
+.
+.TP
+\fB\-\-event\fR, \fB\-e\fR
+provides an event status report
+.
+.TP
+\fB\-\-route\fR, \fB\-r\fR
+displays routing information for the fabric
+.
+.TP
+\fB\-\-partition\fR, \fB\-part\fR
+shows the number and types of partitions in the fabric
+.
+.TP
+\fB\-\-multicast\fR, \fB\-m\fR
+shows the variety and membership of multicast groups, if they exist
+.
+.SS "Functional Commands"
+.
+.TP
+\fB\-\-top\fR, \fB\-t\fR
+shows the top 20 nodes with traffic
+.
+.TP
+\fB\-\-utilize\fR, \fB\-util\fR
+shows the bandwidth utilization of all ports (summary)
+.
+.TP
+\fB\-\-id\fR, \fB\-id\fR
+attempts to identify an object by guid, lid, pkey, mlid, or name
+.
+.TP
+\fB\-\-help\fR, \fB\-h\fR
+provides navigable help via a gui tool
+.
+.TP
+\fB\-\-about\fR, \fB\-abt\fR
+provides JAR package information for the \fBSMT\fR package
+.
+.TP
+\fB\-\-console\fR, \fB\-con\fR
+an interactive console (curses application)
+.
+.TP
+\fB\-\-gui\fR, \fB\-gui\fR
+a graphical tool for investigation, discovery, and exploring Infiniband fabrics
+.
+.TP
+\fB\-\-file\fR, \fB\-fn\fR
+file interrogation and manipulation
+.
+.TP
+\fB\-\-record\fR, \fB\-rcd\fR
+records one or more instances of OMS data (aka "flight recorder", requires a connection)\. Currently this option only returns its on\-line help\. Use the dedicated \fBSMT\fR command instead\.
+.
+.TP
+\fB\-\-config\fR, \fB\-c\fR
+a tool for reading, writing, and parsing SMT Configuration settings\. Currently this option only returns its on\-line help\. Use the dedicated \fBSMT\fR command instead\.
+.
+.TP
+\fB\-\-priv\fR, \fB\-pv\fR
+invokes a privileged command (requires a connection)\. Currently this option only returns its on\-line help\. Use the dedicated \fBSMT\fR command instead\.
+.
+.SS "Generic SMT Options"
+.
+.TP
+\fB\-?\fR, \fB\-\-Help\fR
+provides an abbreviated form of help
+.
+.TP
+\fB\-lf\fR, \fB\-\-logFile\fR=[FILE]
+the filename for holding this commands\' log messages
+.
+.TP
+\fB\-ll\fR, \fB\-\-logLevel\fR=[LEVEL]
+the verbosity of the logging, where LEVEL is SEVERE, WARNING, INFO, CONFIG, FINE, FINER, or ALL\.
+.
+.TP
+\fB\-rC\fR, \fB\-\-readConfig\fR=[FILE]
+reads the specified configuration file\. The configuration file typically holds a users\' default setting for things like the logLevel\.
+.
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+prints the version of the SMT command
+.
+.SS "Sub Command Arguments"
+Sub commands can take their normal \fBoptions\fR as \fBarguments\fR\. Normally the \fBsmt\fR command invokes a single sub command, introduced by the single or double hyphen\. The sub commands arguments follow immediately, without hyphens\. This syntax is a little different than invoking the individual \fBSMT\fR command directly\. Most sub commands will default to the most common behavior if no arguments are supplied\. In general, however, the \fBOMS SOURCE\fR information should be supplied in \fBargument\fR form\.
+.
+.IP "\(bu" 4
+\fBrH\fR [FILE]
+.
+.IP
+Specifies the OMS history file to use with this command\. FILE is a normal (absolute or relative) filename\. Additionally, the special characters \fB%h\fR and \fB%t\fR can be used to specify the users\' home or temp directory, respectively\.
+.
+.IP "\(bu" 4
+\fBh\fR [HOST]
+.
+.IP
+Specifies the name of the OpenSM host where OMS runs\. HOST is either the fully qualified name of the host node, or can be \fIlocalhost\fR\. If not specified, \fIlocalhost\fR is assumed\.
+.
+.IP "\(bu" 4
+\fBpn\fR [PORT]
+.
+.IP
+Specifies the port number for the service\. PORT should normally be the default value of \fI10011\fR, unless service has been configured otherwise, or unless some sort of port forwarding mechanism is being used\. If not specified, \fI10011\fR is assumed\.
+.
+.IP "\(bu" 4
+\fB?\fR
+.
+.IP
+Returns the help page for the specific sub command\.
+.
+.IP "" 0
+
+.
+.IP "" 0
+.
+.SH "EXAMPLES"
+.
+.TP
+\fBsmt \-?\fR
+displays help for the \fBsmt\fR command
+.
+.TP
+\fBsmt \-\-fabric ?\fR
+displays help for the \fBsmt\-fabric\fR command
+.
+.TP
+\fBsmt \-\-route pn 10013\fR
+provide routing attributes of the fabric using the OMS available from \fBlocalhost\fR port \fB10013\fR\. If the port arguments (pn 10013) where not supplied, this command would have attempted to use the default \fBlocalhost\fR, port \fB10011\fR
+.
+.TP
+\fBsmt \-\-fabric rH upgrade1\.his\fR
+provides a subnet status report for the fabric contained in the OMS history file
+.
+.SH "AUTHOR"
+Tim Meier \fImeier3@llnl\.gov\fR
+.
+.SH "COPYRIGHT"
+Copyright (c) 2016, Lawrence Livermore National Security, LLC\. Produced at the Lawrence Livermore National Laboratory\. All rights reserved\. LLNL\-CODE\-673346
+.
+.SH "SEE ALSO"
+SMT(7), OMS(7), OsmJniPi(8), smt\-about(1), smt\-config(1), smt\-console(1), smt\-event(1), smt\-fabric(1), smt\-file(1), smt\-gui(1), smt\-help(1), smt\-id(1), smt\-link(1), smt\-multicast(1), smt\-node(1), smt\-partition(1), smt\-port(1), smt\-priv(1), smt\-record(1), smt\-route(1), smt\-server(1), smt\-system(1), smt\-top(1), smt\-utilize(1)
+.
+.P
+opensm\-smt \fIhttps://github\.com/meier/opensm\-smt\fR on GitHub

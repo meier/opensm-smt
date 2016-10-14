@@ -1,0 +1,62 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "SMT\-ABOUT" "1" "September 2016" "User Commands" "Subnet Monitoring Tools"
+.
+.SH "NAME"
+\fBsmt\-about\fR \- provides JAR package information
+.
+.SH "SYNOPSIS"
+\fBsmt\-about\fR [OPTIONS \fIargs\fR]
+.
+.SH "DESCRIPTION"
+This SMT command uses the Java classpath and execution environment to provide attribution information for the various JAR packages that are used with \fBOMS\fR and \fBSMT\fR\. It is common practice to populate a JAR package with a MANIFEST that includes the provenance, or record of when it was built and by whom\. The intent is to give credit to all the freely available software used by this set of tools\.
+.
+.SH "OPTIONS"
+.
+.SS "Generic SMT Options"
+.
+.TP
+\fB\-?\fR, \fB\-\-Help\fR
+provides an abbreviated form of help
+.
+.TP
+\fB\-lf\fR, \fB\-\-logFile\fR=[FILE]
+the filename for holding this commands\' log messages
+.
+.TP
+\fB\-ll\fR, \fB\-\-logLevel\fR=[LEVEL]
+the verbosity of the logging, where LEVEL is SEVERE, WARNING, INFO, CONFIG, FINE, FINER, or ALL\.
+.
+.TP
+\fB\-rC\fR, \fB\-\-readConfig\fR=[FILE]
+reads the specified configuration file\. The configuration file typically holds a users\' default setting for things like the logLevel\. Refer to the \fIsmt\-config(1)\fR command\.
+.
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+prints the version of the SMT command
+.
+.SS "Command Options"
+None
+.
+.SH "EXAMPLES"
+.
+.TP
+\fBsmt\-about\fR
+list the package information for all of the JAR files used by OMS/SMT
+.
+.TP
+\fBsmt\-about \-?\fR
+provide command line help for this command
+.
+.SH "AUTHOR"
+Tim Meier \fImeier3@llnl\.gov\fR
+.
+.SH "COPYRIGHT"
+Copyright (c) 2016, Lawrence Livermore National Security, LLC\. Produced at the Lawrence Livermore National Laboratory\. All rights reserved\. LLNL\-CODE\-673346
+.
+.SH "SEE ALSO"
+SMT(7), OMS(7), OsmJniPi(8), smt(1), smt\-server(1), smt\-help(1)
+.
+.P
+opensm\-smt \fIhttps://github\.com/meier/opensm\-smt\fR on GitHub

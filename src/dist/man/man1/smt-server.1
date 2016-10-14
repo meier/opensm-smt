@@ -1,0 +1,113 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "SMT\-SERVER" "1" "October 2016" "User Commands" "Subnet Monitoring Tools"
+.
+.SH "NAME"
+\fBsmt\-server\fR \- a tool for obtaining information about the OpenSM Monitoring Service (\fBOMS\fR)
+.
+.SH "SYNOPSIS"
+\fBsmt\-server\fR [OMS SOURCE] [OPTIONS \fIargs\fR]
+.
+.SH "DESCRIPTION"
+This SMT command displays high level information about the OpenSM Monitoring Service (OMS) on the remote or server side, as providedded by the OMS SOURCE\. OMS/SMT is fundamentally a client/server architecture, and the OMS is the server side\. This SMT command is a client application which can interrogate the service to obtain various attributes\. In the most simple use\-case, this command can tell if the service is running\. It can also tell what version, how heavily it is being used, and its health via the various heartbeats\.
+.
+.SH "OMS SOURCE"
+Most SMT commands require one or more snapshots of the data provided by the OpenSM Monitoring Service (\fBOMS\fR)\. These data snapshots can be provided directly (\fIOnline\fR) via a connection to the OpenSM Monitoring Service, or in a post\-mortem (\fIOffline\fR) fashion by using an OMS history file\.
+.
+.SS "Online"
+The OMS runs on the same host as OpenSM (the subnet manager for infiniband)\. In order for the command to connect to the service it normally needs to know the port number the service is hosted on, as well as the name of the host itself\. These can be specified with;
+.
+.TP
+\fB\-h\fR, \fB\-\-host\fR[=HOST]
+Specifies the name of the OpenSM host where OMS runs\. HOST is either the fully qualified name of the host node, or can be \fIlocalhost\fR\. If not specified, \fIlocalhost\fR is assumed\.
+.
+.TP
+\fB\-pn\fR, \fB\-\-portn\fR[=PORT]
+Specifies the port number for the service\. PORT should normally be the default value of \fI10011\fR, unless service has been configured otherwise, or unless some sort of port forwarding mechanism is being used\. If not specified, \fI10011\fR is assumed\.
+.
+.SS "Offline"
+Most SMT commands, like this one, can use an OMS history file instead of directly connecting to the service\. The history file (commonly refered to as the \fIflight recorder\fR file) is obtained via the \fIsmt\-record(1)\fR command\. The file is specified with;
+.
+.TP
+\fB\-rH\fR, \fB\-\-readOMSHistory\fR=[FILE]
+Specifies the OMS history file to use with this command\. FILE is a normal (absolute or relative) filename\. Additionally, the special characters \fB%h\fR and \fB%t\fR can be used to specify the users\' home or temp directory, respectively\.
+.
+.SH "OPTIONS"
+.
+.SS "Generic SMT Options"
+.
+.TP
+\fB\-?\fR, \fB\-\-Help\fR
+provides an abbreviated form of help
+.
+.TP
+\fB\-lf\fR, \fB\-\-logFile\fR=[FILE]
+the filename for holding this commands\' log messages
+.
+.TP
+\fB\-ll\fR, \fB\-\-logLevel\fR=[LEVEL]
+the verbosity of the logging, where LEVEL is SEVERE, WARNING, INFO, CONFIG, FINE, FINER, or ALL\.
+.
+.TP
+\fB\-rC\fR, \fB\-\-readConfig\fR=[FILE]
+reads the specified configuration file\. The configuration file typically holds a users\' default setting for things like the logLevel\. Refer to the \fIsmt\-config(1)\fR command\.
+.
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+prints the version of the SMT command
+.
+.SS "Command Options"
+If no options are provided, a simple status summary is returned\.
+.
+.TP
+\fB\-q\fR, \fB\-\-query\fR=[QUERY ARGUMENT]
+query the service for specific information specifed by the [QUERY ARGUMENT] argument
+.
+.TP
+\fB\-ql\fR, \fB\-\-queryList\fR
+list the available query arguments (same as \-q list)
+.
+.TP
+\fB\-sr\fR, \fB\-\-status\fR
+provides a status report on the remote server\.
+.
+.SS "Query Arguments"
+.
+.TP
+\fBconnection\fR
+provides detailed information about the nature of the connection to the service, including how fast the data caches get updated, as well as how many clients are actively connected to the service\.
+.
+.TP
+\fBlist\fR
+list the available query options (same as \-ql)
+.
+.TP
+\fBstatus\fR
+provides a status report, identical to using the \fB\-sr\fR command option\.
+.
+.SH "EXAMPLES"
+.
+.TP
+\fBsmt\-server \-ql\fR
+list the query options
+.
+.TP
+\fBsmt\-server \-pn 10011 \-q connection\fR
+shows details about the connection to the service on port 10011
+.
+.TP
+\fBsmt\-server \-rH surface3\.his \-sr\fR
+provide the historical status of the service, as it was recorded in the history file
+.
+.SH "AUTHOR"
+Tim Meier \fImeier3@llnl\.gov\fR
+.
+.SH "COPYRIGHT"
+Copyright (c) 2016, Lawrence Livermore National Security, LLC\. Produced at the Lawrence Livermore National Laboratory\. All rights reserved\. LLNL\-CODE\-673346
+.
+.SH "SEE ALSO"
+SMT(7), OMS(7), OsmJniPi(8), smt(1), smt\-record(1), smt\-fabric(1), smt\-id(1), smt\-gui(1), smt\-console(1), smt\-help(1)
+.
+.P
+opensm\-smt \fIhttps://github\.com/meier/opensm\-smt\fR on GitHub

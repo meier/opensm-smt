@@ -1,0 +1,216 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "SMT\-ROUTE" "1" "October 2016" "User Commands" "Subnet Monitoring Tools"
+.
+.SH "NAME"
+\fBsmt\-route\fR \- a tool for examining the fabrics\' routing tables
+.
+.SH "SYNOPSIS"
+\fBsmt\-route\fR [OMS SOURCE, NODE ID] [OPTIONS \fIargs\fR]
+.
+.SH "DESCRIPTION"
+This SMT command displays the fabrics routing information using the \fBOMS\fR data , as provided by the OMS SOURCE\. To the extent possible, this command provides similar capabilities as \fBibroute(8)\fR and \fBibtracert(8)\fR, except does not require root privilages\. Unlike those commands which use SMPs, this command uses the routing tables established by the subnet manager to discover the routes or trace the paths\. Additionally, this command can use an \fBOMS\fR history file, so post\-mortem and dynamic route research and analysis can be performed\.
+.
+.P
+A fabric consists of a hierarchy of elements\. The \fBSMT\fR commands use the following terms for the various elements in the fabric\.
+.
+.IP "\(bu" 4
+Node \- a switch, router, or host channel adapter
+.
+.IP "\(bu" 4
+Port \- an I/O connection point on a node
+.
+.IP "\(bu" 4
+Link \- a negotiated relationship between two connected ports
+.
+.IP "\(bu" 4
+Route \- a direction toward a destination node, one leg of a path
+.
+.IP "\(bu" 4
+Path \- the collection of routes from source to destination
+.
+.IP "\(bu" 4
+LFT \- linear forwarding table (routing table), the switches list of routes for each of its ports
+.
+.IP "" 0
+.
+.P
+Every switch has a routing table\. The routing table contains "forwarding" information for every node in the fabric\. The fabrics routing, therefore, is the collection of the routing tables in all of the switches\. And since every node in the fabric should be reachable from every switch, every switch port has a list of "destination" nodes\. Nodes can be other switches, or channel adapters (compute nodes)\.
+.
+.P
+Although the fabrics routing is relatively static, several issues can trigger the subnet manager to re\-route the fabric (a bad port, for example)\. When this happens, the routing table in some of the switches will change\. Since it is normal for the fabric to route around problems in the subnet, a fabrics routing tables should not be considered as a fixed or static entity\.
+.
+.P
+The routing table of a switch can be thought of as balanced*, if its ports have roughly the same number of routes to channel adapters (switches are generally not I/O destinations)\. Although some ports may have a high number of routes to channel adapters, they may never be used, so their values can be disregarded\.
+.
+.P
+* different routing engines have their own strategies for balancing the routes
+.
+.SH "OMS SOURCE"
+Most SMT commands require one or more snapshots of the data provided by the OpenSM Monitoring Service (\fBOMS\fR)\. These data snapshots can be provided directly (\fIOnline\fR) via a connection to the OpenSM Monitoring Service, or in a post\-mortem (\fIOffline\fR) fashion by using an OMS history file\.
+.
+.SS "Online"
+The OMS runs on the same host as OpenSM (the subnet manager for infiniband)\. In order for the command to connect to the service it normally needs to know the port number the service is hosted on, as well as the name of the host itself\. These can be specified with;
+.
+.TP
+\fB\-h\fR, \fB\-\-host\fR=[HOST]
+Specifies the name of the OpenSM host where OMS runs\. HOST is either the fully qualified name of the host node, or can be \fIlocalhost\fR\. If not specified, \fIlocalhost\fR is assumed\.
+.
+.TP
+\fB\-pn\fR, \fB\-\-portn\fR=[PORT]
+Specifies the port number for the service\. PORT should normally be the default value of \fI10011\fR, unless service has been configured otherwise, or unless some sort of port forwarding mechanism is being used\. If not specified, \fI10011\fR is assumed\.
+.
+.SS "Offline"
+Most SMT commands, like this one, can use an OMS history file instead of directly connecting to the service\. The history file (commonly refered to as the \fIflight recorder\fR file) is obtained via the \fIsmt\-record(1)\fR command\. The file is specified with;
+.
+.TP
+\fB\-rH\fR, \fB\-\-readOMSHistory\fR=[FILE]
+Specifies the OMS history file to use with this command\. FILE is a normal (absolute or relative) filename\. Additionally, the special characters \fB%h\fR and \fB%t\fR can be used to specify the users\' home or temp directory, respectively\.
+.
+.SH "NODE ID"
+Elements within the fabric can be uniquely identified with keys, descriptions, lids, and guids\. Many SMT commands can operate on a single element, and therefore need some form of identifier\. The SMT commands support some (but not all) of the common ways to identify elements\.
+.
+.SS "guid"
+A \fBguid\fR is a globally unique identifier, and is 64 bit number\. It can be expressed in many ways, and the SMT commands support two different ways of expressing a \fBguid\fR\.
+.
+.TP
+\fBbig integer\fR
+The guid is expressed as a base\-10 integer\. A valid guid would look something like: \fB12345698\fR
+.
+.TP
+\fBhexidecimal\fR
+The guid is expressed in 4 groups of 16 bit hexidecimal numbers\. These groups must be seperated by a colon, so a valid guid would look something like: \fB0006:6a00:e900:131e\fR
+.
+.SS "lid or key"
+Numbers are often used to identify elements within the context of a \'type\' of element\. They can be refered to as \'keys\' or \'local ids\'\. SMT supports expressing numbers as normal base\-10 integers, or as hexidecimal\. Hexidecimal numbers \fBmust\fR be preceeded with \fB0x\fR\.
+.
+.SS "name"
+Strings are used to decribe or name an element\. The SMT commands currently only supports the use of \fBnames\fR to identy a \fBnode\fR\.
+.
+.SH "OPTIONS"
+.
+.SS "Generic SMT Options"
+.
+.TP
+\fB\-?\fR, \fB\-\-Help\fR
+provides an abbreviated form of help
+.
+.TP
+\fB\-lf\fR, \fB\-\-logFile\fR=[FILE]
+the filename for holding this commands\' log messages
+.
+.TP
+\fB\-ll\fR, \fB\-\-logLevel\fR=[LEVEL]
+the verbosity of the logging, where LEVEL is SEVERE, WARNING, INFO, CONFIG, FINE, FINER, or ALL\.
+.
+.TP
+\fB\-rC\fR, \fB\-\-readConfig\fR=[FILE]
+reads the specified configuration file\. The configuration file typically holds a users\' default setting for things like the logLevel\. Refer to the \fIsmt\-config(1)\fR command\.
+.
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+prints the version of the SMT command
+.
+.SS "Command Options"
+.
+.TP
+\fB\-q\fR, \fB\-\-query\fR=[QUERY ARGUMENT]
+query the routes for information specifed by the [QUERY ARGUMENT] argument
+.
+.TP
+\fB\-ql\fR, \fB\-\-queryList\fR
+list the available query arguments (same as \-q list)
+.
+.TP
+\fB\-sr\fR, \fB\-\-status\fR
+provides high level routing table information, such as the current routing engine\. This is the default option, and will be provided if no other option is supplied\.
+.
+.SS "Query Arguments"
+Most query optons require some form of switch node description\. Normally this argument should be supplied prior to the type of query, and can be in the form of a \fBguid\fR, \fBname\fR, or \fBlid\fR\. The switch nodes can be identified with the \fB\-q switches\fR option\.
+.
+.TP
+\fBbalance [<NODE ID>]\fR
+provides a route balance report for the fabric (if no switch is specified) or for a single switch\. The notion of \fIbalance\fR may not apply for your particular fabric, but basically gives an indication of the number of routes out each port, and whether the routes are distributed in a manner as to avoid congestion\. The intent is to show if the load of the traffic will be balanced across all ports and switches, and if all resources are utilized efficiently\.
+.
+.TP
+\fBhopDest [NODE ID] [# HOPS]\fR
+requires a NODE ID and a hop distance\. Shows the channel adapter nodes (destinations) at the specified hop distance away from this node\.
+.
+.TP
+\fBhops [NODE ID]\fR
+requires a NODE ID as the source, and list the number of destinations (channel adapters) at each hop distance away\. One hop away indicates a neighbor\. Use this command option to discover the arrangment of destinations, and the \fB\-q hopDest <NODE ID> <hops>\fR to get a specific listing\.
+.
+.TP
+\fBlist\fR
+list the available query options (same as \-ql)
+.
+.TP
+\fBpath [NODE ID] [NODE ID]\fR
+shows the path between the source NODE ID and destination NODE ID\. Requires two NODE IDs and the order is significant\. The source node is first, followed by the destination\. The path, or links connecting the two nodes will be listed in order\. The return path (if you reverse the src & dst) may be different\. This type of query mimics that of \fBibtracert(8)\fR, except doesn\'t require root\.
+.
+.TP
+\fBroutes [NODE ID] [<PORT NUM>]\fR
+list the port routes\. This type of query mimics that of \fBibroute(8)\fR, except doesn\'t require root, and can output the routes for a single port of the switch, as oppose to all of them\. This argument takes a NODE ID and optionally a port number\. If only the NODE ID is provided, the switches routing table (all ports) is displayed\. If a valid port number is provided, then just that ports\' routes are listed\.
+.
+.TP
+\fBstatus\fR
+provides a summary of all the routes in the fabric, as well as a router table summary for each switch\. The switch table summary includes total number of routes, average number of routes per port, and min and max number of routes on a port\.
+.
+.TP
+\fBswitches\fR
+lists all the switches in the fabric with a routing table (which should be all the switches)\. Similar to \fBsmt\-fabric \-q switches\fR\.
+.
+.TP
+\fBtable [NODE ID]\fR
+requires a NODE ID to specify the desired switch table\. This command describes the routing table in terms of the number and type of route for each of the switches ports\. The contents or listing of a specific port in the table can be obtained with the \fB\-q routes <NODE ID> <port>\fR option and arguments for this command\.
+.
+.SH "EXAMPLES"
+.
+.TP
+\fBsmt\-route \-rH clusterHistory\.his\fR
+show high level fabric routing information (routing engine, etc\.), same as using \-sr option
+.
+.TP
+\fBsmt\-route \-pn 10014 \-q switches\fR
+list all of the switches (from the service on port 10014) which have routing tables\.
+.
+.TP
+\fBsmt\-route \-pn 10011 \-q balance 0006:6a00:e300:43f9\fR
+shows the "balance" report for switch with this guid
+.
+.TP
+\fBsmt\-route \-rH surface3\.his \-q hopDest 0x3ed 3\fR
+show the list of nodes that are 3 hops away from the node with this lid
+.
+.TP
+\fBsmt\-route \-rH fabrocRoutes\.his \-dump\fR
+raw dump of all the routing tables
+.
+.TP
+\fBsmt\-route \-rH surface3\.his \-q hopDest 0x3ed 1\fR
+show the immediate neighbors (1 hop away) of the node with lid 0x3ed
+.
+.TP
+\fBsmt\-route \-pn 10013 \-q hops 1164\fR
+show the number of hops required from this node to all channel adapters
+.
+.TP
+\fBsmt\-route \-pn 10013 \-q path 0011:7500:0077:4cfc 0011:7500:0077:2bf6\fR
+the two guids represent the source and destination nodes, and this command will show the path, or ordered collection of routes and links between the source and destination\.
+.
+.TP
+\fBsmt\-route \-pn 10013 \-q table 0xc2\fR
+display a summary of the routing table for this switch lid\.
+.
+.SH "AUTHOR"
+Tim Meier \fImeier3@llnl\.gov\fR
+.
+.SH "COPYRIGHT"
+Copyright (c) 2016, Lawrence Livermore National Security, LLC\. Produced at the Lawrence Livermore National Laboratory\. All rights reserved\. LLNL\-CODE\-673346
+.
+.SH "SEE ALSO"
+SMT(7), OMS(7), OsmJniPi(8), smt(1), smt\-record(1), smt\-fabric(1), smt\-multicast(1), smt\-partition(1)
+.
+.P
+opensm\-smt \fIhttps://github\.com/meier/opensm\-smt\fR on GitHub

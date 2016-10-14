@@ -1,0 +1,199 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "SMT\-CONSOLE" "1" "October 2016" "User Commands" "Subnet Monitoring Tools"
+.
+.SH "NAME"
+\fBsmt\-console\fR \- an interactive console (curses application) for examining the fabric
+.
+.SH "SYNOPSIS"
+\fBsmt\-console\fR [OMS SOURCE] [OPTIONS \fIargs\fR]
+.
+.SH "DESCRIPTION"
+This SMT command uses a text based (curses) user interface to organize and display a fabrics\' \fBOMS\fR data on several screens\. Simple screen navigation is implemented with function keys as well as other special keys\. This tool operates on \fBOMS\fR data, as specified by OMS SOURCE\.
+.
+.P
+Although this is a \fBcurses\fR application, it can be requested to provide a graphical interface for controlling playback\. Also, the terminal is expected to be at least 80 columns wide, by 60 rows\.
+.
+.SH "OMS SOURCE"
+Most SMT commands require one or more snapshots of the data provided by the OpenSM Monitoring Service (\fBOMS\fR)\. These data snapshots can be provided directly (\fIOnline\fR) via a connection to the OpenSM Monitoring Service, or in a post\-mortem (\fIOffline\fR) fashion by using an OMS history file\.
+.
+.SS "Online"
+The OMS runs on the same host as OpenSM (the subnet manager for infiniband)\. In order for the command to connect to the service it normally needs to know the port number the service is hosted on, as well as the name of the host itself\. These can be specified with;
+.
+.TP
+\fB\-h\fR, \fB\-\-host\fR=[HOST]
+Specifies the name of the OpenSM host where OMS runs\. HOST is either the fully qualified name of the host node, or can be \fIlocalhost\fR\. If not specified, \fIlocalhost\fR is assumed\.
+.
+.TP
+\fB\-pn\fR, \fB\-\-portn\fR=[PORT]
+Specifies the port number for the service\. PORT should normally be the default value of \fI10011\fR, unless service has been configured otherwise, or unless some sort of port forwarding mechanism is being used\. If not specified, \fI10011\fR is assumed\.
+.
+.SS "Offline"
+Most SMT commands, like this one, can use an OMS history file instead of directly connecting to the service\. The history file (commonly refered to as the \fIflight recorder\fR file) is obtained via the \fIsmt\-record(1)\fR command\. The file is specified with;
+.
+.TP
+\fB\-rH\fR, \fB\-\-readOMSHistory\fR=[FILE]
+Specifies the OMS history file to use with this command\. FILE is a normal (absolute or relative) filename\. Additionally, the special characters \fB%h\fR and \fB%t\fR can be used to specify the users\' home or temp directory, respectively\.
+.
+.SH "OPTIONS"
+.
+.SS "Generic SMT Options"
+.
+.TP
+\fB\-?\fR, \fB\-\-Help\fR
+provides an abbreviated form of help
+.
+.TP
+\fB\-lf\fR, \fB\-\-logFile\fR=[FILE]
+the filename for holding this commands\' log messages
+.
+.TP
+\fB\-ll\fR, \fB\-\-logLevel\fR=[LEVEL]
+the verbosity of the logging, where LEVEL is SEVERE, WARNING, INFO, CONFIG, FINE, FINER, or ALL\.
+.
+.TP
+\fB\-rC\fR, \fB\-\-readConfig\fR=[FILE]
+reads the specified configuration file\. The configuration file typically holds a users\' default setting for things like the logLevel\. Refer to the \fIsmt\-config(1)\fR command\.
+.
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+prints the version of the SMT command
+.
+.SS "Command Options"
+.
+.TP
+\fB\-pControl\fR, \fB\-\-playControl\fR
+use a gui based \fBplay\fR scroll bar, to \fBcontrol\fR the frequency of \fBOMS\fR snapshots that get delivered to the \fBsmt\-console\fR\. This option is primarily intended for use with \fBOMS\fR history files, in the offline mode of operation\. The play control allows one to stop, play, or fast forward through the collection of snapshots\. The gui has a speed setting (\fBpX\fR) and a wrap (\fBwrap\fR) checkbox to control how the \fBPlay/Pause\fR button behaves\. If the \fBplayControl\fR gui is closed, it also closes the \fBsmt\-console\fR\.
+.
+.TP
+\fB\-pX\fR, \fB\-\-playX\fR=[RATE_MULTIPLIER]
+when used in conjunction with an \fBOMS\fR history file, controls the playback speed of the collection of snapshots\. This option is only available for \fBoffline\fR mode, and dictates how much faster than normal (x1) speed the \fBOMS\fR snapshots should be delivered to the \fBsmt\-console\fR\. For example, if the normal \fBOMS\fR update rate is 180 seconds, and \fB\-pX 10\fR is specified, then updates would occur every 18 seconds\. And a 60 minute \fBOMS\fR history file could be reviewed in 6 minutes\.
+.
+.TP
+\fB\-uS\fR, \fB\-\-update\fR=[NUM_SECONDS]
+when used in \fBonline\fR mode, with a direct connection to an OpenSM Monitoring Service, this option dictates how often the \fBsmt\-console\fR checks the service for new data\. Typically, new data is only available at the same period or frequency as the performance managers sweep rate\. Setting a higher rate here, can reduce the lag time between when the service has new data, and when the \fBsmt\-console\fR client gets that same data\. It cannot, however, force the performance manager to acquire its\' data more frequently (see \fBsmt\-priv(1)\fR)\.
+.
+.TP
+\fB\-wrap\fR, \fB\-\-wrap\fR=[t/f]
+when used in conjunction with an \fBOMS\fR history file, controls how the playback behaves when the end of file is reached\. If true, then playback continues at the beginning of the file\. If false, playback stops, however the \fBsmt\-console\fR does not exit\.
+.
+.SS "Navigation"
+This section describes the different ways the various screens can be selected\. Four other \fBcontrol\fR keys are also explained here\. By default, the first screen is the table of contents, or menu\. Additionally, there is a small area at the bottom of each screen that contains navigation guidance\.
+.
+.TP
+\fBFunction Keys\fR
+each function key selects a specific screen\. In addition, the function key can be modified by the \fBCtrl\fR or \fBShift\fR keys\. These two modifiers are sometimes indicated with an \fB^\fR and \fBs\fR character (respectively) preceding the function key\. Only function keys F2 through F9 are used, which means a maximum of 24 screens can be made available in this manner\.
+.
+.TP
+\fBHome\fR
+brings you to the \fBTable of Contents\fR or menu screen\.
+.
+.TP
+\fBArrow Left/Right\fR
+changes the screen back one, or forward one, with respect to the current screen\. The screens will wrap around if the beginning or end is reached\.
+.
+.TP
+\fBPage Up/Down\fR
+the \fBPage Up\fR key performs exactly the same as the \fBLeft Arrow\fR key, and \fBPage Down\fR is the same as \fBRight Arrow\fR\.
+.
+.TP
+\fBEsc\fR, \fBEnd\fR
+these two keys perform the exact same function, they exit the console, and restore the terminal screen to its original state\.
+.
+.TP
+\fBAlt F11\fR
+repaints the current screen\. Occasionally, the screen may get garbled or resized and not get displayed properly\. This key combination will clear and repaint the current screen in an attempt to clean up the mess\.
+.
+.TP
+\fBspace\fR
+horizontally scrolls the abbreviated navigation menu at the bottom of each page\. In addition to the \fBHome\fR page where the table of contents is displayed, each page contains a short screen list with associated function key\. There is not enough room to show all 14 screens, so the space key provides a way to scroll through the list\.
+.
+.SH "SCREENS"
+There are currently 14 different screens that contain information about the fabric, or about the OpenSM Monitoring Service (\fBOMS\fR)\. Each screen focuses on a particular topic, like \fBPort Status\fR or \fBLink Errors\fR\. There is a common header and footer on each screen\. The header contains \fBhost\fR information, as well as versions, \fBOMS\fR uptime, and the currently displayed \fBOMS\fR data snapshot time\. The footer contains a short screen list with that associated function key for navigating to that screen\. The various screens are described below\.
+.
+.TP
+\fBF2\fR, \fBTable of Contents\fR
+This is the first or default screen that appears as you first invoke the console\. It is the table of contents, and serves as a directory for the available screens\.
+.
+.TP
+\fBF3\fR, \fBSubnet Status\fR
+This screen duplicates the information and mimics the \fBstatus\fR information provided by the opensm console\'s \fBstatus\fR command\. It shows the current state of the subnet manager, subnet administrator, and performance manager\. It also shows a variety of configuration items and counters, all for the purpose of understanding the health and state of OpenSM\.
+.
+.TP
+\fBF4\fR, \fBPerformance Manager\fR
+This screen shows a summary of the various counters monitored by the performance manager\. The colums are organized by the type of node in the fabric\. The rows are the specific performance counter, starting with errors, followed by traffic counters\. The values in each collum/row indicate the type of node that has a non\-zero value\. For example, if the \fBSW\fR column and \fBlink_downed\fR row has a value of \fB2\fR, it means that 2 switches in the fabric have non\-zero values for that particular counter\. Any non\-zero values for the error counters should appear red\. There is an area toward the bottom that contains the \fBtop errors\fR\. If present, this list the most problematic nodes\. A switch is more likely to show up in this list, because it contains more ports (therefore more chance of error) than a channel adapter\.
+.
+.TP
+\fBF5\fR, \fBPort Status\fR
+The composition and configuration of all the ports in the fabric\. This screen breaks out all of the ports by ownership (SW, CA, or RT), and shows their widths and speed, as well as if they are active or not\.
+.
+.TP
+\fBF6\fR, \fBLink Stats\fR
+This is very similar to \fBPort Status\fR\. Only information about the ports that successfully establish a link by negotiating shared attributes (speed, width, etc\.) are displayed here\. Links between switches are in column SW and links between a switch and a channel adapter are indicated in the CA column\. If there are any erros or traffic on the links, they are indicated here as well\.
+.
+.TP
+\fBF7\fR, \fBNode Stats\fR
+The total number and type of nodes in the fabric is displayed on this screen\. The intent is count common node types\. The bottom section attempts to see how homogeneous the fabric is, by breaking down the nodes based on a variety of attributes\. The fewer number of lines in this section, the more homogeneous the fabric is\.
+.
+.TP
+\fBF8\fR, \fBConfiguration\fR
+This screen shows the major items in the opensm configuration file\. Normally the configuration file is located at \fB/etc/opensm/opensm\.conf\fR and may not be easily accessable\. This screen displays the non\-zero and non\-false values in that file\. By scrubbing out all of the comments and default settings this, perhaps, makes the configuration easier to read\.
+.
+.TP
+\fBF9\fR, \fBOpenSM Monitoring Service\fR
+The \fBsmt\-console\fR is just a client application that connects to the \fBOMS\fR\. This screen shows information about the service, such as the protocol and authentication mechanism it is using, as well as how many other clients are currently connected, and how fast it updates or refreshes its data\. The information about this clients\' (\fBsmt\-console\fR) connection is also displayed here\.
+.
+.TP
+\fB^F5\fR, \fBTop Port Traffic\fR
+The traffic counters in two successive \fBOMS\fR snapshots can be used to calculate the ports that had the most traffic flowing through them during the delta time period\. The ports with the most traffic show up in this screen\. Level 0 ports, are ports from channel adapters, and levels increment the further removed in the fabric from channel adapters\.
+.
+.TP
+\fB^F6\fR, \fBTop Link Traffic\fR
+This screen is very similar to the \fBTop Port Traffic\fR screen, except this screen is organized by Link\. Since a link is simply an association of two ports, this list should contain the same ports from \fB^F5\fR\.
+.
+.TP
+\fB^F7\fR, \fBTop Node Traffic\fR
+Since nodes contain ports that hopefully make up links, this screen should also look familiar to the previous two screens\. It is simply organized by node, to identify nodes with may have more than their share of traffic\. Typically, switch nodes would appear at the top, since they have more ports, and channel adapters would be listed toward the bottom\.
+.
+.TP
+\fBsF5\fR, \fBTop Port Errors\fR
+The error counters in two successive \fBOMS\fR snapshots can be used to detect errors in the fabric that are actively occuring\. The ports with the most active errors show up in this screen\. A small, or "clean" fabric may not experience any errors during a snapshot period\. In very large fabrics, however, it is likely that an error will occur at some time, somewhere, between the performance managers sweep interval\. Larger errors appear at the top\.
+.
+.TP
+\fBsF6\fR, \fBTop Link Errors\fR
+This screen is similar to the \fBTop Port Errors\fR screen\. A link error is simply an error at either side of the link, so the screen really just organizes and displays the errors differently\. It is often useful to know what is on the other end of a link, when a port is having issues\. The port at the other side may or may not be experiencing errors also\.
+.
+.TP
+\fBsF7\fR, \fBTop Node Errors\fR
+Since nodes contain ports that make up links, this screen should look similar to the previous two error screens\. This screen is organized and sorted by node\. The intent is to determine if errors may be related to a common node, or if its just isolated by link or port\. Switch nodes tend to occupy this list, simply because they have more ports than channel adapters\.
+.
+.SH "EXAMPLES"
+.
+.TP
+\fBsmt\-console \-pn 10013\fR
+invoke the console in \fBonline\fR mode, connecting to the service on localhost port 10013
+.
+.TP
+\fBsmt\-console \-rH bigFabric\.his \-pControl\fR
+using the collection of \fBOMS\fR snapshots in the history file (\fBoffline\fR mode), show the console in the current terminal window\. Also, use a graphical interface for controlling the playback of the snapshots\.
+.
+.TP
+\fBsmt\-console\fR
+connect to the default \fBOMS SOURCE\fR (normally localhost port 10011), and display the console in the current terminal window\.
+.
+.TP
+\fBsmt\-console \-rH badFabric\.his \-pX 10 \-wrap t\fR
+using the collection of \fBOMS\fR snapshots in the history file (\fBoffline\fR mode), show the console\. Play back the snapshots at ten times the normal speed, and when the end of the file is reached, wrap around to the beginning and start again\.
+.
+.SH "AUTHOR"
+Tim Meier \fImeier3@llnl\.gov\fR
+.
+.SH "COPYRIGHT"
+Copyright (c) 2016, Lawrence Livermore National Security, LLC\. Produced at the Lawrence Livermore National Laboratory\. All rights reserved\. LLNL\-CODE\-673346
+.
+.SH "SEE ALSO"
+SMT(7), OMS(7), OsmJniPi(8), smt(1), smt\-record(1), smt\-server(1), smt\-gui(1), osmConsole(7), smt\-help(1)
+.
+.P
+opensm\-smt \fIhttps://github\.com/meier/opensm\-smt\fR on GitHub

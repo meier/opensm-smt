@@ -1,0 +1,80 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "SMT\-CONFIG" "1" "September 2016" "User Commands" "Subnet Monitoring Tools"
+.
+.SH "NAME"
+\fBsmt\-config\fR \- a tool for reading and writing \fBSMT\fR configuration files
+.
+.SH "SYNOPSIS"
+\fBsmt\-config\fR [OPTIONS \fIargs\fR]
+.
+.SH "DESCRIPTION"
+The Subnet Monitoring Tools (\fBSMT\fR) can share a common set of user specified attributes, or configuration\. This configuration is normally specified on the command line\.
+.
+.P
+The configuration file supports both configuration and persistance\. If a configuration attribute is specified during an SMT command invocation, it will be saved, and will conditionally be used upon subsequent SMT commands\. This is typically used for setting up the location and verbosity of the log files\. It is also useful for specifying the \fBOMS SOURCE\fR once, and then reusing it\.
+.
+.P
+The default location for the configuration file (if it exists) is \fB$SMT_HOME/config\.file\fR, and \fB$SMT_HOME\fR is normally \fB~/\.smt\fR\.
+.
+.SH "OPTIONS"
+.
+.SS "Generic SMT Options"
+.
+.TP
+\fB\-?\fR, \fB\-\-Help\fR
+provides an abbreviated form of help
+.
+.TP
+\fB\-lf\fR, \fB\-\-logFile\fR=[FILE]
+the filename for holding this commands\' log messages
+.
+.TP
+\fB\-ll\fR, \fB\-\-logLevel\fR=[LEVEL]
+the verbosity of the logging, where LEVEL is SEVERE, WARNING, INFO, CONFIG, FINE, FINER, or ALL\.
+.
+.TP
+\fB\-rC\fR, \fB\-\-readConfig\fR=[FILE]
+reads the specified configuration file\. The configuration file typically holds a users\' default setting for things like the logLevel\.
+.
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+prints the version of the SMT command
+.
+.SS "Command Options"
+If no options are provided, a simple status summary is returned\.
+.
+.TP
+\fB\-lp\fR, \fB\-\-list\fR
+lists the current configuration
+.
+.TP
+\fB\-wC\fR, \fB\-\-writeConfig\fR=[FILE]
+writes the current configuration to the specified file\.
+.
+.SH "EXAMPLES"
+.
+.TP
+\fBsmt\-config \-lp\fR
+displays the current configuration
+.
+.TP
+\fBsmt\-config \-rC %h/\.smt/config\.file \-lp\fR
+reads the configuration from the file and prints it out
+.
+.TP
+\fBsmt\-config \-wC newConfig\.file\fR
+writes the current configuration to the file
+.
+.SH "AUTHOR"
+Tim Meier \fImeier3@llnl\.gov\fR
+.
+.SH "COPYRIGHT"
+Copyright (c) 2016, Lawrence Livermore National Security, LLC\. Produced at the Lawrence Livermore National Laboratory\. All rights reserved\. LLNL\-CODE\-673346
+.
+.SH "SEE ALSO"
+SMT(7), OMS(7), OsmJniPi(8), smt(1), smt\-server(1), smt\-node(1), smt\-gui(1), smt\-console(1), smt\-help(1)
+.
+.P
+opensm\-smt \fIhttps://github\.com/meier/opensm\-smt\fR on GitHub

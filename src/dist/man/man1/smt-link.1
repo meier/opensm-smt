@@ -1,0 +1,210 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "SMT\-LINK" "1" "October 2016" "User Commands" "Subnet Monitoring Tools"
+.
+.SH "NAME"
+\fBsmt\-link\fR \- returns information about one or more links in the fabric
+.
+.SH "SYNOPSIS"
+\fBsmt\-link\fR [OMS SOURCE, \fINODE ID, LINK ID\fR] [OPTIONS \fIargs\fR]
+.
+.SH "DESCRIPTION"
+This SMT command displays information about one or more links using the \fBOMS\fR data , as provided by the OMS SOURCE\. A link, in this context, does not refer to a cable, but rather the relationship between two ports\. When a link is established, two ports negotiate the connection attributes\. A link, therefore, consists of these shared attributes, as well as the relationship between the two ports\. This command provides a way to interrogate links\.
+.
+.P
+A fabric consists of a hierarchy of elements\. The \fBSMT\fR commands use the following terms for the various elements in the fabric\.
+.
+.IP "\(bu" 4
+Fabric \- the entire infiniband subnet
+.
+.IP "\(bu" 4
+System \- a collection of switches that share a system guid, usually an assembly or chassis
+.
+.IP "\(bu" 4
+Node \- a switch, router, or host channel adapter
+.
+.IP "\(bu" 4
+Port \- an I/O connection point on a node
+.
+.IP "\(bu" 4
+Link \- a negotiated relationship between two connected ports
+.
+.IP "" 0
+.
+.SH "OMS SOURCE"
+Most SMT commands require one or more snapshots of the data provided by the OpenSM Monitoring Service (\fBOMS\fR)\. These data snapshots can be provided directly (\fIOnline\fR) via a connection to the OpenSM Monitoring Service, or in a post\-mortem (\fIOffline\fR) fashion by using an OMS history file\.
+.
+.SS "Online"
+The OMS runs on the same host as OpenSM (the subnet manager for infiniband)\. In order for the command to connect to the service it normally needs to know the port number the service is hosted on, as well as the name of the host itself\. These can be specified with;
+.
+.TP
+\fB\-h\fR, \fB\-\-host\fR=[HOST]
+Specifies the name of the OpenSM host where OMS runs\. HOST is either the fully qualified name of the host node, or can be \fIlocalhost\fR\. If not specified, \fIlocalhost\fR is assumed\.
+.
+.TP
+\fB\-pn\fR, \fB\-\-portn\fR=[PORT]
+Specifies the port number for the service\. PORT should normally be the default value of \fI10011\fR, unless service has been configured otherwise, or unless some sort of port forwarding mechanism is being used\. If not specified, \fI10011\fR is assumed\.
+.
+.SS "Offline"
+Most SMT commands, like this one, can use an OMS history file instead of directly connecting to the service\. The history file (commonly refered to as the \fIflight recorder\fR file) is obtained via the \fIsmt\-record(1)\fR command\. The file is specified with;
+.
+.TP
+\fB\-rH\fR, \fB\-\-readOMSHistory\fR=[FILE]
+Specifies the OMS history file to use with this command\. FILE is a normal (absolute or relative) filename\. Additionally, the special characters \fB%h\fR and \fB%t\fR can be used to specify the users\' home or temp directory, respectively\.
+.
+.SH "NODE ID, LINK ID"
+Elements within the fabric can be uniquely identified with keys, descriptions, lids, and guids\. Many SMT commands can operate on a single element, and therefore need some form of identifier\. The SMT commands support some (but not all) of the common ways to identify elements\. Individual links can be identified by either of their PORT IDs\. A PORT ID is simply a NODE ID plus a port number\.
+.
+.SS "guid"
+A \fBguid\fR is a globally unique identifier, and is 64 bit number\. It can be expressed in many ways, and the SMT commands support two different ways of expressing a \fBguid\fR\.
+.
+.TP
+\fBbig integer\fR
+The guid is expressed as a base\-10 integer\. A valid guid would look something like: \fB12345698\fR
+.
+.TP
+\fBhexidecimal\fR
+The guid is expressed in 4 groups of 16 bit hexidecimal numbers\. These groups must be seperated by a colon, so a valid guid would look something like: \fB0006:6a00:e900:131e\fR
+.
+.SS "lid or key"
+Numbers are often used to identify elements within the context of a \'type\' of element\. They can be refered to as \'keys\' or \'local ids\'\. SMT supports expressing numbers as normal base\-10 integers, or as hexidecimal\. Hexidecimal numbers \fBmust\fR be preceeded with \fB0x\fR\.
+.
+.SS "name"
+Strings are used to decribe or name an element\. The SMT commands currently only supports the use of \fBnames\fR to identy a \fBnode\fR\.
+.
+.SH "OPTIONS"
+.
+.SS "Generic SMT Options"
+.
+.TP
+\fB\-?\fR, \fB\-\-Help\fR
+provides an abbreviated form of help
+.
+.TP
+\fB\-lf\fR, \fB\-\-logFile\fR=[FILE]
+the filename for holding this commands\' log messages
+.
+.TP
+\fB\-ll\fR, \fB\-\-logLevel\fR=[LEVEL]
+the verbosity of the logging, where LEVEL is SEVERE, WARNING, INFO, CONFIG, FINE, FINER, or ALL\.
+.
+.TP
+\fB\-rC\fR, \fB\-\-readConfig\fR=[FILE]
+reads the specified configuration file\. The configuration file typically holds a users\' default setting for things like the logLevel\. Refer to the \fIsmt\-config(1)\fR command\.
+.
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+prints the version of the SMT command
+.
+.SS "Command Options"
+If a NODE ID is supplied with the command, then all of the links of the switch or channel adapter will be displayed\. If a PORT ID is supplied, then the individual link associated with that port will be displayed\.
+.
+.TP
+\fB\-L\fR, \fB\-\-level\fR=[level value]
+list all of the links with a specific level\. Level 0 shows all of the links connected to Host Channel Adapters\.
+.
+.TP
+\fB\-oM\fR, \fB\-\-onlyMissing\fR=[<t/f>]
+modifies a query to inlude only the "Down" or missing links if the argument is true (T/t)\. If the argument is false (F/f), then only the active, or "LinkUp" links are displayed\. Only modifies the "hosts" and "switches" query\.
+.
+.TP
+\fB\-q\fR, \fB\-\-query\fR=[QUERY ARGUMENT]
+query the links for specific information specifed by the [QUERY ARGUMENT] argument
+.
+.TP
+\fB\-ql\fR, \fB\-\-queryList\fR
+list the available query arguments (same as \-q list)
+.
+.TP
+\fB\-sr\fR, \fB\-\-status\fR
+provides a status report on all of the links in the subnet/fabric\. It shows a summary of much of the information that can be obtained with the various query arguments\.
+.
+.SS "Query Arguments"
+Most query optons are not intended for individual links, rather they return results for the entire fabric\. Many of the query arguments are simply ways to return a subset of the fabrics links that share a common trait, such as \fBswitches\fR, which returns only the switch to switch links\.
+.
+.TP
+\fBactive\fR
+shows all of the links in the fabric that are active
+.
+.TP
+\fBall\fR
+shows all of the links
+.
+.TP
+\fBdown\fR
+shows all of the inactive links
+.
+.TP
+\fBerrors\fR
+shows the links in the system that have port errors on either end of the link
+.
+.TP
+\fBhosts\fR
+shows the links that are connected to Host Channel Adapters
+.
+.TP
+\fBlevels\fR
+displays the hierarchy of links\. Level 0 is the number of \fBhost\fR links, and the remaining levels all represent \fBswitch\fR links\.
+.
+.TP
+\fBlist\fR
+list the available query options (same as \-ql)
+.
+.TP
+\fBstatus\fR
+provides a status report, identical to using the \fB\-sr\fR command option\.
+.
+.TP
+\fBswitches\fR
+shows the switch\-to\-switch links in the fabric\. This usually represents the majority of the links\.
+.
+.SH "EXAMPLES"
+.
+.TP
+\fBsmt\-link \-ql\fR
+list the query options
+.
+.TP
+\fBsmt\-link \-rH fabHist\.his \-\-status\fR
+provides a link status report from the data in the history file\.
+.
+.TP
+\fBsmt\-link \-pn 10011 \-q errors\fR
+list all of the links that are currently experiencing errors
+.
+.TP
+\fBsmt\-link \-rH surface3\.his \-q switches \-oM true\fR
+using the history file, show only the down links between switches
+.
+.TP
+\fBsmt\-link \-pn 10013 \-q levels\fR
+provide a link hierachy report, showing how many links at each level in the fabric
+.
+.TP
+\fBsmt\-link \-pn 10013 \-L 0\fR
+list all of the links at level 0 (host links)
+.
+.TP
+\fBsmt\-link \-pn 10011 0006:6a00:e300:4411\fR
+list all of the links associated with this node guid
+.
+.TP
+\fBsmt\-link \-pn 10011 0006:6a00:e300:4411:16\fR
+list the link associated with this port id (could also use 0006:6a00:e300:4411 16)
+.
+.TP
+\fBsmt\-link \-rH smallFab\.his bcore1 L224\fR
+list all of the links associated with this node name
+.
+.SH "AUTHOR"
+Tim Meier \fImeier3@llnl\.gov\fR
+.
+.SH "COPYRIGHT"
+Copyright (c) 2016, Lawrence Livermore National Security, LLC\. Produced at the Lawrence Livermore National Laboratory\. All rights reserved\. LLNL\-CODE\-673346
+.
+.SH "SEE ALSO"
+SMT(7), OMS(7), OsmJniPi(8), smt(1), smt\-record(1), smt\-fabric(1), smt\-system(1), smt\-node(1), smt\-port(1)
+.
+.P
+opensm\-smt \fIhttps://github\.com/meier/opensm\-smt\fR on GitHub

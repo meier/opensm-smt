@@ -1,0 +1,127 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "SMT\-FILE" "1" "September 2016" "User Commands" "Subnet Monitoring Tools"
+.
+.SH "NAME"
+\fBsmt\-file\fR \- a tool for interrogating and manipulating \fBSMT\fR files
+.
+.SH "SYNOPSIS"
+\fBsmt\-file\fR [SMT FILE] [OPTIONS \fIargs\fR]
+.
+.SH "DESCRIPTION"
+This SMT command determines if the supplied file was created by an \fBSMT\fR command, and if so, can provide its type and some details about its contents\. It can also perform primitive file manipulation of \fBOMS\fR history files\. If no \fBOPTIONS\fR are specified, this command simply tries to identify the file type\.
+.
+.SH "SMT FILE"
+Most SMT commands can make use of a configuration file, an \fBOMS\fR history (flight recorder) file, and/or other less common file types\. This command expects to operate on a file and can potentially generate an output file\.
+.
+.P
+Files are specified normally (absolute or relative), and the special characters \fB%h\fR and \fB%t\fR can also be used to specify the users\' home or temp directory respectively\.
+.
+.SS "Configuration"
+\fBOMS\fR configuration files typically use the \fB\.cfg\fR extension\. They are XML text files\. Althought they can be viewed and modified in that format, they were never intended for human consumption\. This command as well as the \fBsmt\-config(1)\fR command are better suited for that task\.
+.
+.SS "History"
+An \fBOMS\fR history file is the most common \fBSMT\fR file type\. It contains a collection of \fBOMS\fR snapshots, as determined by the arguments of the \fBsmt\-record(1)\fR command that created it\. It is customary, but not enforced, that a history file use the \fB\.his\fR extension\. History files are binary files that have been encrypted and compressed\. They use disk space efficiently, but require \fBSMT\fR commands to decompress, decrypt, and de\-serialize the contents into useable objects or text\.
+.
+.SS "List of History Files"
+Although \fBOMS\fR history files have been optimized to be as small as possible, they can still be quite large, especially on big fabrics\. The size of an \fBOMS\fR history file is a function of both the size of the fabric (# nodes & ports) and the duration and time granularity of the history\. A one hour history file, that contains a snapshot every 60 seconds, will contain 60 snapshots\. Similary, a three hour history file, that contains a snapshot every 180 seconds, will also contain 60 snapshots\. These two files will be roughly the same size\.
+.
+.P
+A list of history files provides a means for describing an \fBOMS\fR history that spanns a timeframe so long that it would be impossible or impractical to cover with a single \fBOMS\fR history file\. It is customary, although not enforced, that a list of history files use the \fB\.lst\fR extension\. List files are simple text files, containing a single history file name per line\. Comments can be included by starting the line with the \fB#\fR character\.
+.
+.SH "OPTIONS"
+.
+.SS "Generic SMT Options"
+.
+.TP
+\fB\-?\fR, \fB\-\-Help\fR
+provides an abbreviated form of help
+.
+.TP
+\fB\-lf\fR, \fB\-\-logFile\fR=[FILE]
+the filename for holding this commands\' log messages
+.
+.TP
+\fB\-ll\fR, \fB\-\-logLevel\fR=[LEVEL]
+the verbosity of the logging, where LEVEL is SEVERE, WARNING, INFO, CONFIG, FINE, FINER, or ALL\.
+.
+.TP
+\fB\-rC\fR, \fB\-\-readConfig\fR=[FILE]
+reads the specified configuration file\. The configuration file typically holds a users\' default setting for things like the logLevel\. Refer to the \fIsmt\-config(1)\fR command\.
+.
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+prints the version of the SMT command
+.
+.SS "Command Options"
+.
+.TP
+\fB\-c\fR, \fB\-\-compress\fR=[FACTOR] [OUTPUT FILE]
+creates a compressed \fBOUTPUT FILE\fR from the specified \fBOMS\fR History file\. The first argument is the compression \fBFACTOR\fR, and the second is a valid filename for the resultant file\. The original file is compressed by skipping the specified number of snapshots\. So a \fBFACTOR\fR of 2 will produce an output file 1/2 the original size, and a factor of 10 will produce a file 1/10th the size\.
+.
+.TP
+\fB\-cH\fR, \fB\-\-concat\fR=[OUTPUT FILE]
+joins or concatenates \fBOMS\fR history data from multiple files into a single \fBOUTPUT FILE\fR\. In this case the \fBSMT FILE\fR is a file that contains a list of \fBOMS\fR history files\. The snapshots from those files are all combined (in the provided order) to create a single \fBOUTPUT FILE\fR, which is just another \fBOMS\fR history file\. Care should be taken to make sure the resultant file is not too large to be used by the other \fBSMT\fR commands\. Most commands need to consume the entire file (to decompress, decrypt, and deserialize) before they can be used\. Huge files can result in long start times\.
+.
+.TP
+\fB\-i\fR, \fB\-\-info\fR
+provides file type specific summary information about the contents of the file\. Obviously this only supports \fBSMT FILES\fR\.
+.
+.TP
+\fB\-lts\fR, \fB\-\-listTimes\fR
+when specified with the \fB\-i\fR option in conjunction with an \fBOMS\fR history file, will include a printout of the timestamp for each snapshot\. This is useful to verify that the sampling happened in a monotonic way\.
+.
+.TP
+\fB\-t\fR, \fB\-\-type\fR
+determine the type of file\. This is the default option, so if only a filename is supplied at the command line, its type will be returned if possible\.
+.
+.TP
+\fB\-x\fR, \fB\-\-extract\fR=[T1] [T2] [OUTPUT FILE]
+extracts a subset of the collection of \fBOMS\fR snapshots contained in the supplied history file, and writes them to a new (smaller) \fBOMS\fR history file\. Typically, the timestamps of the original history file would be initially listed using the \fB\-lts\fR option\. Next, two of those timestamps would be selected as the first (\fBT1\fR) and last (\fBT2\fR) desired snapshots to include in the new \fBOUTPUT FILE\fR\. See the example below for its use\.
+.
+.SH "EXAMPLES"
+.
+.TP
+\fBsmt\-file \-i surface3h\.his\fR
+show the details of the contents of the history file\.
+.
+.TP
+\fBsmt\-file \-t unknownFile\.xxx\fR
+attempt to determine the type of the unknown file
+.
+.TP
+\fBsmt\-file \-i HypeFR\.his \-lts\fR
+show HypeFR\.his details, including timestamps
+.
+.TP
+\fBsmt\-file surface3h\.his \-c 4 compress\.his\fR
+compress surface3h\.his 4x and write to compress\.his
+.
+.TP
+\fBsmt\-file sierra3H\.his \-x Feb 25 12:35:08 2015 Feb 25 13:52:38 2015 sierraSmall\.his\fR
+extract snapshots from sierra3H\.his (t1 to t2) and write to sierraSmall\.his
+.
+.TP
+\fBsmt\-file cabHistoryList\.txt \-cH bigCabHistory\.his\fR
+read the list of \fBOMS\fR history files from the text file, and chain them all together in one big file\.
+.
+.TP
+\fBsmt\-file \-i default\.cfg\fR
+show the details and contents of this configuration file
+.
+.TP
+\fBsmt\-file historyFiles\.lst \-cH combinedCompressed\.his \-c 4\fR
+compress AND combine the history files contained in \fBhistoryFiles\.lst\fR and write them to \fBcombinedCompressed\.his\fR
+.
+.SH "AUTHOR"
+Tim Meier \fImeier3@llnl\.gov\fR
+.
+.SH "COPYRIGHT"
+Copyright (c) 2016, Lawrence Livermore National Security, LLC\. Produced at the Lawrence Livermore National Laboratory\. All rights reserved\. LLNL\-CODE\-673346
+.
+.SH "SEE ALSO"
+SMT(7), OMS(7), OsmJniPi(8), smt(1), smt\-server(1), smt\-record(1), smt\-config(1), smt\-help(1)
+.
+.P
+opensm\-smt \fIhttps://github\.com/meier/opensm\-smt\fR on GitHub

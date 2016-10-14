@@ -1,0 +1,142 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "SMT\-UTILIZE" "1" "October 2016" "User Commands" "Subnet Monitoring Tools"
+.
+.SH "NAME"
+\fBsmt\-utilize\fR \- displays bandwidth utilization as a percentage of theoretical maximum
+.
+.SH "SYNOPSIS"
+\fBsmt\-utilize\fR [OMS SOURCE] [\fI\-CA | \-SW\fR] [OPTIONS \fIargs\fR]
+.
+.SH "DESCRIPTION"
+This SMT command provides a dynamic view of the traffic activity in the fabric\. It uses two snapshots of the \fBOMS\fR data (as provided by the OMS SOURCE) to detect changes, calculate trasmission rates, and bandwidth utilization for each port\. The fabric can be analyzed as a whole, or divided up between links to Channel Adapters, and links between Switches\.
+.
+.SH "OMS SOURCE"
+Most SMT commands require one or more snapshots of the data provided by the OpenSM Monitoring Service (\fBOMS\fR)\. These data snapshots can be provided directly (\fIOnline\fR) via a connection to the OpenSM Monitoring Service, or in a post\-mortem (\fIOffline\fR) fashion by using an OMS history file\.
+.
+.SS "Online"
+The OMS runs on the same host as OpenSM (the subnet manager for infiniband)\. In order for the command to connect to the service it normally needs to know the port number the service is hosted on, as well as the name of the host itself\. These can be specified with;
+.
+.TP
+\fB\-h\fR, \fB\-\-host\fR=[HOST]
+Specifies the name of the OpenSM host where OMS runs\. HOST is either the fully qualified name of the host node, or can be \fIlocalhost\fR\. If not specified, \fIlocalhost\fR is assumed\.
+.
+.TP
+\fB\-pn\fR, \fB\-\-portn\fR=[PORT]
+Specifies the port number for the service\. PORT should normally be the default value of \fI10011\fR, unless service has been configured otherwise, or unless some sort of port forwarding mechanism is being used\. If not specified, \fI10011\fR is assumed\.
+.
+.SS "Offline"
+Most SMT commands, like this one, can use an OMS history file instead of directly connecting to the service\. The history file (commonly refered to as the \fIflight recorder\fR file) is obtained via the \fIsmt\-record(1)\fR command\. The file is specified with;
+.
+.TP
+\fB\-rH\fR, \fB\-\-readOMSHistory\fR=[FILE]
+Specifies the OMS history file to use with this command\. FILE is a normal (absolute or relative) filename\. Additionally, the special characters \fB%h\fR and \fB%t\fR can be used to specify the users\' home or temp directory, respectively\.
+.
+.SH "OVERVIEW"
+Infiniband links consist of two connected ports that have negotiated shared attributes (speed, width, etc\.) and have established a communication path\. The links, and their ports, have a theoretical bandwidth limit\. This command attempts to determine how much of that bandwidth is being used (bandwidth utilization, or simply \fButilization\fR) at any point in time\. Traffic patterns in a fabric will be dependent on the physical structure of the subnet as well as the routing algorithms\. But links between nodes can be inherently different\. Normally I/O traffic on the fabric originates and terminates at Channel Adapter nodes and their ports\. Those CA links only need to support traffic to or from those CA nodes\. Links between Switches, on the other hand, may need to share the available bandwidth for multiple sources and destinations\.
+.
+.P
+This command provides a way to analyze the bandwidth utilization for the entire fabric (all ports), just the channel adapter ports and ports connected to those ports (\-CA), or just the ports connected between switches (\-SW)\. These three options should provide insight into how components in the fabric are being used\.
+.
+.P
+An analysis report is generated, which consists of a collection of 10% bandwidth buckets\. The number of ports that use a percentage of their bandwidths is placed in each of the ten buckets\. Minimums, maximums, and averages are also displayed\. The analysis is broken down in this way to show the how the bandwidth utilization is distributed with respect to the ports\. And empty bucket will not show up in the analysis report\. It is normal to have several empty buckets\. Alternately, the \fB\-dump\fR option provides a way to ignore the bucket analysis, and obtain a simple report that is a single line for each \fBOMS\fR snapshot and timestamp\.
+.
+.P
+The behavior of this command depends upon the \fBOMS SOURCE\fR, whether it is \fBOnline\fR or \fBOffline\fR, and the update rate of the data\. This command has limited interactive capabilities for watching the dynamic display of information\. These options are described below, but the over\-arching characteristic which dictates how this command behaves is how fast the \fBNEXT\fR snapshot of OMS data becomes available\. Since change can only be calculated when new data is available, this command has to wait for it before updating the display\. This means that when using \fBOnline\fR mode, updates can occur slowly (the sweep rate of the Performance Manager)\. Conversely, updates can happen quickly in \fBOffline\fR mode because the entire collection of \fBOMS\fR snapshots are available in the history file\.
+.
+.P
+* \fBOnline\fR startup time can be quick, or very slow, depending upon when the next available OMS snapshot becomes available\.
+.
+.SS "Once, Continuous, Playback"
+This command can optionally be used to display just one utilization analysis\. By specifying the \fB\-once\fR option in either \fBOnline\fR or \fBOffline\fR mode, a single utilization calculation will be performed and displayed, and the command will exit, returning command line control\.
+.
+.P
+This command normally "continuously" updates the results of the utilization analysis\. The terminal, or command line, is controlled by the tool so that new information can be continuously displayed\. To \fBexit\fR this continuous mode, use \'Ctrl\-c\'\.
+.
+.P
+A graphical control, in the form of a horizontal slider, is available when using the \fBOffline\fR mode of operation\. The \fB\-\-playControl\fR option displays the utilization analysis as normal, but also provides a set of gui controls for controlling the speed of playing back the collection of \fBOMS\fR snapshots in the history file\. It allows playing and pausing the data, as well as controlling the speed once the data is in play mode\. You can also have the data \fB\-wrap\fR around to the start, when the end of the data set is reached\. This options should only be selected if your system is capable of displaying graphic user interfaces\. To \fBexit\fR this playback mode, close the play control, or use \'Ctrl\-c\'\.
+.
+.SH "OPTIONS"
+.
+.SS "Generic SMT Options"
+.
+.TP
+\fB\-?\fR, \fB\-\-Help\fR
+provides an abbreviated form of help
+.
+.TP
+\fB\-lf\fR, \fB\-\-logFile\fR=[FILE]
+the filename for holding this commands\' log messages
+.
+.TP
+\fB\-ll\fR, \fB\-\-logLevel\fR=[LEVEL]
+the verbosity of the logging, where LEVEL is SEVERE, WARNING, INFO, CONFIG, FINE, FINER, or ALL\.
+.
+.TP
+\fB\-rC\fR, \fB\-\-readConfig\fR=[FILE]
+reads the specified configuration file\. The configuration file typically holds a users\' default setting for things like the logLevel\. Refer to the \fIsmt\-config(1)\fR command\.
+.
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+prints the version of the SMT command
+.
+.SS "Command Options"
+.
+.TP
+\fB\-CA\fR, \fB\-\-edgePort\fR
+provide utilization analysis for just Channel Adapter ports and ports connected to Channel Adapter ports
+.
+.TP
+\fB\-dump\fR, \fB\-\-dump\fR
+provide the utilization analysis in a simple single line format
+.
+.TP
+\fB\-once\fR, \fB\-\-once\fR
+instead of continuously updating the utilization analysis, just provide a single analysis and stop\.
+.
+.TP
+\fB\-pControl\fR, \fB\-\-playControl\fR
+when using \fBOffline\fR mode, provide a graphical horizontal slider for controlling playback of the \fBOMS\fR snapshots from the file\.
+.
+.TP
+\fB\-pX\fR, \fB\-\-playX\fR=\fI# times faster\fR
+when using \fBOffline\fR mode, directs the collection of \fBOMS\fR snapshots from the file to arrive this many times faster than normal\.
+.
+.TP
+\fB\-SW\fR, \fB\-\-switch2switch\fR
+provide utilization analysis for just the ports connected between two switches\.
+.
+.TP
+\fB\-wrap\fR, \fB\-\-wrap\fR=\fIt|f\fR
+when using \fBOffline\fR mode, directs the playback of the \fBOMS\fR snapshots to restart at the beginning when the end is reached (if true), or to simple stop (if false)\. By default, playback will stop when the end of the collection of snapshots is reached\.
+.
+.SH "EXAMPLES"
+.
+.TP
+\fBsmt\-utilize \-pn 10011\fR
+continuously display the bandwidth utilization of all the ports using the \fBOnline\fR mode via port 10011
+.
+.TP
+\fBsmt\-utilize \-rH myHour\.his \-pControl \-pX 10 \-dump \-SW\fR
+using the history file, replay the data back at 10 times normal speed\. Display the single line form of the bandwidth analysis for just the ports connected between switches\. Also, provide the play control gui for interactive control\.
+.
+.TP
+\fBsmt\-utilize \-pn 10013 \-once \-CA\fR
+display the full utilization report for the ports associated with the Channel adapters\. Use \fBOnline\fR mode with port 10013\. Display once, and exit\.
+.
+.TP
+\fBsmt\-utilize \-rH myHour\.his\fR
+using the history file, display the full utilization report for each \fBOMS\fR snapshot\. The report will include all ports in the fabric\.
+.
+.SH "AUTHOR"
+Tim Meier \fImeier3@llnl\.gov\fR
+.
+.SH "COPYRIGHT"
+Copyright (c) 2016, Lawrence Livermore National Security, LLC\. Produced at the Lawrence Livermore National Laboratory\. All rights reserved\. LLNL\-CODE\-673346
+.
+.SH "SEE ALSO"
+SMT(7), OMS(7), OsmJniPi(8), smt(1), smt\-record(1), smt\-top(1), smt\-node(1), smt\-port(1), smt\-link(1)
+.
+.P
+opensm\-smt \fIhttps://github\.com/meier/opensm\-smt\fR on GitHub

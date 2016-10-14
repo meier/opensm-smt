@@ -1,0 +1,166 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "SMT\-PRIV" "1" "October 2016" "User Commands" "Subnet Monitoring Tools"
+.
+.SH "NAME"
+\fBsmt\-priv\fR \- invokes a privileged command (\fBOnline\fR mode only)
+.
+.SH "SYNOPSIS"
+\fBsmt\-priv\fR [OMS SOURCE] [OPTIONS \fIargs\fR]
+.
+.SH "DESCRIPTION"
+This SMT command provides a set of \fBprivileged\fR commands that \fImay\fR initiate actions in the subnet manager or modify the fabric\. This is one of the few SMT commands that requires a direct connection to the OpenSM Monitoring Service (\fBOMS\fR)\. These commands are \fBNOT\fR benign "monitoring" actions, and therefore require some form of authorization*\. This command will not work for unauthorized users\.
+.
+.P
+* authorization is a function of both the user and the command
+.
+.SH "OMS SOURCE"
+Although most SMT commands can accept \fBOMS\fR snapshots from a file (\fIOffline\fR) or via a direct connection (\fIOnline\fR) to the \fBOMS\fR, this command operates exclusively in the \fIOnline\fR mode\. This command and its options operate on an active fabric, with a working subnet manager\.
+.
+.SS "Online"
+The OMS runs on the same host as OpenSM (the subnet manager for infiniband)\. In order for the command to connect to the service it normally needs to know the port number the service is hosted on, as well as the name of the host itself\. These can be specified with;
+.
+.TP
+\fB\-h\fR, \fB\-\-host\fR=[HOST]
+Specifies the name of the OpenSM host where OMS runs\. HOST is either the fully qualified name of the host node, or can be \fIlocalhost\fR\. If not specified, \fIlocalhost\fR is assumed\.
+.
+.TP
+\fB\-pn\fR, \fB\-\-portn\fR=[PORT]
+Specifies the port number for the service\. PORT should normally be the default value of \fI10011\fR, unless service has been configured otherwise, or unless some sort of port forwarding mechanism is being used\. If not specified, \fI10011\fR is assumed\.
+.
+.SH "NODE ID, PORT ID"
+Elements within the fabric can be uniquely identified with keys, descriptions, lids, and guids\. Many SMT commands can operate on a single element, and therefore need some form of identifier\. The SMT commands support some (but not all) of the common ways to identify elements\.
+.
+.SS "guid"
+A \fBguid\fR is a globally unique identifier, and is 64 bit number\. It can be expressed in many ways, and the SMT commands support two different ways of expressing a \fBguid\fR\.
+.
+.TP
+\fBbig integer\fR
+The guid is expressed as a base\-10 integer\. A valid guid would look something like: \fB12345698\fR
+.
+.TP
+\fBhexidecimal\fR
+The guid is expressed in 4 groups of 16 bit hexidecimal numbers\. These groups must be seperated by a colon, so a valid guid would look something like: \fB0006:6a00:e900:131e\fR
+.
+.SS "lid"
+Local identifiers for nodes can be specified in hex or decimal\. Hexidecimal numbers must begin with \'0x\'\.
+.
+.SS "name"
+Strings are used to decribe or name an element\. The SMT commands currently only supports the use of \fBnames\fR to identy a \fBnode\fR\.
+.
+.SH "OPTIONS"
+.
+.SS "Generic SMT Options"
+.
+.TP
+\fB\-?\fR, \fB\-\-Help\fR
+provides an abbreviated form of help
+.
+.TP
+\fB\-lf\fR, \fB\-\-logFile\fR=[FILE]
+the filename for holding this commands\' log messages
+.
+.TP
+\fB\-ll\fR, \fB\-\-logLevel\fR=[LEVEL]
+the verbosity of the logging, where LEVEL is SEVERE, WARNING, INFO, CONFIG, FINE, FINER, or ALL\.
+.
+.TP
+\fB\-rC\fR, \fB\-\-readConfig\fR=[FILE]
+reads the specified configuration file\. The configuration file typically holds a users\' default setting for things like the logLevel\. Refer to the \fIsmt\-config(1)\fR command\.
+.
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+prints the version of the SMT command
+.
+.SS "Command Options"
+.
+.TP
+\fB\-cC\fR, \fB\-\-clearCounters\fR
+clears all port counters (traffic and error)\. The Performance Manager is responsible for watching and maintaining the port counters, so this command requests that the PerfMgr perform the counter reset\. This may cause error or warning messages, and confuse analysis tools that expect the traffic and error counters to be ever increasing\.
+.
+.TP
+\fB\-dP\fR, \fB\-\-disablePort\fR=[NODE ID] [PORT]
+uses \fBibportstate\fR to disable the specified port, and returns the result of the command
+.
+.TP
+\fB\-eS\fR, \fB\-\-enablePort\fR=[NODE ID] [PORT]
+uses \fBibportstate\fR to enable the specified port, and returns the result of the command
+.
+.TP
+\fB\-hS\fR, \fB\-\-heavySweep\fR
+directs the Subnet Manager to perform a heavy sweep of the fabric\. Every node is queried and updated\.
+.
+.TP
+\fB\-lS\fR, \fB\-\-liteSweep\fR
+directs the Subnet Manager to perform a light sweep of the fabric\. This is less obtrusive than a heavy sweep, but if changes in the fabric are detected, it may cause a heavy sweep anyway\.
+.
+.TP
+\fB\-oLL\fR, \fB\-\-osmLogLevel\fR=[LOG LEVEL]
+modifies the log verbosity level of OpenSM\. Refer to OpenSM for a detailed description of its log level values\. The default value is 0x3, which is 0x1 (ERROR) and 0x2 (INFO)\. Many combinations are possible\.
+.
+.TP
+\fB\-pS\fR, \fB\-\-pfmgrSweep\fR
+requests the Performance Manager to immediately perform a sweep\. Normally the Performance Manager sweeps the fabric at regular intervals, but this command can force it to occur\.
+.
+.TP
+\fB\-pSS\fR, \fB\-\-pfmgrSweepPeriod\fR=[SECONDS]
+sets the Performance Managers sweep period to the value specified\. This value is in seconds, and should not be less than 5 seconds\. This new value will immediately be used, but will not persist if the Subnet Manager is restarted\.
+.
+.TP
+\fB\-qP\fR, \fB\-\-queryPort\fR=[NODE ID] [PORT NUM]
+queries the port using \fBibportstate\fR\. The arguments are passed to that command, and the output is returned\. This is simply a query, you cannot alter the port with this command\. Similar to \fBsmt\-port \-q status\fR\.
+.
+.TP
+\fB\-rt\fR, \fB\-\-re\-route\fR
+directs the Subnet Manager to re\-route the fabric\. This can be disruptive, since the routing table in every switch will be re\-programmed\.
+.
+.TP
+\fB\-uD\fR, \fB\-\-updateDesc\fR
+node descriptions (names) are normally obtained during initialization, and never updated after that\. This is a way to refresh the descriptions without restarting the Subnet Manager\.
+.
+.TP
+\fB\-X\fR, \fB\-\-rCommand\fR=[\fIcommand with args\fR]
+execute a remote command\. The supplied command and arguments (in quotes) will be invoked on the remote management node, and the results will be returned\. The command must be in the list of "permitted" remote commands\. By default, the "hostname" command is always allowed\. Other commands can be added to the permitted list as necessary\.
+.
+.SH "EXAMPLES"
+.
+.TP
+\fBsmt\-priv \-h localhost \-pn 10011 \-X \e"hostname\e"\fR
+invoke the \fBhostname\fR command on the OMS node, and return the results
+.
+.TP
+\fBsmt\-priv \-pn 10011 \-dP 14 3\fR
+disable port 3 of the switch with a lid of 14
+.
+.TP
+\fBsmt\-priv \-pn 10013 pS\fR
+force the Performance Manager to sweep the fabric, and update its counter values
+.
+.TP
+\fBsmt\-priv \-rt\fR
+force the Subnet Manager to re\-route the fabric
+.
+.TP
+\fBsmt\-priv \-qP 0006:6a00:ec00:3c53 33\fR
+return the results of \fBibportstate \-G 0x00066a00ec003c53 33\fR
+.
+.TP
+\fBsmt\-priv \-cC\fR
+request the Performance Manager to reset all of the counters in the fabric to zero\.
+.
+.TP
+\fBsmt\-priv \-uD\fR
+updates the node descriptions
+.
+.SH "AUTHOR"
+Tim Meier \fImeier3@llnl\.gov\fR
+.
+.SH "COPYRIGHT"
+Copyright (c) 2016, Lawrence Livermore National Security, LLC\. Produced at the Lawrence Livermore National Laboratory\. All rights reserved\. LLNL\-CODE\-673346
+.
+.SH "SEE ALSO"
+SMT(7), OMS(7), OsmJniPi(8), smt(1), smt\-server(1), smt\-console(1)
+.
+.P
+opensm\-smt \fIhttps://github\.com/meier/opensm\-smt\fR on GitHub

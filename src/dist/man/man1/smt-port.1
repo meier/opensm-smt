@@ -1,0 +1,189 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "SMT\-PORT" "1" "October 2016" "User Commands" "Subnet Monitoring Tools"
+.
+.SH "NAME"
+\fBsmt\-port\fR \- returns information about one or more ports in the fabric
+.
+.SH "SYNOPSIS"
+\fBsmt\-port\fR [OMS SOURCE, NODE ID] [OPTIONS \fIargs\fR]
+.
+.SH "DESCRIPTION"
+This SMT command displays information about one or more ports using the \fBOMS\fR data , as provided by the OMS SOURCE\. There are Host Channel Adapter ports and Switch ports\. Although ports are fundamentally identical, switch ports have routes associated with them\. This is really a function of the switch, but one can argue this is an additional characteristic of the port\. This command provides a way to interrogate a port and to obtain detailed information\.
+.
+.P
+A fabric consists of a hierarchy of elements\. The \fBSMT\fR commands use the following terms for the various elements in the fabric\.
+.
+.IP "\(bu" 4
+Fabric \- the entire infiniband subnet
+.
+.IP "\(bu" 4
+System \- a collection of switches that share a system guid, usually an assembly or chassis
+.
+.IP "\(bu" 4
+Node \- a switch, router, or host channel adapter
+.
+.IP "\(bu" 4
+Port \- an I/O connection point on a node
+.
+.IP "\(bu" 4
+Link \- a negotiated relationship between two connected ports
+.
+.IP "" 0
+.
+.SH "OMS SOURCE"
+Most SMT commands require one or more snapshots of the data provided by the OpenSM Monitoring Service (\fBOMS\fR)\. These data snapshots can be provided directly (\fIOnline\fR) via a connection to the OpenSM Monitoring Service, or in a post\-mortem (\fIOffline\fR) fashion by using an OMS history file\.
+.
+.SS "Online"
+The OMS runs on the same host as OpenSM (the subnet manager for infiniband)\. In order for the command to connect to the service it normally needs to know the port number the service is hosted on, as well as the name of the host itself\. These can be specified with;
+.
+.TP
+\fB\-h\fR, \fB\-\-host\fR=[HOST]
+Specifies the name of the OpenSM host where OMS runs\. HOST is either the fully qualified name of the host node, or can be \fIlocalhost\fR\. If not specified, \fIlocalhost\fR is assumed\.
+.
+.TP
+\fB\-pn\fR, \fB\-\-portn\fR=[PORT]
+Specifies the port number for the service\. PORT should normally be the default value of \fI10011\fR, unless service has been configured otherwise, or unless some sort of port forwarding mechanism is being used\. If not specified, \fI10011\fR is assumed\.
+.
+.SS "Offline"
+Most SMT commands, like this one, can use an OMS history file instead of directly connecting to the service\. The history file (commonly refered to as the \fIflight recorder\fR file) is obtained via the \fIsmt\-record(1)\fR command\. The file is specified with;
+.
+.TP
+\fB\-rH\fR, \fB\-\-readOMSHistory\fR=[FILE]
+Specifies the OMS history file to use with this command\. FILE is a normal (absolute or relative) filename\. Additionally, the special characters \fB%h\fR and \fB%t\fR can be used to specify the users\' home or temp directory, respectively\.
+.
+.SH "NODE ID, PORT ID"
+Elements within the fabric can be uniquely identified with keys, descriptions, lids, and guids\. Many SMT commands can operate on a single element, and therefore need some form of identifier\. The SMT commands support some (but not all) of the common ways to identify elements\. Individual ports can be identified by their NODE ID followed by the port number\.
+.
+.SS "guid"
+A \fBguid\fR is a globally unique identifier, and is 64 bit number\. It can be expressed in many ways, and the SMT commands support two different ways of expressing a \fBguid\fR\.
+.
+.TP
+\fBbig integer\fR
+The guid is expressed as a base\-10 integer\. A valid guid would look something like: \fB12345698\fR
+.
+.TP
+\fBhexidecimal\fR
+The guid is expressed in 4 groups of 16 bit hexidecimal numbers\. These groups must be seperated by a colon, so a valid guid would look something like: \fB0006:6a00:e900:131e\fR
+.
+.SS "lid or key"
+Numbers are often used to identify elements within the context of a \'type\' of element\. They can be refered to as \'keys\' or \'local ids\'\. SMT supports expressing numbers as normal base\-10 integers, or as hexidecimal\. Hexidecimal numbers \fBmust\fR be preceeded with \fB0x\fR\.
+.
+.SS "name"
+Strings are used to decribe or name an element\. The SMT commands currently only supports the use of \fBnames\fR to identy a \fBnode\fR\.
+.
+.SH "OPTIONS"
+.
+.SS "Generic SMT Options"
+.
+.TP
+\fB\-?\fR, \fB\-\-Help\fR
+provides an abbreviated form of help
+.
+.TP
+\fB\-lf\fR, \fB\-\-logFile\fR=[FILE]
+the filename for holding this commands\' log messages
+.
+.TP
+\fB\-ll\fR, \fB\-\-logLevel\fR=[LEVEL]
+the verbosity of the logging, where LEVEL is SEVERE, WARNING, INFO, CONFIG, FINE, FINER, or ALL\.
+.
+.TP
+\fB\-rC\fR, \fB\-\-readConfig\fR=[FILE]
+reads the specified configuration file\. The configuration file typically holds a users\' default setting for things like the logLevel\. Refer to the \fIsmt\-config(1)\fR command\.
+.
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+prints the version of the SMT command
+.
+.SS "Command Options"
+.
+.TP
+\fB\-q\fR, \fB\-\-query\fR=[QUERY ARGUMENT]
+query the port(s) for specific information specifed by the [QUERY ARGUMENT] argument
+.
+.TP
+\fB\-ql\fR, \fB\-\-queryList\fR
+list the available query arguments (same as \-q list)
+.
+.TP
+\fB\-sr\fR, \fB\-\-status\fR
+provides a status report on all of the ports in the subnet/fabric\. It shows the overall composition of ports in the fabric\.
+.
+.SS "Query Arguments"
+Most query optons require some form of port description\. This is a node description followed by a port number and normally these arguments should be supplied prior to the type of query, and can be in the form of a \fBguid\fR, \fBname\fR, or \fBlid\fR and then a port number\. The last value supplied when specifying a port id is always interpreted as the port number\. Several SMT command can provide node identification information\. Refer to \fBsmt\-fabric(1)\fR or \fBsmt\-id(1)\fR\.
+.
+.TP
+\fBcounters\fR
+shows the all of ports\' counter values, and the deltas, or amounts they changed from the previous sample period
+.
+.TP
+\fBdetails\fR
+displays all of the "known" port attributes, excluding counters\.
+.
+.TP
+\fBerrors\fR
+shows only the ports\' error counter values and deltas\.
+.
+.TP
+\fBlink\fR
+displays information about the link (if any) that this port is associated with
+.
+.TP
+\fBlist\fR
+list the available query options (same as \-ql)
+.
+.TP
+\fBroute\fR
+show the routes (node destinations) out of this port\. This is a portion of the switches\' routing table, specifically for this port\. Refer to the \fBsmt\-route(1)\fR command for additional information\.
+.
+.TP
+\fBstatus\fR
+provides a status or port summary for this individual port\. This is different than the \-sr option (all ports combined)\.
+.
+.TP
+\fBtraffic\fR
+shows the ports\' traffic counters, and their deltas\.
+.
+.SH "EXAMPLES"
+.
+.TP
+\fBsmt\-port \-pn 10013\fR
+same as using the \-sr option without arguments\. Displays a port status summary report, which shows the makeup of all the ports in the fabric, with aggregated attributes\.
+.
+.TP
+\fBsmt\-port \-rH fabHistory\.his 14 3 \-q status\fR
+shows the ports\' identification, speed, width, and other attributes\. This is for the 3rd port on the node with a lid of 14, using the OMS history file\.
+.
+.TP
+\fBsmt\-port \-host localhost \-pn 10011 ibcore2 L225 12 \-q status\fR
+using the name and port number, shows the status of the individual port (similar to above)
+.
+.TP
+\fBsmt\-port \-q counters \-pn 10011 14 3\fR
+shows all of this ports\' counter values
+.
+.TP
+\fBsmt\-port \-pn 10013 14 3 \-q errors\fR
+shows only the error conters for this port
+.
+.TP
+\fBsmt\-port \-q route ibcore LL13 24\fR
+displays the nodes that can be reached via this port
+.
+.TP
+\fBsmt\-port \-dump\fR
+raw dump of all the information about all the ports
+.
+.SH "AUTHOR"
+Tim Meier \fImeier3@llnl\.gov\fR
+.
+.SH "COPYRIGHT"
+Copyright (c) 2016, Lawrence Livermore National Security, LLC\. Produced at the Lawrence Livermore National Laboratory\. All rights reserved\. LLNL\-CODE\-673346
+.
+.SH "SEE ALSO"
+SMT(7), OMS(7), OsmJniPi(8), smt(1), smt\-record(1), smt\-fabric(1), smt\-system(1), smt\-node(1), smt\-link(1)
+.
+.P
+opensm\-smt \fIhttps://github\.com/meier/opensm\-smt\fR on GitHub

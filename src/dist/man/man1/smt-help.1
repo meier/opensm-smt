@@ -1,0 +1,60 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "SMT\-HELP" "1" "September 2016" "User Commands" "Subnet Monitoring Tools"
+.
+.SH "NAME"
+\fBsmt\-help\fR \- a navigable help system for \fBOMS/SMT\fR
+.
+.SH "SYNOPSIS"
+\fBsmt\-help\fR [OPTIONS \fIargs\fR]
+.
+.SH "DESCRIPTION"
+This SMT command is a JavaHelp application\. It provides navigable and searchable help primarily for the \fBSMT\fR commands, but also contains some \fBOMS\fR background information as well as some key Infiniband and OpenSM information\.
+.
+.SH "OPTIONS"
+.
+.SS "Generic SMT Options"
+.
+.TP
+\fB\-?\fR, \fB\-\-Help\fR
+provides an abbreviated form of help
+.
+.TP
+\fB\-lf\fR, \fB\-\-logFile\fR=[FILE]
+the filename for holding this commands\' log messages
+.
+.TP
+\fB\-ll\fR, \fB\-\-logLevel\fR=[LEVEL]
+the verbosity of the logging, where LEVEL is SEVERE, WARNING, INFO, CONFIG, FINE, FINER, or ALL\.
+.
+.TP
+\fB\-rC\fR, \fB\-\-readConfig\fR=[FILE]
+reads the specified configuration file\. The configuration file typically holds a users\' default setting for things like the logLevel\. Refer to the \fIsmt\-config(1)\fR command\.
+.
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+prints the version of the SMT command
+.
+.SH "EXAMPLES"
+The \fBsmt\-help\fR command doesn\'t require command line arguments, except for diagnostic purposes\. The normal use is to invoke it without any options\.
+.
+.TP
+\fBsmt\-help\fR
+list the query options
+.
+.TP
+\fBsmt\-help \-v\fR
+starting at port 10011, and for the next 3 ports, attempt to find an OMS and report
+.
+.SH "AUTHOR"
+Tim Meier \fImeier3@llnl\.gov\fR
+.
+.SH "COPYRIGHT"
+Copyright (c) 2016, Lawrence Livermore National Security, LLC\. Produced at the Lawrence Livermore National Laboratory\. All rights reserved\. LLNL\-CODE\-673346
+.
+.SH "SEE ALSO"
+SMT(7), OMS(7), OsmJniPi(8), smt(1), smt\-server(1), smt\-gui(1),
+.
+.P
+opensm\-smt \fIhttps://github\.com/meier/opensm\-smt\fR on GitHub
