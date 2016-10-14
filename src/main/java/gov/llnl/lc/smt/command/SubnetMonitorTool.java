@@ -60,6 +60,7 @@ import gov.llnl.lc.smt.command.config.SmtConfig;
 import gov.llnl.lc.smt.props.SmtProperties;
 import gov.llnl.lc.smt.props.SmtProperty;
 
+import java.io.File;
 import java.lang.reflect.Method;
 import java.util.Map;
 
@@ -141,7 +142,6 @@ public class SubnetMonitorTool extends SmtCommand
     // everything is considered an argument that is not part of the subcommand
     // the first subcommand wins
     
-    // hopefully the node description is here, so save it
     saveCommandArgs(line.getArgs(), config);
 
     for(SmtCommandType s : SmtCommandType.SMT_COMMON_CMDS)
@@ -160,7 +160,6 @@ public class SubnetMonitorTool extends SmtCommand
   private void saveCommandArgs(String[] args, Map<String, String> config)
   {
     // stash the command line arguments away, because we will use them later
-    // see getNodeGuid()
     if((args != null && args.length > 0))
     {
       // save all the arguments in a single parameter
@@ -185,13 +184,24 @@ public class SubnetMonitorTool extends SmtCommand
     }
   }
   
-  private String getHistoryFileName(Map<String, String> map)
+  private String getHistoryFileName(Map<String, String> map, boolean usePersistedValue)
   {
-    return getPropertyValue(SmtProperty.SMT_READ_OMS_HISTORY, map);
+    // return this filename, only if it exists
+    String fn = getPropertyValue(SmtProperty.SMT_READ_OMS_HISTORY, map, usePersistedValue);
+    if(fn != null)
+    {
+      File hf = new File(fn);
+      if(hf.exists())
+        return fn;      
+    }
+
+    return null;
   }
   
-  private boolean isHelpWanted(Map<String, String> map)
+  private boolean isCommandHelpWanted(Map<String, String> map)
   {
+    // returns true if the commands help should be displayed.  This should happen
+    // only if an ? or Help shows up as arguments (without hyphens)
     if (map != null)
     {
       SmtProperty sp = SmtProperty.SMT_HELP;
@@ -202,34 +212,62 @@ public class SubnetMonitorTool extends SmtCommand
         for (String a : argA)
         {
           if ((a.equals(sp.getShortName()) || args.equals(sp.getName())))
+          {
+            System.err.println("Command arguments       : " + args);
+            System.err.println("Request for command help: " + a);
             return true;
+          }
         }
       }
     }
     return false;
   }
   
-  private String[] getCmdArgs(Map<String, String> map)
+  private String[] getCmdArgs(Map<String, String> map, SmtCommandType s)
   {
+    // parse or decode the map, with respect to the subcommand, and return
+    // a valid argument list (options + arguments) for that subcommand
+
     // default
-    if(isHelpWanted(map))
+    if(isCommandHelpWanted(map))
       return new String [] {"-?"};
     
+    // get the connection args
+    String[] omsSource = getOmsSourceArgs(map, s);
+    
+    // get the final resultant arguments
+    String[] cmdArgs = getDefaultArgs(omsSource, map, s);
+    
+    return cmdArgs;
+  }
+  
+  private String[] getOmsSourceArgs(Map<String, String> map, SmtCommandType s)
+  {
+    // return the method for retrieving an OMS snapshot (may be command specific)
+    
+    // preferential order
+    //
+    // use command line arguments if supplied
+    // if NOT supplied
+    //  use localhost and default port
+    //  use persisted history file
+    //  use persisted host and port
+    //
+    // first success wins!
+    
     String args[] = new String [4];
+    
+    // default arguments and values
     args[0] = "--host";
     args[1] = "localhost";
     args[2] = "-pn";
     args[3] = "10011";
 
-    // currently, support only -?, rH filename, h hostnane, pn port#
-    String F = getHistoryFileName(map);
-    String H = getHostName(map);
-    String P = getPortNumber(map);
+    // currently, support only rH filename, h hostnane, pn port#
+    String F = getHistoryFileName(map, false);
+    String H = getHostName(map, false);
+    String P = getPortNumber(map, false);
     
-    if(F != null)
-    {
-      args = new String [] {"-rH",F};
-    }
     if(H != null)
     {
       args[1] = H;
@@ -238,17 +276,129 @@ public class SubnetMonitorTool extends SmtCommand
     {
       args[3] = P;
     }
-    if((F != null) || (H != null) || (P != null))
-      return args;
-    return null;
+    
+    // F will take precedence over H & P
+    if(F != null)
+      args = new String [] {"-rH",F};
+
+    return args;
   }
   
-  private String getHostName(Map<String, String> map)
+  private String[] getDefaultArgs(String[] omsSource, Map<String, String> map, SmtCommandType s)
   {
-    return getPropertyValue(SmtProperty.SMT_HOST, map);
+    // return the "normal" arguments for this type of command
+    String[] newArgs = null;
+    String args[] = new String [] {""};
+    String line = map.get(SmtProperty.SMT_COMMAND_ARGS.getName());
+    
+    switch (s) 
+    {
+      case SMT_SERVICE_CMD:
+      case SMT_FABRIC_CMD:
+      case SMT_NODE_CMD:
+      case SMT_PORT_CMD:
+      case SMT_LINK_CMD:
+      case SMT_EVENT_CMD:
+      case SMT_ROUTE_CMD:
+      case SMT_PART_CMD:
+      case SMT_MCAST_CMD:
+      case SMT_CONSOLE_CMD:
+      case SMT_GUI_CMD:
+        args = omsSource;
+        break;
+        
+      case SMT_TOP_CMD:
+      case SMT_UTILIZE_CMD:
+        newArgs = new String[omsSource.length + 1];
+        newArgs[0] = "-once";
+        System.arraycopy(omsSource, 0, newArgs, 1, omsSource.length);
+        args = newArgs;
+        break;
+        
+      case SMT_ID_CMD:
+        args = omsSource;
+        // the id search needs an OMS SOURCE and one string
+        // for searching.  Put the string first, followed by
+        // OMS SOURCE args
+        if((line != null) && (line.length() > 1))
+        {
+          String lineArgs[] = line.split(" ");
+          int ndex = 0;
+          for (ndex = 0; ndex < lineArgs.length; ndex++)
+          {
+            String a = lineArgs[ndex];
+            if (a.equals("h") || a.equals("rH") || a.equals("pn"))
+            {
+              // ignore these, and skip the next argument too
+              ndex++;
+            }
+            else
+            {
+              newArgs = new String[omsSource.length + 1];
+              newArgs[0] = a;
+              System.arraycopy(omsSource, 0, newArgs, 1, omsSource.length);
+              args = newArgs;
+              break;
+            }
+          }
+        }
+        break;
+        
+      case SMT_HELP_CMD:
+      case SMT_ABOUT_CMD:
+        args = new String [] {"-lf"," %h/.smt/smt-tool%u.log"};
+        break;
+        
+      case SMT_FILE_CMD:
+        // use the i option and its argument, by default, if provided
+        // if NOT provided, try to use the persisted file if it exists
+        if((line != null) && (line.length() > 1) && (line.contains("i")))
+        {
+          String lineArgs[] = line.split(" ");
+          int ndex = 0;
+          for (String a : lineArgs)
+          {
+            if (a.equals("i"))
+            {
+              // the file name is either before or after the i, which one??
+              int fNdex = ndex == 0 ? 1: 0;
+              args = new String [] {"-lf"," %h/.smt/smt-file%u.log", "-i",lineArgs[fNdex]};
+              return args;
+            }
+            ndex++;
+          }
+        }
+        
+        String F = getHistoryFileName(map, true);
+        if(F != null)
+          args = new String [] {"-lf"," %h/.smt/smt-file%u.log", "-i",F};
+        break;
+        
+      case SMT_RECORD_CMD:
+        args = new String [] {"-lf"," %h/.smt/smt-record%u.log", "-?","record"};
+        break;
+        
+      case SMT_CONFIG_CMD:
+        args = new String [] {"-lf"," %h/.smt/smt-config%u.log", "-?","conf"};
+        break;
+        
+      case SMT_PRIV_CMD:
+        args = new String [] {"-lf"," %h/.smt/smt-priv%u.log", "-?","priv"};
+        break;
+        
+      default:
+        args = new String [] {"-lf"," %h/.smt/smt-tool%u.log"};
+        break;
+    }
+    return args;
   }
   
-  private String getPropertyValue(SmtProperty sp, Map<String, String> map)
+  private String getHostName(Map<String, String> map, boolean usePersistedValue)
+  {
+    return getPropertyValue(SmtProperty.SMT_HOST, map, usePersistedValue);
+  }
+  
+  private String getPropertyValue(SmtProperty sp, Map<String, String> map, boolean usePersistedValue)
   {
     if (map != null)
     {
@@ -268,13 +418,18 @@ public class SubnetMonitorTool extends SmtCommand
           }
         }
       }
+      else
+      {
+        if(usePersistedValue)
+          return map.get(sp.getName());
+      }
     }
     return null;
   }
   
-  private String getPortNumber(Map<String, String> map)
+  private String getPortNumber(Map<String, String> map, boolean usePersistedValue)
   {
-    return getPropertyValue(SmtProperty.SMT_PORT, map);
+    return getPropertyValue(SmtProperty.SMT_PORT, map, usePersistedValue);
   }
 
   /************************************************************
@@ -294,22 +449,29 @@ public class SubnetMonitorTool extends SmtCommand
   @Override
   public boolean doCommand(SmtConfig config) throws Exception
   {
-    boolean success = true;
+    boolean success = false;
     
     Map<String,String> map = smtConfig.getConfigMap();
     
     String subCommand = map.get(SmtProperty.SMT_SUBCOMMAND.getName());
-    if (subCommand == null)
-      subCommand = SmtProperty.SMT_HELP.getName();
-    else
+    
+    if (subCommand != null)
     {
       SmtCommandType s = SmtCommandType.getByName(subCommand);
       
-      // attempt to invoke the command
-      invokeSmtCommand(s, getCmdArgs(map));
-     return true;
-     }
-    return false;
+      if(s == null)
+        logger.severe("SubCommand not found by name");
+      else
+      {
+        // attempt to invoke the command
+        invokeSmtCommand(s, getCmdArgs(map, s));
+        success = true;
+      }      
+    }
+    else
+      printUsage();
+      
+    return success;
   }
 
   /************************************************************
@@ -378,9 +540,13 @@ public class SubnetMonitorTool extends SmtCommand
       Class<?> smtClass = null;
        try
       {
-        smtClass = Class.forName(className);
+         smtClass = Class.forName(className);
         Class[] argTypes = new Class[] { String[].class };
         Method main = smtClass.getDeclaredMethod("main", argTypes);
+        
+        // don't "invoke" with a null arg
+        if(cmdArgs == null)
+           cmdArgs = new String[] {""};
         
 //        System.out.format("invoking %s.main()%n", smtClass.getName());
 //        System.out.println("with arguments " + Arrays.toString(cmdArgs));

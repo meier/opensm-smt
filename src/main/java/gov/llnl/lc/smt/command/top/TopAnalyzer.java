@@ -1622,6 +1622,10 @@ public class TopAnalyzer implements CommonLogger, OSM_ServiceChangeListener
         return;
       
       logger.severe("Attempted to Kickstart TOP via a file or history from the Service, but was unsuccessful");
+      System.err.println("Attempted to Kickstart TOP via a file or history from the Service, but was unsuccessful");
+      System.err.println("If using a file, it may be corrupt, or may have only a single snapshot (minimum of 2 required)");
+
+      System.exit(0);
     }
     
     // given a new osmService object, calculate the new tops

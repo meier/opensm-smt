@@ -60,6 +60,7 @@ import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Node;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_NodeType;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Port;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_System;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
 import gov.llnl.lc.logging.CommonLogger;
@@ -71,10 +72,11 @@ import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 
 
-public class SystemTreeModel extends FabricTreeModel implements CommonLogger
+public class SystemTreeModel extends FabricTreeModelNew implements CommonLogger
 {
   private IB_Guid SysGuid;
   private HashMap <String, IB_Vertex> VertexMap;
+  private OSM_System OSM_sys;
 
   /************************************************************
    * Method Name:
@@ -115,51 +117,34 @@ public class SystemTreeModel extends FabricTreeModel implements CommonLogger
   public SystemTreeModel(OSM_Fabric fabric, IB_Guid sysGuid)
   {
     this(null);
-    // how many nodes are associated with this system image guid?
-    ArrayList<IB_Guid> guidList = fabric.getNodeGuidsForSystemGuid(sysGuid);
-    
-    if(guidList != null)
-      logger.info("There are " + fabric.getNodeGuidsForSystemGuid(sysGuid).size() + " nodes for this system guid: " + sysGuid.toColonString());
-    else
-    {
-      // this must be a single switch??
-      logger.warning("Could not find guids for system guid: " + sysGuid.toColonString());
-      guidList = new ArrayList <IB_Guid>();      
-      guidList.add(sysGuid); 
-    }
-    
+    // get an OSM_System object, which contains the structure of the chassis
+    OSM_System os = new OSM_System(sysGuid, fabric);
+
     // Build the Tree Model for System Image Guid
     
-    LinkedHashMap<String, IB_Vertex> vertexMap = IB_Vertex.createVertexMap(fabric, guidList);
+    LinkedHashMap<String, IB_Vertex> vertexMap = os.getVertexMap();
     if((vertexMap == null) || (vertexMap.size() == 0))
     {
       logger.severe("The VetexMap for System " + sysGuid.toColonString() + " could not be built (no matching guids?)");
     }
     else
-      createModel(vertexMap, sysGuid);
+      createModel(os);
   }
   
-  private void createModel(HashMap <String, IB_Vertex> vertexMap, IB_Guid sysGuid)
+  private void createModel(OSM_System osm_sys)
   {
-    // assume it already has depths
-    
     // this is the normal preferred way to construct the tree model
     
     // find the root, or roots, create a virtual root if necessary
+    OSM_sys = osm_sys;
+    SysGuid = osm_sys.getSysGuid();
+    VertexMap = osm_sys.getVertexMap();
+    String sysName = osm_sys.getName();
     
-    SysGuid = sysGuid;
-    VertexMap = vertexMap;
-    String sysName = "";
     IB_Vertex top = null;
     int maxDepth = IB_Vertex.getMaxDepth(VertexMap);
     LinkedHashMap <String, IB_Vertex> topLevel = IB_Vertex.getVertexMapAtDepth(VertexMap, maxDepth);
     
-    for (Entry<String, IB_Vertex> entry : VertexMap.entrySet())
-    {
-      IB_Vertex v = entry.getValue();
-      if((SysGuid.equals(new IB_Guid(v.getNode().sbnNode.sys_guid))))
-        sysName = getCommonName(sysName, v.getName());
-    }
     
     if(topLevel.size() > 1)
     {
@@ -193,7 +178,7 @@ public class SystemTreeModel extends FabricTreeModel implements CommonLogger
     }
     else if (topLevel.size() == 1)
     {
-//      System.err.println("Single top level");
+      System.err.println("Single top level");
       // there may be a single vertex at the top of a tree, but more likely this is just
       // a normal switch - not an assembly of switches
       rootReal = true;
@@ -211,11 +196,17 @@ public class SystemTreeModel extends FabricTreeModel implements CommonLogger
       System.err.println("No top level nodes in the vertex map");
       System.exit(-1);
     }
+    
+    // Root node for this model has been created as top
+    // so fill in its attributes, and then do the next level (children)
+    
+    
     // create the top level NVN for this System, and fill in its attributes    
     rootVertex = top;
     NameValueNode vmn = new NameValueNode("system", top);
     rootVertexNode = new UserObjectTreeNode(vmn, true);
     
+    // these are the details of the structure of the "system"
     addSystemAttributes(rootVertexNode);
 
     if(rootVertexNode == null)
@@ -223,98 +214,63 @@ public class SystemTreeModel extends FabricTreeModel implements CommonLogger
     else
     {
       addSwitches(rootVertexNode, topLevel, VertexMap);
-
-//      System.err.println("M: The UserObjectTreeNode exists");
-//      System.err.println("M: The root has: " + rootVertexNode.getChildCount() + " children");
-//      System.err.println("M: The root vertex has: " + rootVertex.getEdges().size() + " children");
-//      if(topLevel != null)
-//        System.err.println("M: The number at the next level down is: " + topLevel.size());
     }
  } 
   
   private boolean addSystemAttributes(UserObjectTreeNode parent)
   {
-    /*
+    /*  Refer to OSM_System object
+     * 
+     * name
      * guid
-     * total switches
-     * # level 4
-     * # level 3
-     * total ports
-     * #level 4
-     * #level 3
+     * # switches (and levels)
+     * # ports (active & inactive)
+     * # internal ports (active & inactive)
+     * # external ports (active & inactive)
      * 
      * #switch list
      */
-    int tot_ports = 0;
-    int top_ports = 0;
-    
-    for (Entry<String, IB_Vertex> entry : VertexMap.entrySet())
-    {
-      IB_Vertex v = entry.getValue();
-      tot_ports += v.getEdges().size();
-    }
 
-    NameValueNode      vmn = new NameValueNode("name", rootVertex.getName());
+    NameValueNode      vmn = new NameValueNode("name", OSM_sys.getName());
     UserObjectTreeNode vmtn = new UserObjectTreeNode(vmn, false);
     parent.add(vmtn);
 
-    vmn = new NameValueNode("guid", SysGuid.toColonString());
+    vmn = new NameValueNode("guid", OSM_sys.getSysGuid().toColonString());
     vmtn = new UserObjectTreeNode(vmn, false);
     parent.add(vmtn);
-    
-    int maxDepth = IB_Vertex.getMaxDepth(VertexMap);
-    LinkedHashMap <String, IB_Vertex> topLevel = IB_Vertex.getVertexMapAtDepth(VertexMap, maxDepth);
-    
-    for (Entry<String, IB_Vertex> entry : topLevel.entrySet())
-    {
-      IB_Vertex v = entry.getValue();
-      top_ports += v.getEdges().size();
-    }
-
-    int low_ports = tot_ports - top_ports;
-    int nTotSwitches = VertexMap.size();
-    int nTopSwitches = topLevel.size();
-    int nLowSwitches = nTotSwitches - nTopSwitches;
     
     // is this vertex a switch, or an hca ?
     if(rootVertex.getNode().isSwitch())
     {      
-      vmn = new NameValueNode("# total switches", nTotSwitches);
-      vmtn = new UserObjectTreeNode(vmn, false);
-      parent.add(vmtn);
-
-      vmn = new NameValueNode("# top level (" + maxDepth + ") switches", nTopSwitches);
-      vmtn = new UserObjectTreeNode(vmn, false);
-      parent.add(vmtn);
+      StringBuffer swStr = new StringBuffer();
+      swStr.append(OSM_sys.getTotalSwitches() + " (");
       
-      if(nLowSwitches > 0 )
+      for (int j=OSM_sys.getMaxDepth(); j >= OSM_sys.getMinDepth(); j--)
       {
-        vmn = new NameValueNode("# level (" + (maxDepth-1) + ") switches", nLowSwitches);
-        vmtn = new UserObjectTreeNode(vmn, false);
-        parent.add(vmtn);     
-      }      
-    }
-    
-     // add up all the ports in all switches
-    
-    vmn = new NameValueNode("# total ports", tot_ports);
-    vmtn = new UserObjectTreeNode(vmn, false);
-    parent.add(vmtn);
-    
-    if(rootVertex.getNode().isSwitch())
-    {      
-      vmn = new NameValueNode("# level " + maxDepth + " ports", top_ports);
-      vmtn = new UserObjectTreeNode(vmn, false);
-      parent.add(vmtn);
-      
-      if(low_ports > 0)
-      {
-        vmn = new NameValueNode("# level " + (maxDepth -1) + " ports", low_ports);
-        vmtn = new UserObjectTreeNode(vmn, false);
-        parent.add(vmtn);      
+        swStr.append(OSM_sys.getGuidList(j).size());
+        if(j == OSM_sys.getMinDepth())
+          swStr.append(")");
+        else
+          swStr.append("/");
       }
+      
+      vmn = new NameValueNode("# switches (top/next/etc)", swStr.toString());
+      vmtn = new UserObjectTreeNode(vmn, false);
+      parent.add(vmtn);
+      
+      vmn = new NameValueNode("# ports (active/inactive)", OSM_sys.getTotalPorts() + "  (" + OSM_sys.getTotalActivePorts() + "/" + OSM_sys.getTotalInactivePorts() + ")");
+      vmtn = new UserObjectTreeNode(vmn, false);
+      parent.add(vmtn);
+      
+      vmn = new NameValueNode("# internal ports (active/inactive)", OSM_sys.getTotalInternalPorts() + "  (" + OSM_sys.getActiveInternalPorts() + "/" + OSM_sys.getInactiveInternalPorts() + ")");
+      vmtn = new UserObjectTreeNode(vmn, false);
+      parent.add(vmtn);
+      
+      vmn = new NameValueNode("# external ports (active/inactive)", OSM_sys.getTotalExternalPorts() + "  (" + OSM_sys.getActiveExternalPorts() + "/" + OSM_sys.getInactiveExternalPorts() + ")");
+      vmtn = new UserObjectTreeNode(vmn, false);
+      parent.add(vmtn);
     }
-
+    
     return true;
   }
   

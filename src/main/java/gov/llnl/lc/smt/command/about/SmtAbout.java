@@ -58,6 +58,7 @@ package gov.llnl.lc.smt.command.about;
 import gov.llnl.lc.smt.SmtConstants;
 import gov.llnl.lc.smt.command.SmtCommand;
 import gov.llnl.lc.smt.command.config.SmtConfig;
+import gov.llnl.lc.smt.props.SmtProperty;
 
 import java.io.IOException;
 import java.net.URL;
@@ -198,10 +199,10 @@ public class SmtAbout extends SmtCommand
   @Override
   public boolean doCommand(SmtConfig config) throws Exception
   {
-    this.gatherRecordsFromManifest();
+    gatherRecordsFromManifest();
     
     // ALL, SMT, or OMS ?
-    this.printRecords();
+    printRecords();
     return true;
   }
 
@@ -249,6 +250,12 @@ public class SmtAbout extends SmtCommand
   @Override
   public boolean parseCommands(Map<String, String> config, CommandLine line)
   {
+    
+    // set the command, args, and sub-command
+    config.put(SmtProperty.SMT_COMMAND.getName(), this.getClass().getName());
+    SmtProperty sp = SmtProperty.SMT_ABOUT_COMMAND;
+    config.put(SmtProperty.SMT_SUBCOMMAND.getName(), sp.getName());
+        
     return true;
   }
 

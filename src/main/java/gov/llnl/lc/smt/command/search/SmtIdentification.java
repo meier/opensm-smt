@@ -68,6 +68,7 @@ import gov.llnl.lc.smt.command.SmtCommand;
 import gov.llnl.lc.smt.command.config.SmtConfig;
 import gov.llnl.lc.smt.command.route.SmtMulticast;
 import gov.llnl.lc.smt.command.route.SmtPartition;
+import gov.llnl.lc.smt.command.server.SmtServer;
 import gov.llnl.lc.smt.props.SmtProperty;
 
 import java.util.Map;
@@ -138,7 +139,7 @@ public class SmtIdentification extends SmtCommand
     SmtProperty sp = SmtProperty.SMT_READ_OMS_HISTORY;
     if(line.hasOption(sp.getName()))
     {
-      config.put(sp.getName(), line.getOptionValue(sp.getName()));
+      status = putHistoryProperty(config, line.getOptionValue(sp.getName()));
       config.put(SmtProperty.SMT_SUBCOMMAND.getName(), sp.getName());
     }
     
@@ -184,6 +185,15 @@ public class SmtIdentification extends SmtCommand
     //  on-line using localhost and port 10011
     
     // this is a ID command, and it can take a subcommand and an argument
+
+    // you really ought to be trying to id something, but if not, just return the status
+    //     of the server
+    if((config != null) && (getNumArgs(config) < 1))
+    {
+      System.out.println(SmtServer.getStatus(OMService));
+      return false;
+    }
+     
     String subCommand    = null;
     Map<String,String> map = smtConfig.getConfigMap();
     
@@ -196,7 +206,7 @@ public class SmtIdentification extends SmtCommand
     {
       map = config.getConfigMap();
       subCommand = map.get(SmtProperty.SMT_SUBCOMMAND.getName());
-       if(subCommand == null)
+      if(subCommand == null)
       {
         subCommand = SmtProperty.SMT_HELP.getName();
       }
@@ -244,7 +254,7 @@ public class SmtIdentification extends SmtCommand
   private int getMulticastLid(SmtConfig config)
   {
     // return a valid mlid, or -1
-    if(config != null)
+    if((config != null) && (OMService != null) && (OMService.getFabric() != null) && (OMService.getFabric().getOsmSubnet() != null))
     {
       Map<String,String> map = config.getConfigMap();
       int mLid = getLid( map.get(SmtProperty.SMT_COMMAND_ARGS.getName()));
@@ -286,10 +296,11 @@ public class SmtIdentification extends SmtCommand
   private int getPartitionKey(SmtConfig config)
   {
     // return a valid pKey, or -1
-    if(config != null)
+    if((config != null) && (OMService != null) && (OMService.getFabric() != null) && (OMService.getFabric().getOsmSubnet() != null))
     {
       Map<String,String> map = config.getConfigMap();
       int pKey = getLid( map.get(SmtProperty.SMT_COMMAND_ARGS.getName()));
+ 
       if(pKey >= 0)
       {
         // does this pKey exist in the fabric??
@@ -404,6 +415,24 @@ public class SmtIdentification extends SmtCommand
     }
   }
   
+  private int getNumArgs(SmtConfig config)
+  {
+    // if there are any arguments, return the number
+    int nArgs = 0;
+    if(config != null)
+    {
+      Map<String,String> map = config.getConfigMap();
+      String args = map.get(SmtProperty.SMT_COMMAND_ARGS.getName());
+
+      if(args != null)
+      {
+        String lineArgs[] = args.split(" ");
+        nArgs = lineArgs.length;
+       }
+    }
+     return nArgs;
+  }
+
   private IB_Guid getNodeGuid(SmtConfig config)
   {
     // if there are any arguments, they normally reference a node identifier

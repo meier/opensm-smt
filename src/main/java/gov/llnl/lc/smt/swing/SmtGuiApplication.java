@@ -89,7 +89,7 @@ import gov.llnl.lc.infiniband.opensm.plugin.gui.text.SMT_SearchPanel;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.text.SearchIdentificationPanel;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.text.TimeListenerPanel;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.FabricDiscoveryPanel;
-import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.FabricTreeModel;
+import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.FabricTreeModelNew;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.FabricTreePanel;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.LinkTreeModel;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.LinkTreePanel;
@@ -1359,7 +1359,7 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
       System.exit(-1);
     }
     Message_Mgr.postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INIT, "Building the FabricTreeModel from the VertexMap "));
-    FabricTreeModel treeModel = new FabricTreeModel(vertexMap, OMS.getFabric());
+    FabricTreeModelNew treeModel = new FabricTreeModelNew(vertexMap, OMS.getFabric());
 
     Message_Mgr.postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INIT, "Initializing the FabricTreePanel"));
     UserObjectTreeNode root = (UserObjectTreeNode) treeModel.getRoot();
@@ -1797,13 +1797,18 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
     
     final ArrayList<String> comd = new ArrayList<String>();
     // use the default script to invoke the command
+//    comd.add("/home/meier3/scripts/GitHubScripts/TstDevel/smt-gui.sh");
     comd.add("/usr/share/java/SubnetMonitorTool/bin/smt-gui");
     
     // try to use personal/custom/current settings for remainder
     // ** only args that can be used with the above script! **
-    comd.add("-rC /home/meier3/.smt/config.file");
-    comd.add("-lf /home/meier3/.smt/smt-gui%u.log");
+    
+    String dir = new String(SmtGuiPreferences.getDataDirName());
+
+    comd.add("-rC " + dir + "/config.file");
+    comd.add("-lf " + dir + "/smt-gui%u.log");
     comd.add(cmd);
+    
     final ProcessBuilder pb = new ProcessBuilder(comd);
     try
     {

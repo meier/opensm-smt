@@ -140,8 +140,12 @@ public class FabricSummaryPanel extends JPanel implements OSM_ServiceChangeListe
       buff.append("<p align=right>time stamp: " + SmtConstants.SPACE + "<b>" + tsString + "</b>");
       if(ServerStatus != null)
         buff.append("<br>up since: " + SmtConstants.SPACE + "<b>" + ServerStatus.Server.getStartTime().toString() + "</b>");
+      
+      // the structure and makeup of the fabric
       buff.append(fabStruct.toContent());
       buff.append("<br>");
+      
+      // a horizontal line
       buff.append(SmtConstants.H_LINE);
       
       // put software version stuff here

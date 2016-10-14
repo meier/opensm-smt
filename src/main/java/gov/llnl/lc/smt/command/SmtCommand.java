@@ -85,6 +85,7 @@ import gov.llnl.lc.smt.event.SmtMessageType;
 import gov.llnl.lc.smt.filter.SmtFilter;
 import gov.llnl.lc.smt.manager.MessageManager;
 import gov.llnl.lc.smt.manager.SMT_SearchManager;
+import gov.llnl.lc.smt.prefs.SmtGuiPreferences;
 import gov.llnl.lc.smt.props.SmtProperties;
 import gov.llnl.lc.smt.props.SmtProperty;
 import gov.llnl.lc.smt.swing.SmtSplashFrame;
@@ -92,8 +93,10 @@ import gov.llnl.lc.system.Console;
 import gov.llnl.lc.time.TimeStamp;
 
 import java.awt.Dimension;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -109,6 +112,8 @@ import org.apache.commons.cli.Options;
  * This abstract class should be extended for all SMT Commands. It servers to
  * provide default or common implementation, and to enforce the use of the
  * command interface.
+ * 
+ * Most of the action in this Class happens in the execute() method.
  * <p>
  * 
  * @see #SmtNode
@@ -642,8 +647,10 @@ public abstract class SmtCommand implements SmtCommandInterface, SmtConstants, C
    * init() (in the Objects Constructor) 1a. this execute() (from main()) 1b.
    * configure command line options (using an SmtConfig obj) 1b*.
    * parseCommands() - command specific (invoked within SmtCofnig) 1c. get an
-   * OMS 2. doCommand() the specific command 3. destroy (release resources,
+   * OMS*** 2. doCommand() the specific command 3. destroy (release resources,
    * etc.)
+   * 
+   * ** ideally, an OMS is only obtained if the command requires it
    * 
    * @see describe related java objects
    * 
@@ -653,7 +660,7 @@ public abstract class SmtCommand implements SmtCommandInterface, SmtConstants, C
   public boolean execute(String[] cmdLineArgs) throws Exception
   {
     boolean success = true;
-
+    
     // read in properties and preferences
     smtConfig = new SmtConfig();
 
@@ -667,28 +674,71 @@ public abstract class SmtCommand implements SmtCommandInterface, SmtConstants, C
       Map<String, String> map = smtConfig.getConfigMap();
       String cmdName = map.get(SmtProperty.SMT_COMMAND.getName());
       
-      // Special Case for gui commands that take a long time to start
-      if(SmtProperty.SMT_GUI_COMMAND.getPropertyName().equals(cmdName))
+      if(!SmtProperty.isSkipOMSCommandOption( map))
       {
-        // put up the splash panel (and have it live until the main window is ready - listen for ready event)
-        Splash = new SmtSplashFrame(SmtCommandType.SMT_GUI_CMD.getToolName(), SubnetMonitorTool.getVersion());
-//        Splash = new SmtSplashFrame(SmtProperty.SMT_GUI_COMMAND.getName(), SubnetMonitorTool.getVersion());
-        if(!skipMessages())
-          MessageManager.getInstance().postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INIT, "Initial Splash Message"));
-      }
+        if(!smtConfig.isOmsSpecified())
+        {
+          // nothing specified so use persisted data if possible, or just
+          // fall through and use the default (localhost 10011)
+          // defaults
+          String method = SmtGuiPreferences.getHist_1();
+          
+          String mst = "A method to obtain OMS data was not specified, so using the previous persisted method";
+          MessageManager.getInstance().postMessage(new SmtMessage(SmtMessageType.SMT_MSG_WARNING, mst));
+          logger.warning(mst);
+//          System.err.println("The command: " +cmdName);
+//          System.err.println("The subcommand: " + map.get(SmtProperty.SMT_SUBCOMMAND.getName() ));
+//          System.err.println("The query type: " + map.get(SmtProperty.SMT_QUERY_TYPE.getName() ));
+          
+          // this will either be a path, or start with -h and have -pn in it
+          if(method.startsWith("-h"))
+          {
+            // the persisted method seems to be a host and port number, so jamb it into the map
+            // as if it was entered on the command line
+            
+            String[] cmdArgs = method.split(" ");  // will be in form "-h hostName -pn portNumber"
+            
+            // save the host name and port number
+            map.put(SmtProperty.SMT_HOST.getName(), cmdArgs[1]);
+            map.put(SmtProperty.SMT_PORT.getName(), cmdArgs[3]);
+          }
+          else if (method.length() > 3)
+          {
+            // the persisted method seems to be a filename, so jamb it into the map
+            // as if it was entered on the command line
+            
+            // save the file name as a History file to be used
+            map.put(SmtProperty.SMT_READ_OMS_HISTORY.getName(), method);
+          }
+        }
+        
+        // Special Case for gui commands that take a long time to start
+        if(SmtProperty.SMT_GUI_COMMAND.getPropertyName().equals(cmdName))
+        {
+          // put up the splash panel (and have it live until the main window is ready - listen for ready event)
+          Splash = new SmtSplashFrame(SmtCommandType.SMT_GUI_CMD.getToolName(), SubnetMonitorTool.getVersion());
+//          Splash = new SmtSplashFrame(SmtProperty.SMT_GUI_COMMAND.getName(), SubnetMonitorTool.getVersion());
+          if(!skipMessages())
+            MessageManager.getInstance().postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INIT, "Initial Splash Message"));
+        }
 
-      // some commands shouldn't attempt to connect to the service, but most do
-      if (!SmtProperty.isSkipOMSCommand(map.get(SmtProperty.SMT_COMMAND.getName())) && online)
-      {
-        if(!skipMessages())
-          MessageManager.getInstance().postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INIT, "Getting an OMS for command: " + map.get(SmtProperty.SMT_COMMAND.getName())));
-       logger.info("Getting an OMS for command: " + map.get(SmtProperty.SMT_COMMAND.getName()));
-        // attempt to get an initial instance from a connection or a file
-        OMService = this.getOpenSmMonitorService();
+        // some commands shouldn't attempt to connect to the service, but most do
+        if (!SmtProperty.isSkipOMSCommand(map.get(SmtProperty.SMT_COMMAND.getName())) && online)
+        {
+          if(!skipMessages())
+            MessageManager.getInstance().postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INIT, "Getting an OMS for command: " + map.get(SmtProperty.SMT_COMMAND.getName())));
+         logger.info("Getting an OMS for command: " + map.get(SmtProperty.SMT_COMMAND.getName()));
+          // attempt to get an initial instance from a connection or a file
+          OMService = this.getOpenSmMonitorService();
+        }
+        else
+        {
+          logger.info("An smt command that does not require an initial OMS was detected: " + map.get(SmtProperty.SMT_COMMAND.getName()));
+        }
       }
       else
       {
-        logger.info("An smt command that does not require an initial OMS was detected: " + map.get(SmtProperty.SMT_COMMAND.getName()));
+        logger.info("A special OMS Command Option was detected that does not require an OMS snapshot");
       }
 
       // if asking for version info, provide it and stop
@@ -703,13 +753,15 @@ public abstract class SmtCommand implements SmtCommandInterface, SmtConstants, C
       {
         if(!skipMessages())
           MessageManager.getInstance().postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INIT, "Starting command specific work"));
-        doCommand(smtConfig);
+        success = doCommand(smtConfig);
+        if(!success)
+          logger.severe("doCommand() failed for command: " + cmdName);
       }
     }
     else
     {
       // if here, nothing valid on the command line, assume needs help
-      logger.severe("returned false");
+      logger.severe("Parsing cmd line options for " + this.getClass().getCanonicalName() + " returned false");
       printUsage();
     }
 
@@ -845,11 +897,13 @@ public abstract class SmtCommand implements SmtCommandInterface, SmtConstants, C
 
   public static String convertSpecialFileName(String fname)
   {
-    if (fname == null)
+    if ((fname == null) || (fname.length() < 2))
       return null;
 
     String fileName = fname;
 
+    if (fname.startsWith("~"))
+      fileName = System.getProperty("user.home") + fname.substring(1);
     if (fname.startsWith("%h"))
       fileName = System.getProperty("user.home") + fname.substring(2);
     if (fname.startsWith("%t"))
@@ -1082,6 +1136,9 @@ public abstract class SmtCommand implements SmtCommandInterface, SmtConstants, C
         catch (Exception e)
         {
           logger.severe("Couldn't read the History file");
+          
+          // must be a bad value, so clear it out if possible
+          map.remove(SmtProperty.SMT_READ_OMS_HISTORY.getName());
         }
       }
       else
@@ -1310,6 +1367,8 @@ public abstract class SmtCommand implements SmtCommandInterface, SmtConstants, C
       smt = true;
     if (SmtProperty.SMT_UTILIZE_COMMAND.getPropertyName().compareTo(this.getClass().getName()) == 0)
       smt = true;
+    if (SmtProperty.SMT_EVENT_COMMAND.getPropertyName().compareTo(this.getClass().getName()) == 0)
+      smt = true;
     return smt;
   }
 
@@ -1413,6 +1472,26 @@ public abstract class SmtCommand implements SmtCommandInterface, SmtConstants, C
       return false;
     return (smtFilter.isFiltered(test));
   }
+  
+  protected boolean putHistoryProperty(Map<String, String> map, String fn)
+  {
+    boolean status = false;
+    SmtProperty sp = SmtProperty.SMT_READ_OMS_HISTORY;
+    if(fn != null)
+    {
+      // save this, only if its a valid file
+      File hf = new File(fn);
+      if(hf.exists())
+      {
+        status = true;  // a valid argument
+        map.put(sp.getName(), fn);
+      }
+    }
+    return status;
+  }
+
+  
+  
 
   /************************************************************
    * Method Name: SmtCommand

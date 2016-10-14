@@ -151,7 +151,7 @@ public class SmtFabric extends SmtCommand
     SmtProperty sp = SmtProperty.SMT_READ_OMS_HISTORY;
     if(line.hasOption(sp.getName()))
     {
-      config.put(sp.getName(), line.getOptionValue(sp.getName()));
+      status = putHistoryProperty(config, line.getOptionValue(sp.getName()));
       config.put(SmtProperty.SMT_SUBCOMMAND.getName(), sp.getName());
     }
     
@@ -280,7 +280,7 @@ public class SmtFabric extends SmtCommand
     else if (subCommand.equalsIgnoreCase(SmtProperty.SMT_QUERY_TYPE.getName()))
     {
       FabricQuery qType = FabricQuery.getByName(map.get(SmtProperty.SMT_QUERY_TYPE.getName()));
-      
+           
       if(qType == null)
       {
         logger.severe("Invalid SmtFabric query option");
@@ -325,8 +325,11 @@ public class SmtFabric extends SmtCommand
           // check for dynamic link errors AND configuration errors
           System.out.println("Checking for Link errors...");
           LinkedHashMap<String, String> errMap = IB_LinkInfo.getErrorLinkInfoRecords(OMService, getOSM_FabricDelta(false));
-          for (Map.Entry<String, String> mapEntry : errMap.entrySet())
-            System.out.println(mapEntry.getValue());
+          if((errMap != null) && !(errMap.isEmpty()))
+            for (Map.Entry<String, String> mapEntry : errMap.entrySet())
+              System.out.println(mapEntry.getValue());
+          else
+            System.out.println("  no errors found");
           System.out.println();
  
           cfg = getOsmConfig(true);

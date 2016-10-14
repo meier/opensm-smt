@@ -295,9 +295,12 @@ public class SmtUtilize extends SmtCommand implements SMT_AnalysisChangeListener
     if(line.hasOption(sp.getName()))
     {
       // put the file in both places
-      config.put(sp.getName(), line.getOptionValue(sp.getName()));
+      status = putHistoryProperty(config, line.getOptionValue(sp.getName()));
+      if(status)
+      {
       config.put(SmtProperty.SMT_FILE_NAME.getName(), convertSpecialFileName(line.getOptionValue(sp.getName())));
       config.put(SmtProperty.SMT_OMS_COLLECTION_FILE.getName(), convertSpecialFileName(line.getOptionValue(sp.getName())));
+      }
      
       // see if there was a timestamp specified, and if so, does it make sense
       String ts = config.get(SmtProperty.SMT_TIMESTAMP.getName());

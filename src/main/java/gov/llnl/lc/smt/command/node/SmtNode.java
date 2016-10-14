@@ -205,6 +205,14 @@ public class SmtNode extends SmtCommand
       if((OMService != null) && (g != null))
       {
         fd = getOSM_FabricDelta(false);
+        if(fd == null)
+          fd = getOSM_FabricDelta(true);
+        if(fd == null)
+        {
+          logger.severe("Unable to obtain OSM_FabricDelta");
+          System.err.println("Unable to obtain OSM_FabricDelta");
+          System.exit(1);
+        }
         fabric = fd.getFabric2();
         fda          = new OSM_FabricDeltaAnalyzer(fd);
         n = fabric.getOSM_Node(g);
@@ -648,7 +656,7 @@ public class SmtNode extends SmtCommand
     SmtProperty sp = SmtProperty.SMT_READ_OMS_HISTORY;
     if(line.hasOption(sp.getName()))
     {
-      config.put(sp.getName(), line.getOptionValue(sp.getName()));
+      putHistoryProperty(config, line.getOptionValue(sp.getName()));
       config.put(SmtProperty.SMT_SUBCOMMAND.getName(), sp.getName());
     }
     

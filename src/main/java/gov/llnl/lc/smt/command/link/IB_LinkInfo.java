@@ -934,11 +934,12 @@ return map;
     LinkedHashMap<String, IB_Edge> edgeMap = fda.getDynamicErrorEdgeMap();
     
     // return only good links, with dynamic errors
-    for (Entry<String, IB_Edge> entry : edgeMap.entrySet())
-    {
-      IB_Edge e = entry.getValue();
-      map.putAll(IB_LinkInfo.getLinkInfoRecords(e, vertexMap, oms, fd));      
-    }
+    if((edgeMap != null) && !(edgeMap.isEmpty()))
+      for (Entry<String, IB_Edge> entry : edgeMap.entrySet())
+      {
+        IB_Edge e = entry.getValue();
+        map.putAll(IB_LinkInfo.getLinkInfoRecords(e, vertexMap, oms, fd));      
+      }
      return map;
   }
 

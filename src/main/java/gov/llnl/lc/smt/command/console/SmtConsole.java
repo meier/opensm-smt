@@ -139,11 +139,12 @@ public class SmtConsole extends SmtCommand
     sp = SmtProperty.SMT_READ_OMS_HISTORY;
     if(line.hasOption(sp.getName()))
     {
-      config.put(sp.getName(), line.getOptionValue(sp.getName()));
+      // save this, only if its a valid file
+      boolean status = putHistoryProperty(config, line.getOptionValue(sp.getName()));
       config.put(SmtProperty.SMT_SUBCOMMAND.getName(), sp.getName());
-      // save the argument, which should be the filename
       
-      config.put(SmtProperty.SMT_FILE_NAME.getName(), convertSpecialFileName(line.getOptionValue(sp.getName())));      
+      if(status)
+        config.put(SmtProperty.SMT_FILE_NAME.getName(), convertSpecialFileName(line.getOptionValue(sp.getName())));      
     }
     
 

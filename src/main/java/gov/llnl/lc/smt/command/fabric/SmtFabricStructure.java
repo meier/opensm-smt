@@ -69,6 +69,7 @@ import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Port;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Ports;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Stats;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_SysInfo;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_System;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
 import gov.llnl.lc.infiniband.opensm.plugin.data.SBN_Node;
 import gov.llnl.lc.infiniband.opensm.plugin.data.SBN_NodePortStatus;
@@ -463,6 +464,9 @@ public class SmtFabricStructure implements CommonLogger, SmtConstants
       return false;
     }
     
+    
+    // links determined
+    determineSystemStructure(vertexMap, Fabric);    
     determineLinkStructure(ibla);
 
     int[] Lnum_nodes = new int[4];
@@ -519,6 +523,46 @@ public class SmtFabricStructure implements CommonLogger, SmtConstants
     return true;
   }
   
+  /************************************************************
+   * Method Name:
+   *  determineSystemStructure
+  **/
+  /**
+   * Describe the method here
+   *
+   * @see     describe related java objects
+   *
+   * @param vertexMap
+   * @param fabric2
+   ***********************************************************/
+  private boolean determineSystemStructure(LinkedHashMap<String, IB_Vertex> vertexMap1, OSM_Fabric fabric)
+  {
+    
+    fabric.createSystemGuidBins(false);
+
+    BinList <IB_Guid> guidBins = fabric.getSystemGuidBins();
+    if(guidBins.size() < 1)
+      return false;
+    
+    // we have at least one core switch (a system guid associated with multiple node guids)
+    int k = 0;
+    for(ArrayList <IB_Guid> gList: guidBins)
+    {
+      // create a dummy Vertex for each system guid, and give it the system guid
+      String sGuid = guidBins.getKey(k);
+      IB_Guid sysGuid = new IB_Guid(sGuid);
+      
+      OSM_System osm_sys = new OSM_System(sysGuid, fabric);
+      osm_sys.determineStructure(fabric);
+      System.err.println(osm_sys.toContent());
+
+      k++;
+    }
+
+     return true;
+  }
+
+
   public String toSwitchString()
   {
     StringBuffer buff = new StringBuffer();

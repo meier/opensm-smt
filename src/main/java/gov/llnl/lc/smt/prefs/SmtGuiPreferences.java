@@ -95,7 +95,6 @@ public static final String JAVA_VERSION        = "java.version";
 public static final String FILE_SEPERATOR      = "file.separator";
 public static final String LINE_SEPERATOR      = "line.separator";
 
-
 /** default value for the installation directory **/
 /** this is where the other directories (persist,config,cache) go **/
 public static final String DEFAULT_INSTALL_PATH_LINUX = "%h/.smt";
@@ -155,6 +154,7 @@ private static final String SMT_GUI_HIST_3  = "SmtGuiHistory3";
 private static final String SMT_GUI_HIST_4  = "SmtGuiHistory4";                                                  
 private static final String SMT_GUI_HIST_5  = "SmtGuiHistory5";                                                  
 
+private static final String NEW_LINE = System.getProperty(LINE_SEPERATOR);
 
 /** the root preference node for the system **/
   private static java.util.prefs.Preferences  mySystemRoot =
@@ -195,7 +195,20 @@ private static final String SMT_GUI_HIST_5  = "SmtGuiHistory5";
     private static java.util.prefs.Preferences  myPreferences =
         mySmtSystem.node(SMT_SYSTEM_NODE_NAME);
 
-     /**
+    static
+    {
+      // if not windows, then assume it is Linux
+      if (SmtGuiPreferences.isOsWindows())
+      {
+        SmtGuiPreferences.setDirectories(SmtGuiPreferences.DEFAULT_INSTALL_PATH_WIN32);
+      }
+      else
+      {
+        SmtGuiPreferences.setDirectories(SmtGuiPreferences.DEFAULT_INSTALL_PATH_LINUX);
+      }
+    }
+    
+    /**
     * Private constructor because this class is not meant to be constructed.
     * Only class (static) methods are provided.
     **/
@@ -625,30 +638,55 @@ private static final String SMT_GUI_HIST_5  = "SmtGuiHistory5";
    ***********************************************************/
   public static void main(String[] args)
   {
-    // if not windows, then assume it is Linux
-    if (SmtGuiPreferences.isOsWindows())
-    {
-      SmtGuiPreferences.setDirectories(SmtGuiPreferences.DEFAULT_INSTALL_PATH_WIN32);
-    }
-    else
-    {
-      SmtGuiPreferences.setDirectories(SmtGuiPreferences.DEFAULT_INSTALL_PATH_LINUX);
-    }
+    System.out.println(SmtGuiPreferences.toStaticString());
+  }
+
+  /************************************************************
+   * Method Name:
+   *  toString
+  **/
+  /**
+   * Describe the method here
+   *
+   * @see java.lang.Object#toString()
+   *
+   * @return
+   ***********************************************************/
+  
+  public static String toStaticString()
+  {
+    StringBuffer buff = new StringBuffer();
     
-    System.out.println("DataDirName     = " + SmtGuiPreferences.getDataDirName());
-    System.out.println("DataDir         = " + SmtGuiPreferences.getDataDir());
-    System.out.println("PersistDirName  = " + SmtGuiPreferences.getPersistDirName());
-    System.out.println("PersistDir      = " + SmtGuiPreferences.getPersistDir());
-    System.out.println("CacheDirName    = " + SmtGuiPreferences.getCacheDirName());
-    System.out.println("CacheDir        = " + SmtGuiPreferences.getCacheDir());
-    System.out.println("ConfigDirName   = " + SmtGuiPreferences.getConfigDirName());
-    System.out.println("ConfigDir       = " + SmtGuiPreferences.getConfigDir());
-    System.out.println("NumProcessors   = " + SmtGuiPreferences.getNumberOfProcessors());
-    System.out.println("Linux?          = " + Boolean.toString(SmtGuiPreferences.isOsLinux()));
-    System.out.println("MaxMemAvailable = " + SmtGuiPreferences.getMaximumMemoryAvailable());
-    System.out.println("ProcessId       = " + SmtGuiPreferences.getProcessId());
-    System.out.println("UserId          = " + SmtGuiPreferences.getUserId());
-    System.out.println("UserName        = " + SmtGuiPreferences.getUserName());
+    buff.append("DataDirName     = " + SmtGuiPreferences.getDataDirName());
+    buff.append(NEW_LINE);
+    buff.append("DataDir         = " + SmtGuiPreferences.getDataDir());
+    buff.append(NEW_LINE);
+    buff.append("PersistDirName  = " + SmtGuiPreferences.getPersistDirName());
+    buff.append(NEW_LINE);
+    buff.append("PersistDir      = " + SmtGuiPreferences.getPersistDir());
+    buff.append(NEW_LINE);
+    buff.append("CacheDirName    = " + SmtGuiPreferences.getCacheDirName());
+    buff.append(NEW_LINE);
+    buff.append("CacheDir        = " + SmtGuiPreferences.getCacheDir());
+    buff.append(NEW_LINE);
+    buff.append("ConfigDirName   = " + SmtGuiPreferences.getConfigDirName());
+    buff.append(NEW_LINE);
+    buff.append("ConfigDir       = " + SmtGuiPreferences.getConfigDir());
+    buff.append(NEW_LINE);
+    buff.append("NumProcessors   = " + SmtGuiPreferences.getNumberOfProcessors());
+    buff.append(NEW_LINE);
+    buff.append("Linux?          = " + Boolean.toString(SmtGuiPreferences.isOsLinux()));
+    buff.append(NEW_LINE);
+    buff.append("MaxMemAvailable = " + SmtGuiPreferences.getMaximumMemoryAvailable());
+    buff.append(NEW_LINE);
+    buff.append("ProcessId       = " + SmtGuiPreferences.getProcessId());
+    buff.append(NEW_LINE);
+    buff.append("UserId          = " + SmtGuiPreferences.getUserId());
+    buff.append(NEW_LINE);
+    buff.append("UserName        = " + SmtGuiPreferences.getUserName());
+    buff.append(NEW_LINE);
+    
+    return buff.toString();
   }
 
 }

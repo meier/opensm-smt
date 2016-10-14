@@ -58,10 +58,8 @@ package gov.llnl.lc.infiniband.opensm.plugin.gui.tree;
 import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Updater;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Node;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_ServiceChangeListener;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
-import gov.llnl.lc.infiniband.opensm.plugin.data.SBN_Node;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionEvent;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.SystemErrGraphListener;
@@ -267,15 +265,27 @@ public class FabricTreePanel extends JPanel implements OSM_ServiceChangeListener
     
     // we have at least one core switch (a system guid associated with multiple node guids)
     int k = 0;
+    IB_Guid sbg = new IB_Guid(v.getNode().sbnNode.sys_guid);
     for(ArrayList <IB_Guid> gList: guidBins)
     {
-      // create a dummy Vertex for each system guid, and give it the system guid
+      // get the bins key, which is the guid string
       String sGuid = guidBins.getKey(k);
       IB_Guid sysGuid = new IB_Guid(sGuid);
-      if(v.getGuid().equals(sysGuid))
+      
+      if((v.getGuid().equals(sysGuid)) || (sbg.equals(sysGuid)))
         return true;
       k++;
     }
+//    int k = 0;
+//    for(ArrayList <IB_Guid> gList: guidBins)
+//    {
+//      // create a dummy Vertex for each system guid, and give it the system guid
+//      String sGuid = guidBins.getKey(k);
+//      IB_Guid sysGuid = new IB_Guid(sGuid);
+//      if(v.getGuid().equals(sysGuid))
+//        return true;
+//      k++;
+//    }
     return false;
   }
   
@@ -308,7 +318,7 @@ public class FabricTreePanel extends JPanel implements OSM_ServiceChangeListener
     if (vertexMap == null)
       System.exit(-1);
     System.err.println("There are " + vertexMap.size() + " vertices");
-    FabricTreeModel treeModel = new FabricTreeModel(vertexMap, OMS.getFabric());
+    FabricTreeModelNew treeModel = new FabricTreeModelNew(vertexMap, OMS.getFabric());
 
     UserObjectTreeNode root = (UserObjectTreeNode) treeModel.getRoot();
     if (root != null)
@@ -342,19 +352,19 @@ public class FabricTreePanel extends JPanel implements OSM_ServiceChangeListener
   public void osmServiceUpdate(OMS_Updater updater, OpenSmMonitorService osmService)
       throws Exception
   {
-    FabricTreeModel model = null;
+    FabricTreeModelNew model = null;
     setOMS(osmService);
     
     // if the updater is an SMT_Updater, skip analysis, already done
     if(updater instanceof SMT_UpdateService)
-       model = new FabricTreeModel(((SMT_UpdateService)updater).getVertexMap(), osmService.getFabric());
+       model = new FabricTreeModelNew(((SMT_UpdateService)updater).getVertexMap(), osmService.getFabric());
     else
     {
       LinkedHashMap<String, IB_Vertex> vertexMap = IB_Vertex.createVertexMap(osmService.getFabric());
       if (vertexMap == null)
         System.exit(-1);
       logger.info("There are " + vertexMap.size() + " vertices");
-      model = new FabricTreeModel(vertexMap, osmService.getFabric());
+      model = new FabricTreeModelNew(vertexMap, osmService.getFabric());
     }
     
     UserObjectTreeNode root = (UserObjectTreeNode) model.getRoot();

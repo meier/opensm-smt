@@ -84,12 +84,14 @@ public enum SmtCommandType
   SMT_CONFIG_CMD(        209, "smt-config",  "gov.llnl.lc.smt.command.config.SmtConfig",          "config",  "c",   "cmd args", "checks or modifies the SMT configuration"),
   SMT_ROUTE_CMD(         210, "smt-route",   "gov.llnl.lc.smt.command.route.SmtRoute",            "route",   "r",   "cmd args", "routing table tools"),
   SMT_GUI_CMD(           211, "smt-gui",     "gov.llnl.lc.smt.command.gui.SmtGui",                "gui",     "gui", "cmd args", "a gui fabric exploration tool"),
+  SMT_SYSTEM_CMD(        212, "smt-system",  "gov.llnl.lc.smt.command.system.SmtSystem",          "system",  "sys", "cmd args", "discovers and shows systems in the fabric"),
   SMT_EVENT_CMD(         213, "smt-event",   "gov.llnl.lc.smt.command.event.SmtEvent",            "event",   "e",   "cmd args", "shows SM events, traps, and exceptions"),
   SMT_ID_CMD(            214, "smt-id",      "gov.llnl.lc.smt.command.search.SmtIdentification",  "id",      "id",  "cmd args", "an identificaton tool (name resolver)"),
   SMT_HELP_CMD(          215, "smt-help",    "gov.llnl.lc.smt.command.help.SmtHelp",              "help",     "h",  "cmd args", "a gui help tool"),
   SMT_MCAST_CMD(         216, "smt-multicast","gov.llnl.lc.smt.command.route.SmtMulticast",       "multicast","m",  "cmd args", "a multicast group tool"),
   SMT_PART_CMD(          217, "smt-partition","gov.llnl.lc.smt.command.route.SmtPartition",       "partition","part","cmd args","a partition tool"),
   SMT_UTILIZE_CMD(       218, "smt-utilize", "gov.llnl.lc.smt.command.utilize.SmtUtilize",        "utilize",  "util","cmd args","show bandwitdh utilization"),
+  SMT_SERVICE_CMD(       219, "smt-server",  "gov.llnl.lc.smt.command.server.SmtServer",          "server",   "srv","cmd args","show the status of the OpenSM Monitoring Service"),
   SMT_PRIV_CMD(          220, "smt-priv",    "gov.llnl.lc.smt.command.privileged.SmtPrivileged",  "priv",    "pv",  "cmd args", "a set of privileged commands"),
   SMT_ALIAS_CMD(         300, "smt-config",  "gov.llnl.lc.smt.command.config.SmtConfig",          "config",  "c",   "cmd args", "checks or modifies the SMT configuration"),
   SMT_CONSOLE_MGR(       301, "smt-console", "gov.llnl.lc.smt.command.console.SmtConsoleManager", "console", "con", "cmd args", "a curses application for viewing OMS information"),
@@ -164,9 +166,6 @@ public enum SmtCommandType
     }
     return len;
   }
-
-
-
   
   private int CmdNum;
   

@@ -57,6 +57,7 @@ package gov.llnl.lc.smt.command.config;
 
 import gov.llnl.lc.smt.SmtConstants;
 import gov.llnl.lc.smt.command.SmtCommand;
+import gov.llnl.lc.smt.props.CommandProperties;
 import gov.llnl.lc.smt.props.SmtProperties;
 import gov.llnl.lc.smt.props.SmtProperty;
 
@@ -110,7 +111,7 @@ public class SmtConfig  extends SmtCommand
   {
     super();
     
-    // initialize the map with the default crap
+    // initialize the map with the default crap (over write as needed later)
     SmtProperties sProp = new SmtProperties();
     
     // put these in the map
@@ -119,6 +120,40 @@ public class SmtConfig  extends SmtCommand
     sConfigMap.put(SmtProperty.SMT_LOG_FILE.getName(), sProp.gProp.nProp.getProperty(SmtProperty.SMT_LOG_FILE.getPropertyName()));
     sConfigMap.put(SmtProperty.SMT_LOG_LEVEL.getName(), sProp.gProp.nProp.getProperty(SmtProperty.SMT_LOG_LEVEL.getPropertyName()));
     createDefaultDir();
+    
+    // save the number of arguments
+    sConfigMap.put(CommandProperties.SCMD_NUM_ARGS, Integer.toString(0));
+    sConfigMap.put(CommandProperties.SCMD_FILE_SPECIFIED, Boolean.toString(false));
+    sConfigMap.put(CommandProperties.SCMD_HOST_SPECIFIED, Boolean.toString(false));
+    sConfigMap.put(CommandProperties.SCMD_PORT_SPECIFIED, Boolean.toString(false));
+  }
+  
+  /************************************************************
+   * Method Name:
+   *  isOmsSpecified
+  **/
+  /**
+   * True is a method to obtain the OMS is specified.  Generally, this
+   * means either a file name is given with the -rH option, or a host and
+   * port number is given with the -h and -pn options.
+   * 
+   * If neither of these were specified, this function will return false.
+   * 
+   * Either a persisted value can be used, or a default value can be used
+   * to obtain the service.
+   *
+   * @see     describe related java objects
+   *
+   * @return
+   ***********************************************************/
+  public boolean isOmsSpecified()
+  {
+    boolean bf = Boolean.valueOf(sConfigMap.get(CommandProperties.SCMD_FILE_SPECIFIED));
+    boolean bh = Boolean.valueOf(sConfigMap.get(CommandProperties.SCMD_HOST_SPECIFIED));
+    boolean bp = Boolean.valueOf(sConfigMap.get(CommandProperties.SCMD_PORT_SPECIFIED));
+    // return true if host or port is specified on the command line
+    
+    return bf || bh || bp;
   }
 
   private Map<String,String> sConfigMap = new HashMap<String,String>();
@@ -258,6 +293,9 @@ public class SmtConfig  extends SmtCommand
     Options options = command.getOptions();
     CommandLine line = null;
     
+    // save the number of arguments
+    sConfigMap.put(CommandProperties.SCMD_NUM_ARGS, Integer.toString(args.length));
+    
     if((args.length < 1) || (options == null))
     {
       System.err.println("No args or options, ending");
@@ -290,7 +328,16 @@ public class SmtConfig  extends SmtCommand
 //      System.err.println("Parsed line is for help");
       return false;
     }
+    
     sp = SmtProperty.SMT_VERSION;
+    if(line.hasOption(sp.getName()))
+    {
+      sConfigMap.put(sp.getName(), line.getOptionValue(sp.getName()));
+      sConfigMap.put(SmtProperty.SMT_COMMAND.getName(), sp.getName());
+      return true;
+    }
+    
+    sp = SmtProperty.SMT_ABOUT_COMMAND;
     if(line.hasOption(sp.getName()))
     {
       sConfigMap.put(sp.getName(), line.getOptionValue(sp.getName()));
@@ -330,6 +377,7 @@ public class SmtConfig  extends SmtCommand
       status = true;  // a valid argument
 
       sConfigMap.put(sp.getName(), line.getOptionValue(sp.getName()));
+      sConfigMap.put(CommandProperties.SCMD_HOST_SPECIFIED, Boolean.toString(true));
     }
 
     sp = SmtProperty.SMT_PORT;
@@ -337,13 +385,18 @@ public class SmtConfig  extends SmtCommand
     {
       status = true;  // a valid argument
       sConfigMap.put(sp.getName(), line.getOptionValue(sp.getName()));
+      sConfigMap.put(CommandProperties.SCMD_PORT_SPECIFIED, Boolean.toString(true));
     }
 
     sp = SmtProperty.SMT_READ_OMS_HISTORY;
     if(line.hasOption(sp.getName()))
     {
-      status = true;  // a valid argument
-      sConfigMap.put(sp.getName(), line.getOptionValue(sp.getName()));
+      // save this, only if its a valid file
+      status = putHistoryProperty(sConfigMap, line.getOptionValue(sp.getName()));
+      if(status)
+      {
+        sConfigMap.put(CommandProperties.SCMD_FILE_SPECIFIED, Boolean.toString(true));        
+      }
     }
 
     sp = SmtProperty.SMT_REUSE;

@@ -129,7 +129,7 @@ public class SmtPort extends SmtCommand
     SmtProperty sp = SmtProperty.SMT_READ_OMS_HISTORY;
     if(line.hasOption(sp.getName()))
     {
-      config.put(sp.getName(), line.getOptionValue(sp.getName()));
+      putHistoryProperty(config, line.getOptionValue(sp.getName()));
       config.put(SmtProperty.SMT_SUBCOMMAND.getName(), sp.getName());
     }
     
@@ -234,6 +234,14 @@ public class SmtPort extends SmtCommand
       if((OMService != null) && (g != null))
       {
         fd = getOSM_FabricDelta(false);
+        if(fd == null)
+        {
+          // this should not happen, but if so, can't go further
+          logger.severe("Could not produce FabricDelta's, suspect corrupt file.  Try -dump");
+          System.out.println("Could not produce FabricDelta's, suspect corrupt file.  Try -dump");
+          System.exit(0);
+        }
+        
         fabric = fd.getFabric2();
         fda          = new OSM_FabricDeltaAnalyzer(fd);
         n = fabric.getOSM_Node(g);
@@ -283,7 +291,7 @@ public class SmtPort extends SmtCommand
           break;
           
         case PORT_ROUTE:
-           System.out.println(SmtPort.getPortRoutes(OMService, g, (short)pNum));
+          System.out.println(SmtPort.getPortRoutes(OMService, g, (short)pNum));
           System.exit(0);
           break;
           
@@ -394,18 +402,22 @@ public class SmtPort extends SmtCommand
   {
     // Port x of node y, t0: t1:
     StringBuffer buff = new StringBuffer();
-    String format = "Port %2d, Node: %s";
-    String formatT = " (t0: %s  ->  t1: %s)";
-    OSM_Fabric fab = fd.getFabric2();
-    if(p == null)
-      System.err.println("Crap, the port is null");
-    String name = fab.getNameFromGuid(p.getNodeGuid());
-    int lid     = fab.getLidFromGuid(p.getNodeGuid());
     
-    String nodeId = name + " (" + p.getNodeGuid().toColonString() + " lid: " + lid + ")";
-    buff.append(String.format(format, p.getPortNumber(), nodeId));
-    if(includeTimeStamps)
-      buff.append(SmtConstants.NEW_LINE + String.format(formatT,fd.getFabric1().getTimeStamp(), fd.getFabric2().getTimeStamp()));
+    if((p != null) && (fd != null))
+    {
+      String format = "Port %2d, Node: %s";
+      String formatT = " (t0: %s  ->  t1: %s)";
+      OSM_Fabric fab = fd.getFabric2();
+      if(p == null)
+        System.err.println("Crap, the port is null");
+      String name = fab.getNameFromGuid(p.getNodeGuid());
+      int lid     = fab.getLidFromGuid(p.getNodeGuid());
+      
+      String nodeId = name + " (" + p.getNodeGuid().toColonString() + " lid: " + lid + ")";
+      buff.append(String.format(format, p.getPortNumber(), nodeId));
+      if(includeTimeStamps)
+        buff.append(SmtConstants.NEW_LINE + String.format(formatT,fd.getFabric1().getTimeStamp(), fd.getFabric2().getTimeStamp()));      
+    }
     return buff.toString();
   }
 
@@ -604,7 +616,7 @@ public class SmtPort extends SmtCommand
   public static String getPortRoutes(RT_Table rTable, OpenSmMonitorService oms, IB_Guid g, short pNum)
   {
     StringBuffer buff = new StringBuffer();
-    if(oms != null)
+    if((oms != null) && (g != null))
     {
       OSM_Fabric fabric = oms.getFabric();
       if(fabric != null)
@@ -681,16 +693,19 @@ public class SmtPort extends SmtCommand
 
   public static String getPortLinkSummary(OSM_FabricDelta fabricDelta, OSM_Port p, LinkedHashMap<String, IB_Link> links)
   {
-    OSM_FabricDeltaAnalyzer fda = new OSM_FabricDeltaAnalyzer(fabricDelta);
-    OSM_Fabric fabric = fabricDelta.getFabric2();
     StringBuffer buff = new StringBuffer();
-    String formatString = "%13s: %-20s  %s:%2d ";
-    String nName = fabric.getNameFromGuid(p.getNodeGuid());
-    
-    // find the link associated with this port
-    IB_Link l = OSM_Fabric.getIB_Link(p.getNodeGuid().getGuid(), (short)p.getPortNumber(), links);
-    String errStr = fda.getLinkErrorState(l);
-    buff.append(SmtNode.getLinkLine(p, l, fabric, String.format(formatString, errStr, nName, p.getNodeGuid().toColonString(), p.getPortNumber())) + SmtConstants.NEW_LINE);
+    if((p != null) && (fabricDelta != null))
+    {
+      OSM_FabricDeltaAnalyzer fda = new OSM_FabricDeltaAnalyzer(fabricDelta);
+      OSM_Fabric fabric = fabricDelta.getFabric2();
+      String formatString = "%13s: %-20s  %s:%2d ";
+      String nName = fabric.getNameFromGuid(p.getNodeGuid());
+      
+      // find the link associated with this port
+      IB_Link l = OSM_Fabric.getIB_Link(p.getNodeGuid().getGuid(), (short)p.getPortNumber(), links);
+      String errStr = fda.getLinkErrorState(l);
+      buff.append(SmtNode.getLinkLine(p, l, fabric, String.format(formatString, errStr, nName, p.getNodeGuid().toColonString(), p.getPortNumber())) + SmtConstants.NEW_LINE);      
+    }
     return buff.toString();
   }
 

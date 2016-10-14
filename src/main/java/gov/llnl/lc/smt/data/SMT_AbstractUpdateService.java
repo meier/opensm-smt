@@ -108,6 +108,27 @@ public abstract class SMT_AbstractUpdateService extends OMS_AbstractUpdateServic
     return true;
   }
   
+  public boolean isConnectionMode()
+  {
+    // normally the host and port always have default values,
+    // but if we are definately using a file, then we are not
+    // using a connection
+    if(isFileMode())
+      return false;
+    
+    // only true if I have a host and port number to use
+    String host = getHost();
+    String port = getPort();
+    
+    return (host != null) && (host.length() > 2) && (port != null) && (port.length() > 2);
+  }
+  
+  public boolean isOmsSpecified()
+  {
+    // check to see if a file was specified or a host and port number
+    return isFileMode() || isConnectionMode();
+  }
+
   /**************************************************************************
    *** Method Name:
    ***     updateAllListeners

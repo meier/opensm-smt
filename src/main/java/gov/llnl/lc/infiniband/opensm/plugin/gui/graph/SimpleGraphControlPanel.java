@@ -92,6 +92,9 @@ import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ScalingControl;
 import edu.uci.ics.jung.visualization.subLayout.GraphCollapser;
 import gov.llnl.lc.smt.swing.SMT_FabricGraphPanel;
+import javax.swing.border.TitledBorder;
+import javax.swing.border.LineBorder;
+import java.awt.Color;
 
 /**********************************************************************
  * Describe purpose and responsibility of SimpleGraphControlPanel
@@ -104,7 +107,9 @@ import gov.llnl.lc.smt.swing.SMT_FabricGraphPanel;
  **********************************************************************/
 public class SimpleGraphControlPanel extends JPanel
 {
-  
+  /**
+   * @wbp.parser.constructor
+   */  
   SimpleCollapsableGraph SimpleGraph;
 
 
@@ -132,6 +137,7 @@ public class SimpleGraphControlPanel extends JPanel
    * Describe the constructor here
    *
    * @see     describe related java objects
+   * @wbp.parser.constructor
    *
    ***********************************************************/
   public SimpleGraphControlPanel(SimpleCollapsableGraph simpleGraph)
@@ -155,7 +161,7 @@ public class SimpleGraphControlPanel extends JPanel
 
     final ScalingControl scaler = new CrossoverScalingControl();
 
-    JButton plus = new JButton("+");
+    JButton plus = new JButton(" + ");
     plus.addActionListener(new ActionListener()
     {
       public void actionPerformed(ActionEvent e)
@@ -164,7 +170,7 @@ public class SimpleGraphControlPanel extends JPanel
         scaler.scale(vv, 1.1f, vv.getCenter());
       }
     });
-    JButton minus = new JButton("-");
+    JButton minus = new JButton(" - ");
     minus.addActionListener(new ActionListener()
     {
       public void actionPerformed(ActionEvent e)
@@ -345,12 +351,12 @@ public class SimpleGraphControlPanel extends JPanel
 
     JPanel controls = new JPanel();
     JPanel zoomControls = new JPanel(new GridLayout(2, 1));
-    zoomControls.setBorder(BorderFactory.createTitledBorder("Zoom"));
+    zoomControls.setBorder(new TitledBorder(new LineBorder(new Color(184, 207, 229)), "Zoom"));
     zoomControls.add(plus);
     zoomControls.add(minus);
     controls.add(zoomControls);
     JPanel collapseControls = new JPanel(new GridLayout(3, 1));
-    collapseControls.setBorder(BorderFactory.createTitledBorder("Picked"));
+    collapseControls.setBorder(new TitledBorder(null, "Picked", TitledBorder.LEADING, TitledBorder.TOP, null, null));
     collapseControls.add(collapse);
     collapseControls.add(expand);
     collapseControls.add(compressEdges);

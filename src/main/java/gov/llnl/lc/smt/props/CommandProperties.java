@@ -71,6 +71,47 @@ import java.util.Properties;
 public class CommandProperties extends Properties implements CommonLogger
 {
 
+  public static final String SCMD_NUM_ARGS            = "SmtCommand.arguments.number";
+  public static final String SCMD_FILE_SPECIFIED      = "SmtCommand.file.specified.boolean";
+  public static final String SCMD_HOST_SPECIFIED      = "SmtCommand.host.specified.boolean";
+  public static final String SCMD_PORT_SPECIFIED      = "SmtCommand.port.specified.boolean";
+
+  /**
+  * @return Returns the number of command line arguments
+  */
+  public String getNumCmdLineArgs()
+  {
+    logger.info("Number of arguments: " + getProperty(SCMD_NUM_ARGS));
+    return getProperty(SCMD_NUM_ARGS);
+  }
+
+  /**
+  * @return Returns true if a filename was specified
+  */
+  public boolean isFileSpecified()
+  {
+    logger.info("File argument: " + getProperty(SCMD_FILE_SPECIFIED));
+    return Boolean.valueOf(getProperty(SCMD_FILE_SPECIFIED));
+  }
+
+  /**
+  * @return Returns true if a hostname was specified
+  */
+  public boolean isHostSpecified()
+  {
+    logger.info("Host argument: " + getProperty(SCMD_HOST_SPECIFIED));
+    return Boolean.valueOf(getProperty(SCMD_HOST_SPECIFIED));
+  }
+
+  /**
+  * @return Returns the number of command line arguments
+  */
+  public boolean isPortSpecified()
+  {
+    logger.info("Port of argument: " + getProperty(SCMD_PORT_SPECIFIED));
+    return Boolean.valueOf(getProperty(SCMD_PORT_SPECIFIED));
+  }
+
   /************************************************************
    * Method Name:
    *  main

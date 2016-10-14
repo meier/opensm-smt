@@ -63,9 +63,16 @@ import gov.llnl.lc.smt.command.config.SmtConfig;
 import gov.llnl.lc.smt.props.SmtProperty;
 import gov.llnl.lc.time.TimeStamp;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -82,6 +89,8 @@ import org.apache.commons.cli.OptionBuilder;
  **********************************************************************/
 public class SmtFile extends SmtCommand
 {
+  
+//  Consumer <String> consumer = SmtFile::printFileInfo;
 
   /************************************************************
    * Method Name:
@@ -132,6 +141,13 @@ public class SmtFile extends SmtCommand
     else if (subCommand.equalsIgnoreCase(SmtProperty.SMT_FILE_INFO.getName()))
     {
       System.out.println(getFileInfo(subCommandArg, includeTS));
+    }
+    else if (subCommand.equalsIgnoreCase(SmtProperty.SMT_CONCAT_HISTORY.getName()))
+    {
+      System.out.println("Concatinating from input file: " + subCommandArg);
+      String fileName = concatFile(subCommandArg, config);
+      System.out.println("\nConcatinating to output file: " + fileName);
+//      System.out.println(getFileInfo(fileName, includeTS));
     }
     else if (subCommand.equalsIgnoreCase(SmtProperty.SMT_FILE_EXTRACT.getName()))
     {
@@ -267,7 +283,13 @@ public class SmtFile extends SmtCommand
     return bs.toString();
   }
   
-  private String getFileInfo(String fileName, boolean includeTimeStamps)
+  private static void printFileInfo(String fileName)
+  {
+    System.out.println(fileName);
+    System.out.println(getFileInfo(fileName, false));
+  }
+    
+  private static String getFileInfo(String fileName, boolean includeTimeStamps)
   {
     String fn = convertSpecialFileName(fileName);
     
@@ -407,6 +429,8 @@ public class SmtFile extends SmtCommand
     Option info     = new Option( sp.getShortName(), sp.getName(), false, sp.getDescription() );
     sp = SmtProperty.SMT_FILE_COMPRESS;
     Option compress = OptionBuilder.hasArg(true).hasArgs(2).withArgName( sp.getArgName() ).withValueSeparator('=').withDescription(  sp.getDescription() ).withLongOpt(sp.getName()).create( sp.getShortName() );
+    sp = SmtProperty.SMT_CONCAT_HISTORY;
+    Option concat = OptionBuilder.hasArg(true).hasArgs(1).withArgName( sp.getArgName() ).withValueSeparator('=').withDescription(  sp.getDescription() ).withLongOpt(sp.getName()).create( sp.getShortName() );
     sp = SmtProperty.SMT_FILE_EXTRACT;
     Option extract = OptionBuilder.hasArg(true).hasArgs(9).withArgName( sp.getArgName() ).withValueSeparator('=').withDescription(  sp.getDescription() ).withLongOpt(sp.getName()).create( sp.getShortName() );
     sp = SmtProperty.SMT_LIST_TIMESTAMP;
@@ -415,6 +439,7 @@ public class SmtFile extends SmtCommand
     options.addOption( fType );
     options.addOption( info );
     options.addOption( compress );
+    options.addOption( concat );
     options.addOption( extract );
     options.addOption( lTimeStamps );
     
@@ -470,9 +495,15 @@ public class SmtFile extends SmtCommand
     if(line.hasOption(sp.getName()))
     {
       // exactly two arguments, first must be #, second is output filename
-      
       config.put(SmtProperty.SMT_SUBCOMMAND.getName(), sp.getName());
       saveCompressionArgs(line.getOptionValues(sp.getName()), config);
+    }
+    
+    sp = SmtProperty.SMT_CONCAT_HISTORY;
+    if(line.hasOption(sp.getName()))
+    {
+      config.put(SmtProperty.SMT_SUBCOMMAND.getName(), sp.getName());
+      saveConcatinationArgs(line.getOptionValues(sp.getName()), config);
     }
     
     sp = SmtProperty.SMT_FILE_EXTRACT;
@@ -515,7 +546,20 @@ public class SmtFile extends SmtCommand
     // stash the compression arguments away, because we will use them later
     // see getFileName()
     
-    if((args != null && args.length > 1))
+    if((args != null && args.length > 0))
+    {
+      config.put(SmtProperty.SMT_FILE_NUM_SKIPS.getName(), args[0]);
+      if(args.length > 1)
+        config.put(SmtProperty.SMT_WRITE_OMS_HISTORY.getName(), args[1]);
+    }
+  }
+  
+  private void saveConcatinationArgs(String[] args, Map<String, String> config)
+  {
+    // stash the concatination arguments away, because we will use them later
+    // see getFileName()
+    
+    if((args != null && args.length > 0))
     {
       // save all the arguments in a single parameter
       StringBuffer cmdArgs = new StringBuffer();
@@ -523,8 +567,8 @@ public class SmtFile extends SmtCommand
       {
         cmdArgs.append(arg + " ");
       }
-      config.put(SmtProperty.SMT_FILE_NUM_SKIPS.getName(), args[0]);
-      config.put(SmtProperty.SMT_WRITE_OMS_HISTORY.getName(), args[1]);
+      // this should be the output file name
+      config.put(SmtProperty.SMT_WRITE_OMS_HISTORY.getName(), args[0]);
     }
   }
   
@@ -570,7 +614,7 @@ public class SmtFile extends SmtCommand
   {
     Map<String,String> map = config.getConfigMap();
     String val = map.get(SmtProperty.SMT_FILE_NUM_SKIPS.getName());
-    return Integer.parseInt(val) -1;
+    return val == null ? 0: Integer.parseInt(val) -1;
   }
   
   private String compressFile(String inFile, SmtConfig config)
@@ -643,8 +687,124 @@ public class SmtFile extends SmtCommand
     
     return outFile;    
   }
+
+  private String concatFile(String inFile, SmtConfig config)
+  {
+    String inputFileName = convertSpecialFileName(inFile);
+    int skipNum = getNumToSkip(config);
+    String outFile  = getFileName(config);
+    
+    System.err.println("The skip number is: " + skipNum);
+    
+    OMS_Collection origHistory;
+    
+    // skip 0 means don't skip any
+    //      1 means skip every other one, or return 1/2 the data
+    // skip 9 means skip 9 before returning one, or return 1/10th the data
+    
+    /* ideally, the input file is just a list of OMS History files,
+     * one per line, in time order.  First file is the earliest (oldest),
+     * and last file is the latest (most recent).
+     * 
+     * the output will be one big file (if it can fit)
+     * 
+     */
+    
+    // read the file list, and make sure they are all there
+    List<String> OMS_Files = getFileList(inputFileName);
+    
+//    OMS_Files.forEach(SmtFile::printFileInfo);
+    
+    // create a new, smaller, collection, based on a subset of indecies
+    OMS_Collection newHistory = new OMS_Collection();
+    for (String fname : OMS_Files)
+    {
+      String fn = convertSpecialFileName(fname);
+      System.out.println(fn);
+      
+    try
+    {
+      origHistory = OMS_Collection.readOMS_Collection(fn);
+      int num = origHistory.getSize();
+      boolean initial = true;
+      TimeStamp t = null;
+      int skipCount = 0;
+
+      
+      for(OpenSmMonitorService oms: origHistory.getOSM_History().values())
+      {
+        if(initial)
+        {
+          t = oms.getTimeStamp();
+          initial = false;
+        }
+        if(skipCount++ >= skipNum)
+        {
+          newHistory.put(oms);
+          skipCount = 0;
+        }
+      }
+      System.out.println("  timestamp:   " + t.toString());
+      System.out.println("  num records: " + num);
+    }
+    catch (Exception e)
+    {
+      System.err.println("Could open file for concatenation: " + inputFileName + ", to " + outFile);
+      System.err.println("Exception: " + e.getMessage());
+      e.printStackTrace();
+    }
+    
+    }
+    
+    /* have the new collection, lets try to save it */
+    try
+    {
+      OMS_Collection.writeOMS_Collection(outFile, newHistory);
+    }
+    catch (IOException e)
+    {
+      System.err.println("Could not concatenate file: " + inputFileName + ", to " + outFile);
+      System.err.println("Exception: " + e.getMessage());
+      e.printStackTrace();
+    }
+    return outFile;    
+  }
   
 
+
+  /************************************************************
+   * Method Name:
+   *  getFileList
+  **/
+  /**
+   * Describe the method here
+   *
+   * @see     describe related java objects
+   *
+   * @param inputFileName
+   * @return
+   ***********************************************************/
+  private List<String> getFileList(String fileName)
+  {
+    List<String> fileList = new ArrayList<String>();
+
+    try (BufferedReader br = Files.newBufferedReader(Paths.get(fileName)))
+    {
+      //br returns as stream and convert it into a List
+      fileList = br.lines().collect(Collectors.toList());
+      
+      // trim empty lines from list
+      fileList.removeIf(s -> s.isEmpty());
+
+      // trim comment lines from list
+      fileList.removeIf(s -> s.startsWith("#"));
+    }
+    catch (IOException e)
+    {
+      e.printStackTrace();
+    }
+    return fileList;
+  }
 
   private TimeStamp getTimeStamp(int i, SmtConfig config)
   {

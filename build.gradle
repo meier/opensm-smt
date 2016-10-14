@@ -256,6 +256,8 @@ task fatJar(type: Jar, dependsOn: classes) {
 }
 
 javadoc {
+     options.addStringOption('Xmaxerrs',  '1000')
+     options.addStringOption('Xmaxwarns', '1000')
      options.addStringOption('windowtitle',  'Subnet Monitor Tool API Specification')
      options.addStringOption('header',  '<b>Subnet Monitor Tool</b><br><font size="-1">v2.0</font>')
      options.addStringOption('bottom',  '<font size="-1"><a href="https://github.com/meier/opensm-smt/issues/">Submit a bug or feature</a><br><br>Java is a trademark or registered trademark of Oracle and/or its affiliates. in the US and other countries.<br>Copyright 1993-1999 Oracle and/or its affiliates. 901 San Antonio Road,<br>Palo Alto, California, 94303, U.S.A. All rights reserved.</font>')

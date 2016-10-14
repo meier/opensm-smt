@@ -109,6 +109,8 @@ public class SMT_UpdateService extends SMT_AbstractUpdateService implements Time
   // if true, a new OMS instance is available to be broadcast to all listeners
   private volatile static boolean ReadyToUpdate = false;
   
+  // indicates if the slider is "detached" (independent) or part of (contained in)
+  // a more complex gui application
   private volatile static boolean DetachedFrame = false;
   
   // the number of times the listeners have been updated with an OMS instance
@@ -179,7 +181,7 @@ public class SMT_UpdateService extends SMT_AbstractUpdateService implements Time
     
     String mst = "  Already have the OMS History?? (" + Boolean.toString(this.omsHistory != null) + ")";
     MessageManager.getInstance().postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INIT, mst));
-
+    
     // open the file if possible
     if(isFileMode())
     {
@@ -193,8 +195,11 @@ public class SMT_UpdateService extends SMT_AbstractUpdateService implements Time
        }
        catch (FileNotFoundException e)
        {
-         System.err.println("Couldn't open the file (" + getFile() + ")");
-         e.printStackTrace();
+         mst = "Couldn't open the file (" + getFile() + ") FileNotFoundException (No such file or directory)";
+         System.err.println(mst);
+         logger.severe(mst);
+//         e.printStackTrace();
+         System.exit(-1);
        }      
        catch (IOException e)
        {

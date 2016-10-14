@@ -55,6 +55,7 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.event;
 
+import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDelta;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
@@ -64,8 +65,10 @@ import gov.llnl.lc.infiniband.opensm.plugin.net.OsmServerStatus;
 import gov.llnl.lc.smt.SmtConstants;
 import gov.llnl.lc.smt.command.SmtCommand;
 import gov.llnl.lc.smt.command.config.SmtConfig;
+import gov.llnl.lc.smt.data.SMT_UpdateService;
 import gov.llnl.lc.smt.props.SmtProperty;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
@@ -131,9 +134,14 @@ public class SmtEvent extends SmtCommand
      SmtProperty sp = SmtProperty.SMT_READ_OMS_HISTORY;
     if(line.hasOption(sp.getName()))
     {
-      config.put(sp.getName(), line.getOptionValue(sp.getName()));
+      // save this, only if its a valid file
+      status = putHistoryProperty(config, line.getOptionValue(sp.getName()));
+      if(status)
+      {
+        config.put(SmtProperty.SMT_OMS_COLLECTION_FILE.getName(), convertSpecialFileName(line.getOptionValue(sp.getName())));       
+      }
       config.put(SmtProperty.SMT_SUBCOMMAND.getName(), sp.getName());
-    }
+     }
     
     // parse (only) the command specific options
     sp = SmtProperty.SMT_QUERY_TYPE;
@@ -157,6 +165,17 @@ public class SmtEvent extends SmtCommand
       config.put(sp.getName(), line.getOptionValue(sp.getName()));
     }
     
+    sp = SmtProperty.SMT_DUMP;
+    if(line.hasOption(sp.getName()))
+    {
+      // the dump option is intended to process a file, and display the results as soon as possible
+      //  - playback speed does not apply - instead process next delta as soon as previous finishes
+      //  - wrap does not apply - display from beginning to end, then stop
+      //  - connection issues do not apply, this is file based
+      config.put(SmtProperty.SMT_SUBCOMMAND.getName(), sp.getName());
+      config.put(sp.getName(), line.getOptionValue(sp.getName()));
+    }
+   
     return status;
    }
   
@@ -191,6 +210,8 @@ public class SmtEvent extends SmtCommand
     //  Fabric file
     //  on-line using localhost and port 10011
     
+    initServiceUpdater(config);
+    
     Map<String,String> map = smtConfig.getConfigMap();
     
     String subCommand = map.get(SmtProperty.SMT_SUBCOMMAND.getName());
@@ -215,6 +236,9 @@ public class SmtEvent extends SmtCommand
           System.out.println(EventQuery.describeAllQueryTypes());
           break;
           
+        case EVENT_TYPES:
+           System.out.println(OsmEvent.getEventEnumTable());
+          break;
           
         case EVENT_STATUS:
           if(OMService != null)
@@ -232,10 +256,64 @@ public class SmtEvent extends SmtCommand
     {
       System.out.println(getEventSummary(getOSM_FabricDelta(false), ""));
     }
+    else if (subCommand.equalsIgnoreCase(SmtProperty.SMT_DUMP.getName()))
+    {
+      int eNum = -1;  // by default, do all
+      String eventNum = map.get(SmtProperty.SMT_DUMP.getName());
+      if(eventNum != null)
+        eNum = Integer.parseInt(eventNum);
+ 
+//      System.err.println("The event number is: " + eventNum);
+//      System.err.println("The event number is: " + eNum);
+//      
+      OsmEvent e = OsmEvent.get(eNum);
+//      if(e != null)
+//        System.err.println("The event is: " + e.getEventName());
+        
+      /* iterate through all the OMS, and dump the counters */
+      if(UpdateService != null)
+      {
+        if ((UpdateService instanceof SMT_UpdateService))
+             dumpAllEvents(e);
+      }
+      else
+        System.err.println("The update service appears to be null");
+        
+      return true;
+    }
     else if (OMService != null)
       System.out.println(getStatus(OMService));
      
     return true;
+  }
+  
+  private void dumpAllEvents(OsmEvent e)
+  {
+    // dump event data for all OMS records
+    // if the OsmEvent parameter is NOT null, then just list that event
+    //  otherwise, list all events in OSM_EventStats
+    
+    // using an SMT_Updater, AND I have already read the file, so just set the collection
+    SMT_UpdateService sus = (SMT_UpdateService)UpdateService;
+    OMS_Collection collection = sus.getCollection();
+    LinkedHashMap<String, OpenSmMonitorService> omsHistory = collection.getOSM_History();
+    
+    // display all the Events, or just a single one?
+    
+    // loop through the history and dump the event stats for each timestamp
+    for (Map.Entry<String, OpenSmMonitorService> entry : omsHistory.entrySet())
+    {
+      OpenSmMonitorService oms = entry.getValue();
+      OSM_Fabric fabric = oms.getFabric();
+      OSM_EventStats EventStats  = fabric.getOsmEventStats();
+      if(e == null)
+        System.out.println(fabric.getTimeStamp() + ": " + EventStats.toString());
+      else
+      {
+        System.out.println(fabric.getTimeStamp() + ": " + EventStats.toEventString(e));
+ //       System.out.println(fabric.getTimeStamp() + ": " + EventStats.getCounter(e));
+      }
+    }
   }
   
   public static String getStatus(OpenSmMonitorService OMService)
@@ -321,6 +399,8 @@ public class SmtEvent extends SmtCommand
     EXAMPLE ="examples:" + SmtConstants.NEW_LINE +
         "> smt-event -pn 10013" + SmtConstants.NEW_LINE + 
         "> smt-event -pn 10013 -sr" + SmtConstants.NEW_LINE + 
+        "> smt-event -rH surface3h.his -dump 10" + SmtConstants.NEW_LINE  +
+        "> smt-event -q events" + SmtConstants.NEW_LINE  +
         "> smt-event -rH surface3h.his -q status" + SmtConstants.NEW_LINE  + ".";  // terminate with nl
 
     // create and initialize the common options for this command
@@ -335,12 +415,16 @@ public class SmtEvent extends SmtCommand
     sp = SmtProperty.SMT_QUERY_LIST;
     Option qList = new Option( sp.getShortName(), sp.getName(), false, sp.getDescription() );
     
+    sp = SmtProperty.SMT_DUMP;
+    Option dump  = OptionBuilder.hasOptionalArg().withDescription(  sp.getDescription() ).withLongOpt(sp.getName()).create( sp.getShortName() );
+    
     sp = SmtProperty.SMT_STATUS;
     Option status  = OptionBuilder.hasArg(false).withDescription(  sp.getDescription() ).withLongOpt(sp.getName()).create( sp.getShortName() );
     
     options.addOption( status );
     options.addOption( qType );
     options.addOption( qList );
+    options.addOption( dump );
     
     return true;
   }

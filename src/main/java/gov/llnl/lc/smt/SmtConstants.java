@@ -68,7 +68,7 @@ import gov.llnl.lc.util.SystemConstants;
  **********************************************************************/
 public interface SmtConstants extends SystemConstants
 {
-  static final String COPYRIGHT =  "Copyright (C) 2015, Lawrence Livermore National Security, LLC";
+  static final String COPYRIGHT =  "Copyright (C) 2016, Lawrence Livermore National Security, LLC";
   static final long PERF_MGR_STALE_PERIOD =  1200L; // definitely stale if older than 20 minutes
   
   static final long PACKET_SIZE =      512;

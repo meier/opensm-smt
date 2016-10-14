@@ -271,8 +271,9 @@ public class OSM_FabricDeltaAnalyzer implements CommonLogger
     IB_Guid rguid = new IB_Guid(port.sbnPort.linked_node_guid);
     
     OSM_Node rn = f.getOSM_Node(rguid);
+    
     boolean isLocalSwitchPort  = isSwitchPort(d, p);
-    boolean isRemoteSwitchPort = rn.isSwitch();
+    boolean isRemoteSwitchPort = rn == null? false: rn.isSwitch();
 
     // if includeTypes == OSM_NodeType.SW_NODE, return true only if this port is a switch port AND is
     //                                          connected to another switch

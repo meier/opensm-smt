@@ -56,6 +56,8 @@
 package gov.llnl.lc.smt.props;
 
 import gov.llnl.lc.net.NetworkConstants;
+import gov.llnl.lc.smt.command.SmtCommandType;
+import gov.llnl.lc.smt.command.event.EventQuery;
 
 import java.io.Serializable;
 import java.util.Comparator;
@@ -105,7 +107,7 @@ public enum SmtProperty implements Serializable, NetworkConstants
   SMT_SUBCOMMAND_ARG(         122, "SmtSubcommand.arg",      "subcommandArg", "arg", "arg", "an argument for the sub-command"),
   SMT_SUBCOMMAND_VAL(         123, "SmtSubcommand.val",      "subcommandVal", "val", "val", "the value of the argument"),
   SMT_CONFIG_COMMAND(         124, "gov.llnl.lc.smt.command.config.SmtConfig", "subcommand", "sub", "arg", "the last smt sub-command"),
-  SMT_FILE_COMMAND(           125, "gov.llnl.lc.smt.command.file.SmtFile",     "subcommand", "sub", "arg", "the last smt sub-command"),
+  SMT_FILE_COMMAND(           125, "gov.llnl.lc.smt.command.file.SmtFile",     "file", "sub", "arg", "the last smt sub-command"),
   SMT_CONSOLE_COMMAND(        126, "gov.llnl.lc.smt.command.console.SmtConsole","subcommand", "sub", "arg", "the last smt sub-command"),
   SMT_GUI_COMMAND(            127, "gov.llnl.lc.smt.command.gui.SmtGui",    "SmtGui", "sub", "arg", "the last smt sub-command"),
   SMT_VERSION(                128, "version",                 "version", "v", "", "print the version"),
@@ -125,6 +127,7 @@ public enum SmtProperty implements Serializable, NetworkConstants
   SMT_HISTORY_RECORDS(        142, "SmtHistory.records",      "numRecords", "nr", "# to record", "specifies the number of Fabrics instances to record in the History"),
   SMT_HISTORY_MINUTES(        143, "TimeUnit.MINUTES",        "numMinutes", "nm", "# minutes to record", "specifies the length of time, in minutes, to record the Fabric History"),
   SMT_HISTORY_HOURS(          144, "TimeUnit.HOURS",          "numHours", "nh", "# hours to record", "specifies the length of time, in hours, to record the Fabric History"),
+  SMT_CONCAT_HISTORY(         145, "SmtHistory.concat",       "concat", "cH", "out filename", "combines data from a collection of files, into a single OMS History file"),
   SMT_READ_RT_TABLE(          150, "SmtRoute.read",           "readRoute", "rR", "filename", "reads the specified Routing Table file"),
   SMT_WRITE_RT_TABLE(         151, "SmtRoute.write",          "writeRoute", "wR", "filename", "writes the Routing Table to the specified file"),
   SMT_FILE_OP(                190,  "SmtFabric.file.operation", "fop", "fo", "r or w", "the value of the operation, either read, write, or error"),
@@ -144,7 +147,7 @@ public enum SmtProperty implements Serializable, NetworkConstants
   SMT_PRIV_EXT(               901, "SmtPrivileged.Ext",       "rCommand",      "X",  "command with args", "invokes a command on the mgmt node"),
   SMT_PRIV_ENABLE(            902, "SmtPrivileged.enable",    "enablePort",    "eP", "guid or lid> <portNum", "enables the specified port"),
   SMT_PRIV_DISABLE(           903, "SmtPrivileged.disable",   "disablePort",   "dP", "guid or lid> <portNum", "disables the specified port"),
-  SMT_PRIV_QUERY_PORT(        911, "SmtPrivileged.query",     "queryPort",     "qP", "guid or lid> <portNum", "queries the specified port"),
+  SMT_PRIV_QUERY_PORT(        913, "SmtPrivileged.query",     "queryPort",     "qP", "guid or lid> <portNum", "queries the specified port"),
   SMT_PRIV_UPDATE_DESC(       904, "SmtPrivileged.updateDesc","updateDesc",    "uD", "arg", "updates the node descriptions"),
   SMT_PRIV_REROUTE(           905, "SmtPrivileged.reroute",   "re-route",      "rt", "arg", "re-routes the fabric"),
   SMT_PRIV_LT_SWEEP(          906, "SmtPrivileged.lt_sweep",  "liteSweep",     "lS", "arg", "forces a light sweep of the fabric"),
@@ -154,8 +157,8 @@ public enum SmtProperty implements Serializable, NetworkConstants
   SMT_PRIV_NAME(              910, "SmtPrivileged.Name",      "privname",    "pN", "arg", "the last smt sub-command"),
   SMT_PRIV_PM_SWEEP_PERIOD(   911, "SmtPrivileged.pm_sw_period",  "pfmgrSweepPeriod",    "pSS", "seconds", "sets the performance manager to sweep period in secs."),
   SMT_PRIV_OSM_LOG_LEVEL(     912, "SmtPrivileged.osm_log_level",  "osmLogLevel",    "oLL", "level value", "sets the opensm.log verbosity level"),
-  SMT_HELP_COMMAND(           997, "gov.llnl.lc.smt.command.help.SmtHelp",   "subcommand", "sub", "arg", "the last smt sub-command"),
-  SMT_HELP(                   998, "Help", "Help", "?", "", "print this message"),
+  SMT_HELP_COMMAND(           996, "gov.llnl.lc.smt.command.help.SmtHelp",   "subcommand", "sub", "arg", "the last smt sub-command"),
+  SMT_HELP(                   997, "Help", "Help", "?", "", "print this message"),
   SMT_LOG_FILE(               200, "java.util.logging.FileHandler.pattern", "logFile", "lf", "file name", "the file name or pattern to use for log files"),
   SMT_LOG_LEVEL(              201, "java.util.logging.ConsoleHandler.level", "logLevel", "ll", "log level", "the verbosity level for log files"),
   SMT_FABRIC_DELTA_COLLECTION_FILE(210, "gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDeltaCollection", "readFabricDeltaCollectionOnly", "toInfo", "toTimeString", "the file of the Fabric cache"),
@@ -170,6 +173,7 @@ public enum SmtProperty implements Serializable, NetworkConstants
   SMT_FABRIC_CONFIG_CMD(      212, "SmtFabric.ibFabricConfig",                                            "fabricConfig",             "fC", "toTimeString", "displays the ibfabricconf.xml"),
   SMT_NODE_MAP_CMD(           213, "SmtFabric.nodeNameMap",                                               "nodeNameMap",              "nM", "toTimeString", "displays the ib-node-name-map"),
   SMT_UTILIZE_COMMAND(        214, "gov.llnl.lc.smt.command.utilize.SmtUtilize",    "utilize",               "u",      "file name", "the file of the configuration file"),
+  SMT_EVENT_COMMAND(          215, "gov.llnl.lc.smt.command.event.SmtEvent",        "event",                 "e",      "file name", "the file of the configuration file"),
   SMT_TOP_COMMAND(            220, "gov.llnl.lc.smt.command.top.SmtTop",            "top",                       "t",      "file name", "the file of the configuration file"),
   SMT_TOP_NUMBER(             221, "SmtTop.number",                                 "topNum",                "tN", "# top lines", "the number of top result lines"),
   SMT_NODE_TRAFFIC(           222, "SmtTop.nodeTraffic",                            "nodeTraffic",           "nT", "# top lines", "the number of top result lines"),
@@ -182,6 +186,7 @@ public enum SmtProperty implements Serializable, NetworkConstants
   SMT_ROUTE_SWITCH_INFO(      230, "gov.llnl.lc.infiniband.opensm.plugin.data.RT_Path", "switchInfo",        "sI", "toTimeString", "information about the switch tables"),
   SMT_ROUTE_TABLE_INFO(       230, "gov.llnl.lc.infiniband.opensm.plugin.data.RT_Path", "tableInfo",         "tI", "toTimeString", "information about the overall routing table"),
   SMT_FABRIC_DISCOVER(        300, "discover",                                      "discover",               "dF", "# attempts", "attempt to discover OMS/SMT ports (on-line only)"),
+  SMT_TOOL_CMD(               700, "gov.llnl.lc.smt.command.SubnetMonitorTool",     "SMT",                "SMT", "sub command", "the subnet monitor tool suite"),
   SMT_UPDATE_PERIOD(          800, "Online.update.period",                          "update",                "uS", "# secs", "the interval (in secs) between data updates from the service"),
   SMT_UPDATE_MULTIPLIER(      801, "Offline.playback.multiplier",                    "playX",                "pX", "# times faster", "play back history this # times faster than normal"),
   SMT_TIMESTAMP(              810, "gov.llnl.lc.time.TimeStamp",                    "timeStamp",             "ts", "Aug 01 16:10:32 2013", "the time of the OMS data within the OMS History file"),
@@ -196,7 +201,10 @@ public enum SmtProperty implements Serializable, NetworkConstants
   public static final EnumSet<SmtProperty> SMT_ALL_PROPERTIES = EnumSet.allOf(SmtProperty.class);
   
   /**  the commands that should never get an initial instance of the OMS **/
-  public static final EnumSet<SmtProperty> SMT_NO_OMS_INIT_COMMANDS = EnumSet.of(SMT_CONFIG_COMMAND, SMT_FILE_COMMAND, SMT_FABRIC_DISCOVER, SMT_ABOUT_COMMAND, SMT_PRIV_COMMAND, SMT_HELP_COMMAND, SMT_HELP, SMT_TOP_COMMAND);
+  public static final EnumSet<SmtProperty> SMT_NO_OMS_INIT_COMMANDS = EnumSet.of(SMT_QUERY_LIST, SMT_CONFIG_COMMAND, SMT_FILE_COMMAND, SMT_FABRIC_DISCOVER, SMT_ABOUT_COMMAND, SMT_PRIV_COMMAND, SMT_HELP_COMMAND, SMT_HELP, SMT_TOP_COMMAND);
+  
+  /**  the sub commands or options that should never get an initial instance of the OMS **/
+  public static final EnumSet<SmtProperty> SMT_NO_OMS_INIT_COMMAND_OPTION = EnumSet.of(SMT_CONFIG_COMMAND, SMT_FILE_COMMAND, SMT_FABRIC_DISCOVER, SMT_ABOUT_COMMAND, SMT_PRIV_COMMAND, SMT_HELP_COMMAND, SMT_HELP, SMT_TOP_COMMAND);
   
   /**  the various types of files supported by SMT (ordered from big file, to small file for optimization purposes **/
   public static final EnumSet<SmtProperty> SMT_FILE_TYPES = EnumSet.range(SMT_FABRIC_DELTA_COLLECTION_FILE, SMT_FABRIC_CONFIG_FILE);
@@ -271,16 +279,47 @@ public static SmtProperty get(int Property)
 
 public static boolean isSkipOMSCommand(String cmdName)
 {
+  boolean skip = false;
   // return true if this is a command that doesn't want an initial oms
   for(SmtProperty s : SMT_NO_OMS_INIT_COMMANDS)
   {
     if(s.getPropertyName().equals(cmdName))
-      return true;
+      skip = true;
   }
-  return false;
+//  
+//  if(skip)
+//    System.err.println("I should skip getting an OMS for this command: " + cmdName);
+  return skip;
 }
 
-
+public static boolean isSkipOMSCommandOption(Map<String, String> map)
+{
+  // return true if this is a command doesn't need data, like version
+  // or help, or list query options
+  boolean skip = false;
+  
+  String cmdName = map.get(SmtProperty.SMT_COMMAND.getName());
+  String subCmd  = map.get(SmtProperty.SMT_SUBCOMMAND.getName());
+  String qType   = map.get(SmtProperty.SMT_QUERY_TYPE.getName());
+  
+  // return true if just query and list
+  if(SmtProperty.SMT_TOOL_CMD.getPropertyName().equals(cmdName))
+    skip = true;
+  if(SmtProperty.SMT_FILE_COMMAND.getName().equals(cmdName) || SmtProperty.SMT_FILE_COMMAND.getPropertyName().equals(cmdName))
+    skip = true;
+  if(SmtProperty.SMT_ABOUT_COMMAND.getName().equals(cmdName) || SmtProperty.SMT_ABOUT_COMMAND.getPropertyName().equals(cmdName))
+    skip = true;
+  if(SmtProperty.SMT_VERSION.getName().equals(cmdName))
+    skip = true;
+  
+  if(SmtProperty.SMT_QUERY_TYPE.getName().equals(subCmd))
+  {
+    if(SmtProperty.SMT_LIST.getName().equals(qType) ||
+        (EventQuery.EVENT_TYPES.getName().equals(qType) && SmtCommandType.SMT_EVENT_CMD.getCommandName().equals(cmdName)))
+      skip = true;
+  }
+  return skip;
+}
 
 public static SmtProperty getByName(String Name)
 {

@@ -74,6 +74,7 @@ public enum EventQuery
 {
   EVENT_LIST(                  0, "list",             "l",   "lists the available query options"),    
   EVENT_STATUS(                1, "status",           "stat","provides an event summary"),    
+  EVENT_TYPES(                 2, "events",           "event","provides a name/value list of event types"),    
   EVENT_LAST_QUERY(          999, "QueryEnd",         "end", "always the end of the property list");
   
   /*
