@@ -27,7 +27,7 @@ be *bad*.
 For this reason, the native tools that query the hardware/nodes directly will
 always be necessary.
 
-Man pages are currently unavailable, but each command provides basic command line help.
+Man pages are available and in addition each command provides basic command line help.
 
 * smt
 * smt-about
@@ -47,4 +47,7 @@ Man pages are currently unavailable, but each command provides basic command lin
 * smt-priv
 * smt-record
 * smt-route
+* smt-server
+* smt-system
 * smt-top
+* smt-utilize

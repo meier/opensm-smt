@@ -547,14 +547,17 @@ private static final String NEW_LINE = System.getProperty(LINE_SEPERATOR);
         String dataDir     = SmtCommand.convertSpecialFileName(newDataDir);
 
         java.io.File nid = new java.io.File(dataDir);
-        java.io.File oid = new java.io.File(origDataDir);
+        java.io.File oid = null;
+        
+        if(origDataDir != null)
+          oid = new java.io.File(origDataDir);
        
         // first, check to see if the supplied install dir is already our current value
-        newInstallation = !(nid.getAbsolutePath().equalsIgnoreCase(oid.getAbsolutePath()));
+        newInstallation = (oid == null) ? true: !(nid.getAbsolutePath().equalsIgnoreCase(oid.getAbsolutePath()));
         
         if (newInstallation)
         {
-          if ( oid.isDirectory() )
+          if ( (oid != null) && (oid.isDirectory()) )
           {
             // it appears like we had an old installation, do we want to save some
             // data from the previous environment or just

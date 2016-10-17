@@ -5,7 +5,7 @@
 
 Name:           	opensm-smt-java
 Version:        	2.01
-Release:        	53%{?dist}
+Release:        	55%{?dist}
 Summary:        	Subnet monitoring tools for OpenSM, that use the OpenSM Monitoring Service
 
 Group:          	Development/Libraries
@@ -76,6 +76,8 @@ rm -rf $RPM_BUILD_ROOT
 %{cmd_dir}/*
 
 %changelog
+* Mon Oct 17 2016 Tim Meier <meier3@llnl.gov> 2.01-55
+- version 2.01 release 55 include man pages and new commands
 * Thu Nov 19 2015 Tim Meier <meier3@llnl.gov> 2.01-51
 - version 2.01 release 51
 * Wed Nov 18 2015 Tim Meier <meier3@llnl.gov> 2.0.0-51
