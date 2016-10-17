@@ -1,5 +1,7 @@
 %define java_package_name SubnetMonitorTool
 %define osm_config_dir etc/opensm-plugin
+%define smt_man_dir man
+%define cmd_dir /usr/bin
 
 Name:           	opensm-smt-java
 Version:        	2.01
@@ -44,6 +46,15 @@ ln -s %{java_package_name}-*.jar %{java_package_name}.jar
 mkdir -p $RPM_BUILD_ROOT/%{osm_config_dir}
 mv $RPM_BUILD_ROOT%{_javadir}/%{java_package_name}/%{osm_config_dir} $RPM_BUILD_ROOT/etc
 
+mkdir -p $RPM_BUILD_ROOT/%{_mandir}
+mv $RPM_BUILD_ROOT%{_javadir}/%{java_package_name}/%{smt_man_dir}/man1 $RPM_BUILD_ROOT/%{_mandir}
+mv $RPM_BUILD_ROOT%{_javadir}/%{java_package_name}/%{smt_man_dir}/man7 $RPM_BUILD_ROOT/%{_mandir}
+
+# create symbolic links for all the scripts
+mkdir -p $RPM_BUILD_ROOT%{cmd_dir}
+cd $RPM_BUILD_ROOT%{cmd_dir}
+ln -s %{_javadir}/%{java_package_name}/bin/* .
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
@@ -52,10 +63,17 @@ rm -rf $RPM_BUILD_ROOT
 %{_javadir}/*
 %config(noreplace) /%{osm_config_dir}/*.config
 
+# the man pages
+%{_mandir}/man1/*
+%{_mandir}/man7/*
 
+# the scripts
 %defattr(755,root,root,755)
 %{_javadir}/%{java_package_name}/bin/*
 
+# the symbolic links
+%defattr(755,root,root,755)
+%{cmd_dir}/*
 
 %changelog
 * Thu Nov 19 2015 Tim Meier <meier3@llnl.gov> 2.01-51
