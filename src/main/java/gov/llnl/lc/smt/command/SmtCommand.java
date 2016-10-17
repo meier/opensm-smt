@@ -681,11 +681,23 @@ public abstract class SmtCommand implements SmtCommandInterface, SmtConstants, C
           // nothing specified so use persisted data if possible, or just
           // fall through and use the default (localhost 10011)
           // defaults
-          String method = SmtGuiPreferences.getHist_1();
           
-          String mst = "A method to obtain OMS data was not specified, so using the previous persisted method";
-          MessageManager.getInstance().postMessage(new SmtMessage(SmtMessageType.SMT_MSG_WARNING, mst));
-          logger.warning(mst);
+          String method = null;
+          try
+          {
+            method = SmtGuiPreferences.getHist_1();
+            String mst = "A method to obtain OMS data was not specified, so using the previous persisted method";
+            MessageManager.getInstance().postMessage(new SmtMessage(SmtMessageType.SMT_MSG_WARNING, mst));
+            logger.warning(mst);            
+          }
+          catch(Exception e)
+          {
+            String mst = "No persisted method for determining an OMS Source, using default";
+            MessageManager.getInstance().postMessage(new SmtMessage(SmtMessageType.SMT_MSG_WARNING, mst));
+            logger.warning(mst);
+            method = "-h localhost -pn 10011";
+          }
+          
 //          System.err.println("The command: " +cmdName);
 //          System.err.println("The subcommand: " + map.get(SmtProperty.SMT_SUBCOMMAND.getName() ));
 //          System.err.println("The query type: " + map.get(SmtProperty.SMT_QUERY_TYPE.getName() ));
