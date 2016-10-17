@@ -788,8 +788,9 @@ public class SmtFile extends SmtCommand
   {
     List<String> fileList = new ArrayList<String>();
 
-    try (BufferedReader br = Files.newBufferedReader(Paths.get(fileName)))
+    try
     {
+      BufferedReader br = Files.newBufferedReader(Paths.get(fileName));
       //br returns as stream and convert it into a List
       fileList = br.lines().collect(Collectors.toList());
       
