@@ -8,4 +8,4 @@ CMD_CLASS=gov.llnl.lc.smt.command.route.SmtMulticast
 CMD_LOGS="$SMT_HOME/smt-multicast%u.log"
 #
 # command line arguments for this command will be appended
-/usr/share/java/SubnetMonitorTool/bin/smt-abstract $CMD_CLASS -lf $CMD_LOGS $@
+smt-abstract $CMD_CLASS -lf $CMD_LOGS $@
