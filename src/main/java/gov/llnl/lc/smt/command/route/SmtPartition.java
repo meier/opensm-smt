@@ -521,7 +521,7 @@ public class SmtPartition extends SmtCommand
       String nodeid = map.get(SmtProperty.SMT_COMMAND_ARGS.getName());
       if(nodeid != null)
       {
-        return getNodeGuid(nodeid, true);
+        return getNodeGuid(nodeid);
       }
     }
      return null;

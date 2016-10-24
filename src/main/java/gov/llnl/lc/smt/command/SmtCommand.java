@@ -56,6 +56,7 @@
 package gov.llnl.lc.smt.command;
 
 import gov.llnl.lc.infiniband.core.IB_Guid;
+import gov.llnl.lc.infiniband.core.IB_GuidType;
 import gov.llnl.lc.infiniband.core.IB_Link;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_List;
@@ -96,7 +97,6 @@ import java.awt.Dimension;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -929,17 +929,24 @@ public abstract class SmtCommand implements SmtCommandInterface, SmtConstants, C
 
   protected IB_Guid getNodeGuid(String nodeStr)
   {
-    return getNodeGuid(nodeStr, false);
-  }
-
-  protected IB_Guid getNodeGuid(String nodeStr, boolean portGuid)
-  {
-    return SMT_SearchManager.getNodeGuid(nodeStr, portGuid, OMService);
+    // I want only the type I am asking for
+    return SMT_SearchManager.getGuidByType(nodeStr, IB_GuidType.NODE_GUID, OMService);
   }
 
   protected IB_Guid getPortsNodeGuid(String nodeStr)
   {
-    return SMT_SearchManager.getNodeGuid(nodeStr, true, OMService);
+    // the search string could be anything, and I want
+    // the node guid in return
+    IB_Guid g  = getNodeGuid(nodeStr);
+    IB_Guid pg = SMT_SearchManager.getGuidByType(nodeStr, IB_GuidType.PORT_GUID, OMService);
+    
+    if(pg != null)
+    {
+      OSM_Fabric fabric = OMService.getFabric();
+      OSM_Port op = fabric.getOSM_Port(pg);
+      g = op.getNodeGuid();
+   }
+    return g;
   }
 
   protected HashMap<String, OSM_Node> getOSM_Nodes()

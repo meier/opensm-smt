@@ -170,7 +170,6 @@ public class FabricTreeModelNew implements TreeModel
         SystemTreeModel treeModel = new SystemTreeModel(fabric, sysGuid);
         int numChildren = treeModel.getChildCount(treeModel.rootVertexNode);
         // did the model get created??
-        System.err.println("There are " + numChildren + " child nodes in this system guid");
         
         int depth = treeModel.getRootVertex().getDepth();
         maxDepth = depth;
@@ -182,6 +181,11 @@ public class FabricTreeModelNew implements TreeModel
                                                                    // the core
                                                                    // switch
                                                                    // node
+        
+        System.err.println("There are " + numChildren + " child nodes in this system tree model");
+        System.err.println("There are " + depth + " depths in this system tree model");
+        System.err.println("The root vertex guid in this system tree model is: " + treeModel.getRootVertex().getGuid().toColonString());
+        System.err.println("The system guid is:                                " + sysGuid.toColonString());
 
         // ASSUMPTION: core switches are part of the top most levels
         // connect up the top level switches to these dummy Vertex

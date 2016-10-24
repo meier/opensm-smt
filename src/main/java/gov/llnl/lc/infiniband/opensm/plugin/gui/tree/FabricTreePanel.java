@@ -255,6 +255,10 @@ public class FabricTreePanel extends JPanel implements OSM_ServiceChangeListener
       return false;
     }
     
+    System.err.println("Checing to see if this Vertex has a matching system guid");
+    System.err.println("Vertex guid is 1: " + v.getGuid().toColonString());
+    System.err.println("Vertex guid is 2: " + new IB_Guid(v.getNode().sbnNode.sys_guid).toColonString());
+    
     // are there any core switches in this fabric?
     OSM_Fabric fabric = OMS.getFabric();
     fabric.createSystemGuidBins(false);
@@ -271,6 +275,7 @@ public class FabricTreePanel extends JPanel implements OSM_ServiceChangeListener
       // get the bins key, which is the guid string
       String sGuid = guidBins.getKey(k);
       IB_Guid sysGuid = new IB_Guid(sGuid);
+      System.err.println("System guid is: " + sysGuid.toColonString());
       
       if((v.getGuid().equals(sysGuid)) || (sbg.equals(sysGuid)))
         return true;

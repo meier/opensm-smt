@@ -56,6 +56,7 @@
 package gov.llnl.lc.infiniband.opensm.plugin.gui.text;
 
 import gov.llnl.lc.infiniband.core.IB_Guid;
+import gov.llnl.lc.infiniband.core.IB_GuidType;
 import gov.llnl.lc.infiniband.core.IB_Link;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Node;
@@ -71,7 +72,6 @@ import gov.llnl.lc.infiniband.opensm.plugin.gui.data.SmtIconType;
 import gov.llnl.lc.logging.CommonLogger;
 import gov.llnl.lc.smt.SmtConstants;
 import gov.llnl.lc.smt.command.search.SMT_SearchResult;
-import gov.llnl.lc.smt.command.search.SmtIdentification;
 import gov.llnl.lc.smt.data.SMT_UpdateService;
 import gov.llnl.lc.smt.event.SmtMessage;
 import gov.llnl.lc.smt.event.SmtMessageType;
@@ -230,7 +230,7 @@ public class SMT_SearchPanel extends JPanel implements  CommonLogger
           OpenSmMonitorService oms = updater.getOMS();
           if (oms != null)
           {
-            IB_Guid g = SMT_SearchManager.getNodeGuid(searchText.getText(), false, oms);
+            IB_Guid g = SMT_SearchManager.getGuidByType(searchText.getText(), IB_GuidType.NODE_GUID, oms);
             OSM_Fabric fabric = null;
             OSM_Node n = null;
             if ((oms != null) && (g != null))

@@ -321,32 +321,38 @@ public class SmtServer extends SmtCommand
     buff.append("    up since: " + OMService.getRemoteServerStatus().Server.getStartTime().toString() + SmtConstants.NEW_LINE);
     if(Fabric != null)
     {
-    buff.append("   timestamp: " + Fabric.getTimeStamp().toString() );
-
-    buff.append(SmtConstants.NEW_LINE);
-    buff.append("-----------------------------------------" + SmtConstants.NEW_LINE);
-    buff.append("Service name: " + "OpenSM Monitoring Service\n");
-    buff.append("     version: " + ServerStatus.Version + "\n");
-    buff.append("  build date: " + ServerStatus.BuildDate + "\n");
-    buff.append("   heartbeat: " + Long.toString(ServerStatus.ServerHeartbeatCount) + "\n");
-
-    // strip out the name and version and build date
-    String nm = "OSM_JNI_Plugin ";
-    int sndx = SysInfo.OsmJpi_Version.indexOf("(");
-    int endx = SysInfo.OsmJpi_Version.lastIndexOf(")");
-    String ver = SysInfo.OsmJpi_Version.substring(nm.length(), sndx);
-    String da = SysInfo.OsmJpi_Version.substring(sndx + 1, endx-1);
+      if(Fabric.getTimeStamp() == null)
+      {
+        String notUpYet = "... Data Not Available, please try again in a few minutes ...";
+        logger.warning(notUpYet);
+        buff.append(notUpYet +SmtConstants.NEW_LINE);
+      }
+      else
+      {
+        buff.append("   timestamp: " + Fabric.getTimeStamp().toString() );
     
-    buff.append("-----------------------------------------" + SmtConstants.NEW_LINE);
-    buff.append(" Plugin name: " + "OsmJniPi\n");
-    buff.append("     version: " + ver + "\n");
-    buff.append("  build date: " + da + "\n");
-    buff.append("   built for: " + SysInfo.OpenSM_Version + "\n");
+        buff.append(SmtConstants.NEW_LINE);
+        buff.append("-----------------------------------------" + SmtConstants.NEW_LINE);
+        buff.append("Service name: " + "OpenSM Monitoring Service\n");
+        buff.append("     version: " + ServerStatus.Version + "\n");
+        buff.append("  build date: " + ServerStatus.BuildDate + "\n");
+        buff.append("   heartbeat: " + Long.toString(ServerStatus.ServerHeartbeatCount) + "\n");
     
+        // strip out the name and version and build date
+        String nm = "OSM_JNI_Plugin ";
+        int sndx = SysInfo.OsmJpi_Version.indexOf("(");
+        int endx = SysInfo.OsmJpi_Version.lastIndexOf(")");
+        String ver = SysInfo.OsmJpi_Version.substring(nm.length(), sndx);
+        String da = SysInfo.OsmJpi_Version.substring(sndx + 1, endx-1);
+        
+        buff.append("-----------------------------------------" + SmtConstants.NEW_LINE);
+        buff.append(" Plugin name: " + "OsmJniPi\n");
+        buff.append("     version: " + ver + "\n");
+        buff.append("  build date: " + da + "\n");
+        buff.append("   built for: " + SysInfo.OpenSM_Version + "\n");
+        buff.append("   heartbeat: " + Long.toString(ServerStatus.NativeHeartbeatCount) + "\n");
+    }
   }
-
-    buff.append("   heartbeat: " + Long.toString(ServerStatus.NativeHeartbeatCount) + "\n");
-    
     return buff.toString();
   }
   

@@ -153,7 +153,6 @@ public class SmtUtilize extends SmtCommand implements SMT_AnalysisChangeListener
         subCommandArg          = map.get(subCommand);
         sOnce                  = map.get(SmtProperty.SMT_SINGLE_SHOT.getName());
         sPlay                  = map.get(SmtProperty.SMT_PLAY_CONTROL.getName());
-
       }
       
       // start all managers

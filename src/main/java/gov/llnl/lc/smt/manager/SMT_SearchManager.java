@@ -57,10 +57,12 @@ package gov.llnl.lc.smt.manager;
 
 import gov.llnl.lc.infiniband.core.IB_Address;
 import gov.llnl.lc.infiniband.core.IB_Guid;
+import gov.llnl.lc.infiniband.core.IB_GuidType;
 import gov.llnl.lc.infiniband.core.IB_Link;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Node;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Port;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_System;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
 import gov.llnl.lc.infiniband.opensm.plugin.data.RT_Node;
 import gov.llnl.lc.infiniband.opensm.plugin.data.RT_Port;
@@ -85,6 +87,24 @@ import java.util.Map.Entry;
  * @author meier3
  * 
  * @version Apr 29, 2015 11:19:24 AM
+ **********************************************************************/
+/**********************************************************************
+ * Describe purpose and responsibility of SMT_SearchManager
+ * <p>
+ * @see  related classes and interfaces
+ *
+ * @author meier3
+ * 
+ * @version Oct 19, 2016 9:58:23 AM
+ **********************************************************************/
+/**********************************************************************
+ * Describe purpose and responsibility of SMT_SearchManager
+ * <p>
+ * @see  related classes and interfaces
+ *
+ * @author meier3
+ * 
+ * @version Oct 19, 2016 9:59:27 AM
  **********************************************************************/
 public class SMT_SearchManager implements CommonLogger
 {
@@ -175,8 +195,8 @@ public class SMT_SearchManager implements CommonLogger
     int number         = getTrailingNumber(searchString, true);
     IB_Guid sg         = getGuid(searchString);
 
-    IB_Guid NodeGuid = SMT_SearchManager.getNodeGuid(searchString, false, oms);
-    IB_Guid PortGuid = SMT_SearchManager.getNodeGuid(searchString, true, oms);
+    IB_Guid NodeGuid = SMT_SearchManager.getGuidByType(searchString, IB_GuidType.NODE_GUID, oms);
+    IB_Guid PortGuid = SMT_SearchManager.getGuidByType(searchString, IB_GuidType.PORT_GUID, oms);
     if(Fabric.isUniquePortGuid(PortGuid))
     {
       // this is a port guid, which normally means its a channel adapter
@@ -453,7 +473,20 @@ public class SMT_SearchManager implements CommonLogger
     return g;
   }
 
-  public static IB_Guid getNodeGuid(String searchString, boolean rtnPortsGuid, OpenSmMonitorService oms)
+  /**************************************************************************
+   *** Method Name: getGuidByType
+   **/
+  /**
+   *** Get the Guid for the node associated with the provided search string.
+   *   The search string can be the node name, a lid, a guid, or even a port guid.
+   *   
+   *   If the boolean is true, return the ports guid, instead of the nodes guid
+   *   
+   *** <p>
+   *** 
+   *** @return the GLOBAL (or shared) SmtConsoleManager
+   **************************************************************************/
+  public static IB_Guid getGuidByType(String searchString, IB_GuidType gType, OpenSmMonitorService oms)
   {
     IB_Guid g = null;
     if((oms != null) && (oms.getFabric() != null))
@@ -505,7 +538,6 @@ public class SMT_SearchManager implements CommonLogger
 //        System.err.println("Could not convert name string, using longs and lids");
       }
       
-      
       if(g == null)
       {
         // it might be the name, or description
@@ -516,20 +548,39 @@ public class SMT_SearchManager implements CommonLogger
     // try to validate this guid, by finding a node
     if(g != null)
     {
-      // it is either a port guid, or a node guid
+      // it is either a port guid, or a node guid, or system guid
       // is this a node guid?
       OSM_Node on = Fabric.getOSM_Node(g);
-      if(on == null)
+      if(on != null)
       {
-        // its not a node guid, but could be a port guid, check it
-        if(rtnPortsGuid && Fabric.isUniquePortGuid(g))
-        {
-          // this is a port guid, which is okay to return (if desired)
+        // got a node, but is that what I was asking for, null other wise
+        if(gType == IB_GuidType.NODE_GUID)
           return g;
-        }
-        else
-          g = null;
+        return null;
       }
+      
+      OSM_Port op = Fabric.getOSM_Port(g);
+      if(op != null)
+      {
+        // got a port, but is that what I was asking for, null other wise
+        if(gType == IB_GuidType.PORT_GUID)
+          return g;
+        return null;
+      }
+      
+      // If I am here, I have a valid looking guid, and I must have asked for
+      // a system guid
+      OSM_System sys = OSM_System.getOSM_System(Fabric, g);
+      if(sys != null)
+      {
+        // got a port, but is that what I was asking for, null other wise
+        if(gType == IB_GuidType.SYSTEM_GUID)
+          return g;
+       }
+      
+      // went through all valid types, to no avail
+      logger.warning("Looks like a valid guid (" + g.toColonString() + ") but not the desired type: " + gType.getGuidName());
+      g = null;
     }
     }
     return g;
@@ -548,8 +599,6 @@ public class SMT_SearchManager implements CommonLogger
     }
     return clear;
   }
-
-
 
   public static java.util.ArrayList<SMT_SearchResult> getSearchResults(String searchString, OpenSmMonitorService oms)
   {

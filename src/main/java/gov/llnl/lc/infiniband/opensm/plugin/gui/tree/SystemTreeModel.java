@@ -119,6 +119,9 @@ public class SystemTreeModel extends FabricTreeModelNew implements CommonLogger
     this(null);
     // get an OSM_System object, which contains the structure of the chassis
     OSM_System os = new OSM_System(sysGuid, fabric);
+    
+    System.err.println("STM - The System Guid 1: " + sysGuid.toColonString());
+    
 
     // Build the Tree Model for System Image Guid
     
@@ -128,7 +131,10 @@ public class SystemTreeModel extends FabricTreeModelNew implements CommonLogger
       logger.severe("The VetexMap for System " + sysGuid.toColonString() + " could not be built (no matching guids?)");
     }
     else
+    {
+      System.err.println("SMT - VertexMap size 1: " + vertexMap.size());
       createModel(os);
+    }
   }
   
   private void createModel(OSM_System osm_sys)
@@ -145,6 +151,11 @@ public class SystemTreeModel extends FabricTreeModelNew implements CommonLogger
     int maxDepth = IB_Vertex.getMaxDepth(VertexMap);
     LinkedHashMap <String, IB_Vertex> topLevel = IB_Vertex.getVertexMapAtDepth(VertexMap, maxDepth);
     
+    System.err.println("STM - The System Guid 2: " + SysGuid.toColonString());
+    System.err.println("SMT - VertexMap size 2: " + VertexMap.size());
+    System.err.println("SMT - System Name: " + sysName);
+    System.err.println("SMT - Num Top Level: " + topLevel.size());
+    System.err.println("SMT - Num Depths: " + maxDepth);
     
     if(topLevel.size() > 1)
     {
@@ -153,6 +164,8 @@ public class SystemTreeModel extends FabricTreeModelNew implements CommonLogger
       maxDepth++;
       OSM_Node n = new OSM_Node();  // null constructor for artificial node
       n.sbnNode.node_type = (short) OSM_NodeType.SW_NODE.getType();  // force this to be a switch
+      if((sysName == null) || (sysName.length() < 1))
+        sysName = "UNKNOWN SYSTEM NAME";
       
 //      logger.info("The artificial root (level " + maxDepth + ") has " + topLevel.size() + " children");
       top = new IB_Vertex(n, maxDepth, true, false, sysName);  // this is the artificial root node

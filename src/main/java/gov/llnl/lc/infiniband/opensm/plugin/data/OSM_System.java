@@ -449,8 +449,14 @@ public class OSM_System implements Serializable, CommonLogger, Comparable<OSM_Sy
     ArrayList <OSM_System> sysArray = new ArrayList<OSM_System>();
 
         // assume nothing
-      if((fabric == null) || (!fabric.isInitialized()))
+      if(fabric == null)
         return null;
+      
+      if(!fabric.isInitialized())
+      {
+        System.err.println("Fabric not initialized???");
+        
+      }
       
       fabric.createSystemGuidBins(false);
       BinList <IB_Guid> guidBins = fabric.getSystemGuidBins();
@@ -488,7 +494,15 @@ public class OSM_System implements Serializable, CommonLogger, Comparable<OSM_Sy
     return sys;
    }
   
-
+  public static OSM_System getOSM_System(OSM_Fabric fabric, IB_Guid sysGuid)
+  {
+    java.util.ArrayList <OSM_System> sysArray =  getArrayOfSystems(fabric);
+    
+    if((sysArray == null) || (sysArray.isEmpty()))
+      return null;
+    
+    return OSM_System.getOSM_System(sysArray, sysGuid);
+   }
 
   /************************************************************
    * Method Name:

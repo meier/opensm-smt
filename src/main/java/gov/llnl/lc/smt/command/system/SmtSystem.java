@@ -386,7 +386,7 @@ public class SmtSystem extends SmtCommand
     return buff.toString();
   }
   
-  private static String getStatus(OSM_System sys)
+  public static String getStatus(OSM_System sys)
   {
     if(sys == null)
       return null;

@@ -678,6 +678,33 @@ public class SmtFabricStructure implements CommonLogger, SmtConstants
     return buff.toString();
   }
 
+  public String toSystemContent()
+  {
+    int numSystems = 1;
+    int numTop     = 3;
+    int numMiddle  = 2;
+    int numBottom  = 1;
+
+    
+    StringBuffer stringValue = new StringBuffer();
+    if(numSystems > 0)
+    {
+      stringValue.append("<h3># Systems: "         + numSystems + "</h3>");
+      stringValue.append("<blockquote>");
+      stringValue.append(MEDIUM_FONT);
+      stringValue.append("switches/system: "       + numTop); 
+      stringValue.append("<br>");
+      stringValue.append("ports/switch: "          + numMiddle); 
+      stringValue.append("<br>");
+      stringValue.append("ports/system: "          + numMiddle); 
+      stringValue.append("<br>");
+      stringValue.append("external ports/system: " + numBottom);
+      stringValue.append("</blockquote>");
+      stringValue.append("<br>");    
+    }
+    return stringValue.toString();
+  }
+  
   public String toNodeContent()
   {
     int numTotal = Nodes == null ? 0: Nodes.NumTotal;
@@ -834,6 +861,7 @@ public class SmtFabricStructure implements CommonLogger, SmtConstants
   public String toContent()
   {
     StringBuffer stringValue = new StringBuffer();
+    stringValue.append(toSystemContent());
     stringValue.append(toNodeContent());
     stringValue.append(toPortContent());
     stringValue.append(toLinkContent());

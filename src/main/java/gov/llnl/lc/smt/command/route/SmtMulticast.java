@@ -57,6 +57,7 @@ package gov.llnl.lc.smt.command.route;
 
 import gov.llnl.lc.infiniband.core.IB_Address;
 import gov.llnl.lc.infiniband.core.IB_Guid;
+import gov.llnl.lc.infiniband.core.IB_GuidType;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
 import gov.llnl.lc.infiniband.opensm.plugin.data.SBN_MulticastGroup;
@@ -576,7 +577,7 @@ public class SmtMulticast extends SmtCommand
       String nodeid = map.get(SmtProperty.SMT_COMMAND_ARGS.getName());
       if(nodeid != null)
       {
-        return getNodeGuid(nodeid, true);
+        return getNodeGuid(nodeid);
       }
     }
      return null;

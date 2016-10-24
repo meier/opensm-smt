@@ -57,10 +57,14 @@ package gov.llnl.lc.smt.command.search;
 
 import gov.llnl.lc.infiniband.core.IB_Address;
 import gov.llnl.lc.infiniband.core.IB_Guid;
+import gov.llnl.lc.infiniband.core.IB_GuidType;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Node;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_NodeType;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Port;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Subnet;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_System;
+import gov.llnl.lc.infiniband.opensm.plugin.data.SBN_Manager;
 import gov.llnl.lc.infiniband.opensm.plugin.data.SBN_MulticastGroup;
 import gov.llnl.lc.infiniband.opensm.plugin.data.SBN_PartitionKey;
 import gov.llnl.lc.smt.SmtConstants;
@@ -69,6 +73,8 @@ import gov.llnl.lc.smt.command.config.SmtConfig;
 import gov.llnl.lc.smt.command.route.SmtMulticast;
 import gov.llnl.lc.smt.command.route.SmtPartition;
 import gov.llnl.lc.smt.command.server.SmtServer;
+import gov.llnl.lc.smt.command.system.SmtSystem;
+import gov.llnl.lc.smt.manager.SMT_SearchManager;
 import gov.llnl.lc.smt.props.SmtProperty;
 
 import java.util.Map;
@@ -197,7 +203,9 @@ public class SmtIdentification extends SmtCommand
     String subCommand    = null;
     Map<String,String> map = smtConfig.getConfigMap();
     
-    IB_Guid g  = getNodeGuid(config);
+    IB_Guid ng = getNodeGuid(config);
+    IB_Guid pg = getPortGuid(config);
+    IB_Guid sg = getSystemGuid(config);
     int  pNum = getPortNumber(config);
     int  pKey = getPartitionKey(config);
     int  mLid = getMulticastLid(config);
@@ -212,13 +220,30 @@ public class SmtIdentification extends SmtCommand
       }
      }
 
-    // attempt to identify the node
+    // attempt to identify the elements
     OSM_Fabric                    fabric = null;
     OSM_Node                           n = null;
-    if((OMService != null) && (g != null))
+    OSM_Port                           p = null;
+    OSM_System                       sys = null;
+    
+    if((OMService != null) && (ng != null))
     {
       fabric = OMService.getFabric();
-      n = fabric.getOSM_Node(g);
+      n = fabric.getOSM_Node(ng);
+    }
+
+    if((OMService != null) && (pg != null))
+    {
+      fabric = OMService.getFabric();
+      p = fabric.getOSM_Port(pg);
+      if(p != null)
+        n = fabric.getOSM_Node(p.getNodeGuid());
+    }
+    
+    if((OMService != null) && (sg != null))
+    {
+      fabric = OMService.getFabric();
+      sys = OSM_System.getOSM_System(fabric, sg);
     }
 
     // there should only be one subcommand
@@ -239,13 +264,19 @@ public class SmtIdentification extends SmtCommand
     if(n != null)
       System.out.println(SmtIdentification.getIdentication(fabric, n, pNum));
     
+    if((p != null) && (n == null))
+      System.out.println("Found a matching port, but couldn't identify the parent node");
+    
+    if(sys != null)
+      System.out.println(SmtSystem.getStatus( sys));
+    
     if(pKey >= 0)
        System.out.println(SmtPartition.getPartition(pKey, OMService).toPartitionKeyString());
       
     if(mLid >= 0)
       System.out.println((SmtMulticast.getMulticastGroup(mLid, OMService.getFabric().getOsmSubnet().MCGroups)).toMulticastGroupString());
     
-    if((n == null) && (pKey < 0) && (mLid < 0))
+    if((n == null) && (p == null) && (sys == null) && (pKey < 0) && (mLid < 0))
       System.err.println("Could not identify object: (" + map.get(SmtProperty.SMT_COMMAND_ARGS.getName()) + ")");
      
     return true;
@@ -318,11 +349,12 @@ public class SmtIdentification extends SmtCommand
   public static String getIdentication(OSM_Fabric f, OSM_Node n, int pNum)
   {
     // return a node or port identifier
-    String formatString = "%12s:  %s";
+    String formatString = "%14s:  %s";
 
     StringBuffer buff = new StringBuffer();
     if ((f != null) && (n != null))
     {
+      boolean bMgr = f.isManagementNode(n);
       IB_Guid g = n.getNodeGuid();
       int lid = f.getLidFromGuid(g);
       boolean bPguid = f.isUniquePortGuid(g);
@@ -336,6 +368,16 @@ public class SmtIdentification extends SmtCommand
       buff.append(String.format(formatString, "guid", g.toColonString() + SmtConstants.NEW_LINE));
       buff.append(String.format(formatString, "lid", lid + " (0x" + Integer.toHexString(lid) + ")" + SmtConstants.NEW_LINE));
       buff.append(String.format(formatString, "type", OSM_NodeType.get(n).getFullName() + SmtConstants.NEW_LINE));
+      if(bMgr)
+      {
+        OSM_Subnet  sn  = f.getOsmSubnet();
+        for(SBN_Manager m: sn.Managers)
+        {
+          IB_Guid mg = new IB_Guid(m.guid);
+          if(f.isSubnetManager(mg))
+            buff.append(String.format(formatString, "Subnet Manager", m.State + SmtConstants.NEW_LINE));
+        }
+      }
       if(!bSw)
       {
         pNum = 1;
@@ -433,7 +475,41 @@ public class SmtIdentification extends SmtCommand
      return nArgs;
   }
 
+  private IB_Guid getSystemGuid(SmtConfig config)
+  {
+    // if there are any arguments, they normally reference a node identifier
+    // return null, indicating couldn't be found, or nothing specified
+    if(config != null)
+    {
+      Map<String,String> map = config.getConfigMap();
+      String nodeid = map.get(SmtProperty.SMT_COMMAND_ARGS.getName());
+      if(nodeid != null)
+      {
+        // the id may be a name, lid, guid, or a port-guid (not same as node guid)
+        return SMT_SearchManager.getGuidByType(nodeid, IB_GuidType.SYSTEM_GUID, OMService);
+       }
+    }
+     return null;
+  }
+
   private IB_Guid getNodeGuid(SmtConfig config)
+  {
+    // if there are any arguments, they normally reference a node identifier
+    // return null, indicating couldn't be found, or nothing specified
+    if(config != null)
+    {
+      Map<String,String> map = config.getConfigMap();
+      String nodeid = map.get(SmtProperty.SMT_COMMAND_ARGS.getName());
+      if(nodeid != null)
+      {
+        // the id may be a name, lid, guid, or a port-guid (not same as node guid)
+        return getNodeGuid(nodeid);
+       }
+    }
+     return null;
+  }
+
+  private IB_Guid getPortGuid(SmtConfig config)
   {
     // if there are any arguments, they normally reference a node identifier
     // return null, indicating couldn't be found, or nothing specified
@@ -498,9 +574,6 @@ public class SmtIdentification extends SmtCommand
      return 0;
   }
 
-
-
-  
   /************************************************************
    * Method Name:
    *  main

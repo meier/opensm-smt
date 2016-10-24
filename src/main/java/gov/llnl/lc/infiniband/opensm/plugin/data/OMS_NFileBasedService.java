@@ -173,9 +173,16 @@ public class OMS_NFileBasedService extends OMS_AbstractUpdateService
    }
    catch (FileNotFoundException e)
    {
-     logger.severe("Couldn't open the Configuration file: " + cfn);
-     System.err.println("Couldn't open the Configuration file: " + cfn);
-     e.printStackTrace();
+     String msg1 = "Couldn't open the Configuration file: " + cfn;
+     String msg2 = "Consider creating it with \"smt-record -pn <port num> -wC <filename>\"";
+     String msg3 = "  (it will be cached and used in subsequent smt commands)";
+     logger.severe(msg1);
+     System.err.println(msg1);
+     logger.severe(msg2);
+     System.err.println(msg2);
+     System.err.println(msg3);
+     System.err.println("");
+//     e.printStackTrace();
    }
    catch (IOException e)
    {

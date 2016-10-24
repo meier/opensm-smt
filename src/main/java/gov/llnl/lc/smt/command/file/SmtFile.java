@@ -64,14 +64,15 @@ import gov.llnl.lc.smt.props.SmtProperty;
 import gov.llnl.lc.time.TimeStamp;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -783,53 +784,53 @@ public class SmtFile extends SmtCommand
    * @param inputFileName
    * @return
    ***********************************************************/
+  private List<String> getFileList6(String fileName)
+  {
+    List<String> fileList = new ArrayList<String>();
+
+//    try
+//    {
+//      FileInputStream fis = new FileInputStream(fileName);
+//      
+//      //Construct BufferedReader from InputStreamReader
+//      BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+//     
+//      String line = null;
+//      while ((line = br.readLine()) != null)
+//      {
+//        // don't add blank lines or comments
+//        if(!line.isEmpty() && !line.startsWith("#"))
+//          fileList.add(line);
+//      }
+//      br.close();
+//    }
+//    catch (IOException e)
+//    {
+//      e.printStackTrace();
+//    }
+    return fileList;
+  }
+
   private List<String> getFileList(String fileName)
   {
     List<String> fileList = new ArrayList<String>();
 
     try
     {
-      FileInputStream fis = new FileInputStream(fileName);
+      BufferedReader br = Files.newBufferedReader(Paths.get(fileName));
+      //br returns as stream and convert it into a List
+      fileList = br.lines().collect(Collectors.toList());
       
-      //Construct BufferedReader from InputStreamReader
-      BufferedReader br = new BufferedReader(new InputStreamReader(fis));
-     
-      String line = null;
-      while ((line = br.readLine()) != null)
-      {
-        // don't add blank lines or comments
-        if(!line.isEmpty() && !line.startsWith("#"))
-          fileList.add(line);
-      }
-      br.close();
+      // trim empty lines from list
+      fileList.removeIf(s -> s.isEmpty());
+
+      // trim comment lines from list
+      fileList.removeIf(s -> s.startsWith("#"));
     }
     catch (IOException e)
     {
       e.printStackTrace();
     }
-    return fileList;
-  }
-
-  private List<String> getFileList8(String fileName)
-  {
-    List<String> fileList = new ArrayList<String>();
-
-//    try
-//    {
-//      BufferedReader br = Files.newBufferedReader(Paths.get(fileName));
-//      //br returns as stream and convert it into a List
-//      fileList = br.lines().collect(Collectors.toList());
-//      
-//      // trim empty lines from list
-//      fileList.removeIf(s -> s.isEmpty());
-//
-//      // trim comment lines from list
-//      fileList.removeIf(s -> s.startsWith("#"));
-//    }
-//    catch (IOException e)
-//    {
-//      e.printStackTrace();
-//    }
     return fileList;
   }
 
