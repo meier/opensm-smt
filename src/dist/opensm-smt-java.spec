@@ -62,6 +62,8 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(644,root,root,755)
 %{_javadir}/*
 %config(noreplace) /%{osm_config_dir}/*.config
+%config(noreplace) /%{osm_config_dir}/*.properties
+%config(noreplace) /%{osm_config_dir}/OsmClientKeystore
 
 # the man pages
 %{_mandir}/man1/*
