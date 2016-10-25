@@ -66,6 +66,10 @@ dependencies {
    compile name: 'collections-generic-4.01'
 }
 
+task wrapper(type: Wrapper) {
+   gradleVersion = '3.1' //version required
+}
+
 task makeDistro() << {
     def subdir = new File(project.buildDir, "distributions")
     println("subdir: "+ subdir)
