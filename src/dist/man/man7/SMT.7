@@ -1,71 +1,186 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "SMT" "7" "September 2016" "Overview" "Subnet Monitoring Tools"
+.TH "SMT" "7" "2016-10-28" "Overview" "Subnet Monitoring Tools"
 .
 .SH "NAME"
 \fBSMT\fR \- Subnet Monitoring Tools
 .
 .SH "DESCRIPTION"
-description
+The Subnet Monitoring Tools (\fBSMT\fR) package contains a complete set of client side Java libraries (JAR files) to create Opensm Monitoring Service (\fBOMS\fR) client applications\. It also contains a collection of pre\-built OMS client utilities and applications\. These are collectively referred to as the subnet monitoring tools, and individually as SMT commands\.
+.
+.P
+The \fBSMT\fR Java libraries are built on the primitive application interfaces provided by the Opensm Monitoring Service (\fBOMS\fR)\. It extends the \fBOMS\fR libraries by providing numerous convenience methods and commonly used analysis capabilities\. It also provides a framework (used by the included commands) for easily creating your own custom \fBOMS\fR client applications\.
+.
+.P
+Since the \fBSMT\fR is an implementation of the client side of the \fBOMS\fR client/server architecture, it must be configured to communicate to the \fBOMS\fR service\. By default, the \fBSMT\fR is configured to work with the default configuration of the \fBOMS\fR\. If something other than the default configuration of the \fBOMS\fR is used on the server side, then corresponding changes will be necessary on the client side\. These changes can be specified in the following files\.
+.
+.SS "FILES"
+The \fBSMT\fR commands are simply \fBOMS\fR client applications, and all need to be configured to be able to establish a secure and efficient connection to the service\. The following files address the various ways to configure client applications\.
+.
+.TP
+\fB/usr/share/java/SubnetMonitorTool/bin/smt\-abstract\fR
+All of the \fBSMT\fR commands use the same configuration, specified within this file\. This can be used as a template or a reference for customizing your own configuration\. It specifies the default command options, such as the location of the network, keystore, authentication, and authorization properties files\. It also shows how to configure the \fIclasspath\fR and the desired logging mechanism and verbosity\.
+.
+.TP
+\fB/etc/opensm\-plugin/OsmJClient\.properties\fR
+The all\-in\-one default properties file for configuring the network, keystore, authentication, authorization, and logging properties\. Normally each of these attributes can be specified in their own separate file, but it is also possible to specify everything in a single file, and simply re\-use that file, as demonstrated in \fBsmt\-abstract\fR\.
+.
+.TP
+\fB/etc/opensm\-plugin/OsmClientKeystore\fR
+This is the default \fBOMS\fR keystore for client applications\. It is provided to get you started, and serve as a template for creating your own keystore\. You can (and probably should) specify a keystore created specifically for your host\. If you want to use a keystore other than the default, it must be specified in the \fBOsmJClient\.properties\fR file\.
+.
+.TP
+\fB/etc/opensm\-plugin/SubnetMonitorTool\.config\fR
+This contains the default settings for the \fBSMT\fR commands\. For example if no \fBOMS SOURCE\fR (a method to get OMS snapshots) is specified, the commands will use \fIlocalhost 10011\fR by default\.
 .
 .SH "QUICK START"
-quickstart
+The RPM and DEB package should install everything in an identical manner\. The \fBSMT\fR is a client package and can be installed on your linux laptop or the management node of the cluster\. These two different installations will be referred to as \fIremote\fR and \fIlocal\fR, respectively, and affects how the SMT commands operate\. Almost all of the commands require one or more \fBOMS\fR data snapshots\. This data can be directly provided by the \fBOMS\fR service (Online) or by using a previously recorded "history" file (Offline), also know as "flight recorder data"\.
+.
+.SS "Online"
+Establishing a connection to the \fBOMS\fR means the client application successfully negotiated the SSL/TLS handshake, passed the authentication and authorization checks, decrypted, decompressed, and successfully deserialized the Java objects\. Using the default configuration in both \fBOMS\fR and \fBSMT\fR should make the process of establishing a connection between the client and server more simple, since they should be compatible\.
+.
+.P
+Most \fBOMS\fR deployments will employ some form of security measure for allowing socket connections to the service on port 10011\.
+.
+.P
+\fB\-local\fR
+.
+.br
+If you are using \fBSMT\fR commands from the management node, it is assumed you have already authenticated and are authorized\. All of the commands will be available without using any form of security credentials\. This is the preferred method of connecting to the service\. The \fBOMS\fR service can be spoofed into thinking a remote connection is also local, by using an ssh tunnel with local port forwarding\. Exploiting this behavior is recommended, as security is satisfied when establishing the tunnel, and it provides a way to authenticate once for several command invocations\.
+.
+.TP
+\fBsmt\-server\fR
+Invoking the above command without any arguments from the management node should provide information about the \fBOMS\fR service\.
+.
+.P
+\fB\-remote\fR
+.
+.br
+If you are attempting to establish an \fBOnline\fR connection to the \fBOMS\fR from a remote host, it is recommended that you first establish an SSH tunnel (with any necessary proxy hosts) first, and then use that tunnel to forward a local port to a port on the remote host\. In this way, even remote connections will appear like \fBlocal\fR connections to the \fBOMS\fR service\.
+.
+.P
+If you don\'t use the local port forwarding through an ssh tunnel trick, then remote connections will require some form of credential\. By default, this is configured as \fBLDAPOTP\fR\. You will have to supply a user name, and your passcode (PIN + RSA token code) each time you connect to the \fBOMS\fR\. Since this can be very problematic, only \fBOffline\fR or \fBOnline \- local\fR modes of operation are recommended\.
+.
+.TP
+\fBsmt\-server \-h <hostname> \-pn 10011\fR
+Specifying the hostname and port number of the \fBOMS\fR service is normal, whether connecting to the localhost or not\. If no host is specified, localhost is assumed\. Likewise, if no port is specified, 10011 is assumed\. If using the ssh tunnel and port forwarding method of connecting, one or both of these arguments can be omitted\. If not, then both are required, and you will need to authenticate using your LDAPOTP credentials\.
+.
+.SS "Offline"
+It is often inconvenient or not possible to connect to the \fBOMS\fR\. The \fBSMT\fR commands can still be used in an \fBoffline\fR mode by providing an \fBOMS\fR history file\. An \fBOMS\fR history file contains one or more snapshots of the \fBOMS\fR data, and can be useful for post\-mortem and trend analysis\.
+.
+.P
+\fBOMS\fR history files can be created with the filght recorder tool; \fBsmt\-record(1)\fR\.
+.
+.P
+\fB\-local\fR or \fB\-remote\fR
+.
+.br
+The tools can read history files with the \fB\-rH\fR option\. History files can contain many snapshots of \fBOMS\fR data\. Some \fBSMT\fR commands need only a single snapshot (in which case the first one in the file is used), whereas other require two or more snapshots to do comparitive analysis\.
+.
+.TP
+\fBsmt\-server \-rH <omsFile\.his>\fR
+Using the \fBSMT\fR commands in the \fBOffline\fR mode with history files avoids all the connection and authentication issues associated with using them in the \fBOnline\fR mode\. In order to take advantage of this mode, however, the history file needs to be first created by using the \fBsmt\-record(1)\fR command in the \fBOnline\fR mode\.
 .
 .SH "COMMANDS"
-list of commands
+A collection of \fBOMS\fR client applications provides a convenient way to obtain both static and dynamic information about the Infiniband fabric\. Each of these commands have their own man page, but are listed here for reference\.
 .
-.IP "\(bu" 4
-\fBcmd1\fR a command
+.TP
+\fBsmt\fR
+The parent command that "wraps" all the other commands\.
 .
-.IP "\(bu" 4
-\fBcmd2\fR another command with some test under it
+.TP
+\fBsmt\-about\fR
+Provides JAR package information, through which attribution or credit to freely available software used by these commands can be given\.
 .
-.IP "" 0
+.TP
+\fBsmt\-config\fR
+A tool for reading and writing SMT configuration files\.
 .
-.P
-now some regurlar test
+.TP
+\fBsmt\-console\fR
+An interactive console (curses application) for examining the fabric\.
 .
-.IP "\(bu" 4
-\fBcmd3\fR and back to indenting the list
+.TP
+\fBsmt\-event\fR
+A command that shows OpenSM events and traps\.
 .
-.IP "" 0
+.TP
+\fBsmt\-fabric\fR
+A tool for obtaining high level fabric and subnet information\.
 .
-.P
-and this is how to cause a bread
+.TP
+\fBsmt\-file\fR
+A command line tool for interrogating and manipulating SMT files\.
 .
-.br
-one
+.TP
+\fBsmt\-gui\fR
+A graphical application for investigation, discovery, and exploration of Infiniband fabrics\.
 .
-.br
-two
+.TP
+\fBsmt\-help\fR
+A graphical tool that provides a navigable help system for OMS/SMT\.
 .
-.br
-three
+.TP
+\fBsmt\-id\fR
+A command that can help identify components in an Infiniband fabric\.
 .
-.br
-four five
+.TP
+\fBsmt\-link\fR
+Returns information about one or more links in the fabric\.
+.
+.TP
+\fBsmt\-multicast\fR
+Provides information about the one\-to\-many communication mechanism\.
+.
+.TP
+\fBsmt\-node\fR
+Returns information about a node or nodes in the fabric\.
+.
+.TP
+\fBsmt\-partition\fR
+Provides information about how the subnet may be partitioned\.
+.
+.TP
+\fBsmt\-port\fR
+Returns information about one or more ports in the fabric\.
+.
+.TP
+\fBsmt\-priv\fR
+Invokes a privileged command in \fBOnline\fR mode only\.
+.
+.TP
+\fBsmt\-record\fR
+Saves or records one or more snapshots of the OMS data, also known as the \fBflight recorder\fR\.
+.
+.TP
+\fBsmt\-route\fR
+A tool for examining the fabrics´ routing tables\.
+.
+.TP
+\fBsmt\-server\fR
+A utility for obtaining information about the OpenSM Monitoring Service (\fBOMS\fR)\.
+.
+.TP
+\fBsmt\-system\fR
+Discovers and describes the \fIsystems\fR in the fabric\.
+.
+.TP
+\fBsmt\-top\fR
+A tool for displaying the most active nodes, ports, or links\.
+.
+.TP
+\fBsmt\-utilize\fR
+Returns bandwidth utilization as a percentage of the theoretical maximum\.
 .
 .SS "Notes"
-this is just a section with notes and I have indented this section by two spaces\. I don\'t know how it will handle line wraps or parts of paragraphs but this will hopefully show that\. I would like to also double indent, so will try that here\. But I will first try to see how a line starting on a new line gets formatted\. I think it just gets appended, but I am not sure\.
+This is a Java 8 package, primarily designed and tested for RHEL 7\. Since these are client side libraries and applications, they can be installed and used on hosts that do not have the \fBOMS\fR package installed\. When used with \fBOMS\fR history files, these commands can be used completely independent of a network connection (on a plane, a demo, or presentation)\. The history file have proven useful for research, and as an archive\.
 .
 .P
-And what about a new line with a blank line in between? Does that get appended as well, or does it start a new line, and if it starts a new line, does it need to be indented, or does that happen automatically\.
+It should be possible to port this package to Windows and iOS systems, or anything with a JVM\.
 .
 .P
-This may be the answer to that because I indented tis line by two spaces, and only two spaces, just to see what would happen, and it looks like I will also see how the line gets wrapped\.
-.
-.IP "" 4
-.
-.nf
-
-That was a new line with a tab
-
-And that was a new line with 4 spaces\.
-.
-.fi
-.
-.IP "" 0
+These tools are actively under development, and should be considered a BETA version\. Although the \fBOMS\fR package is relatively stable, this package still contains many undocumented features, incomplete or inconsistent capabilities, and hooks or place holders for features not yet implemented\.
 .
 .SH "AUTHOR"
 Tim Meier \fImeier3@llnl\.gov\fR
@@ -74,7 +189,7 @@ Tim Meier \fImeier3@llnl\.gov\fR
 Copyright (c) 2016, Lawrence Livermore National Security, LLC\. Produced at the Lawrence Livermore National Laboratory\. All rights reserved\. LLNL\-CODE\-673346
 .
 .SH "SEE ALSO"
-OMS(7), OsmJniPi(8), smt\-about(1), smt\-config(1), smt\-console(1), smt\-event(1), smt\-fabric(1), smt\-file(1), smt\-gui(1), smt\-help(1), smt\-id(1), smt\-link(1), smt\-multicast(1), smt\-node(1), smt\-partition(1), smt\-port(1), smt\-priv(1), smt\-record(1), smt\-route(1), smt\-server(1), smt(1), smt\-top(1), smt\-utilize(1)
+OMS(7), OsmJniPi(8), smt\-about(1), smt\-config(1), smt\-console(1), smt\-event(1), smt\-fabric(1), smt\-file(1), smt\-gui(1), smt\-help(1), smt\-id(1), smt\-link(1), smt\-multicast(1), smt\-node(1), smt\-partition(1), smt\-port(1), smt\-priv(1), smt\-record(1), smt\-route(1), smt\-server(1), smt\-system(1), smt(1), smt\-top(1), smt\-utilize(1)
 .
 .P
 opensm\-smt \fIhttps://github\.com/meier/opensm\-smt\fR on GitHub
