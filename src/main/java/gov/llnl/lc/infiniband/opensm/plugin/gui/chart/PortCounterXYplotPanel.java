@@ -101,6 +101,10 @@ public class PortCounterXYplotPanel extends ChartPanel implements CommonLogger
   private TimeSeries TSeries = new TimeSeries("counts");
   
   private String FrameTitle;
+  
+  private long     prevVal = 0;
+  private TimeStamp prevTS = null;
+
 
   /**
    * A time series plot of a single port counter.  This is a multiple axis
@@ -448,11 +452,19 @@ public class PortCounterXYplotPanel extends ChartPanel implements CommonLogger
       // find the desired port counter, in this instance
       LinkedHashMap<String, OSM_Port> pL = osm.getFabric().getOSM_Ports();
       OSM_Port p = pL.get(OSM_Port.getOSM_PortKey(Port));
-      long lValue = p.pfmPort.getCounter(PortCounter);
-      TimeStamp ts = p.pfmPort.getCounterTimeStamp();
+      long lValue = prevVal;
+      TimeStamp ts = prevTS;
+      if((p != null) && (p.pfmPort != null))
+      {
+        lValue = p.pfmPort.getCounter(PortCounter);
+        ts = p.pfmPort.getCounterTimeStamp();
+        prevVal = lValue;
+        prevTS = ts;
+      }
       
       RegularTimePeriod ms = new FixedMillisecond(ts.getTimeInMillis());
-      TSeries.add(ms, (double)lValue);
+//      TSeries.add(ms, (double)lValue);
+      TSeries.addOrUpdate(ms, (double)lValue);
     }
     TimeSeriesCollection dataset = new TimeSeriesCollection();
     dataset.addSeries(TSeries);

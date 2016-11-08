@@ -16,6 +16,7 @@ BuildArch:      	noarch
 
 BuildRequires:  	java-devel >= 1:1.6.0
 Requires:       	java >= 1:1.6.0
+Requires:       	llnl-curses-jni-libs
 BuildRequires:  	jpackage-utils
 BuildRequires:  	ant >= 1.6
 
