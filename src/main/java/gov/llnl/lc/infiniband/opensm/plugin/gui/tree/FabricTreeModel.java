@@ -75,7 +75,7 @@ import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
 import gov.llnl.lc.util.BinList;
 
-public class FabricTreeModelNew implements TreeModel
+public class FabricTreeModel implements TreeModel
 {  
   protected UserObjectTreeNode rootVertexNode;
   protected IB_Vertex rootVertex;
@@ -92,7 +92,7 @@ public class FabricTreeModelNew implements TreeModel
     return rootVertex;
   }
 
-  public FabricTreeModelNew(UserObjectTreeNode RootVertexNode)
+  public FabricTreeModel(UserObjectTreeNode RootVertexNode)
   {
     super();
     rootVertexNode = RootVertexNode;
@@ -100,12 +100,12 @@ public class FabricTreeModelNew implements TreeModel
     rootVertex = (IB_Vertex)nvn.getMemberObject();
   }
 
-  public FabricTreeModelNew(IB_Vertex root)
+  public FabricTreeModel(IB_Vertex root)
   {
     this(new UserObjectTreeNode(new NameValueNode((root == null ? "": root.getName()), root ), true));
  }
 
-  public FabricTreeModelNew(HashMap <String, IB_Vertex> VertexMap, OSM_Fabric fabric)
+  public FabricTreeModel(HashMap <String, IB_Vertex> VertexMap, OSM_Fabric fabric)
   {
     // this is the normal preferred way to construct the tree model
     

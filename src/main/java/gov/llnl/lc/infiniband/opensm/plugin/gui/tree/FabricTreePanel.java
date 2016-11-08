@@ -348,7 +348,7 @@ public class FabricTreePanel extends JPanel implements OSM_ServiceChangeListener
     if (vertexMap == null)
       System.exit(-1);
     System.err.println("There are " + vertexMap.size() + " vertices");
-    FabricTreeModelNew treeModel = new FabricTreeModelNew(vertexMap, OMS.getFabric());
+    FabricTreeModel treeModel = new FabricTreeModel(vertexMap, OMS.getFabric());
 
     UserObjectTreeNode root = (UserObjectTreeNode) treeModel.getRoot();
     if (root != null)
@@ -382,19 +382,19 @@ public class FabricTreePanel extends JPanel implements OSM_ServiceChangeListener
   public void osmServiceUpdate(OMS_Updater updater, OpenSmMonitorService osmService)
       throws Exception
   {
-    FabricTreeModelNew model = null;
+    FabricTreeModel model = null;
     setOMS(osmService);
     
     // if the updater is an SMT_Updater, skip analysis, already done
     if(updater instanceof SMT_UpdateService)
-       model = new FabricTreeModelNew(((SMT_UpdateService)updater).getVertexMap(), osmService.getFabric());
+       model = new FabricTreeModel(((SMT_UpdateService)updater).getVertexMap(), osmService.getFabric());
     else
     {
       LinkedHashMap<String, IB_Vertex> vertexMap = IB_Vertex.createVertexMap(osmService.getFabric());
       if (vertexMap == null)
         System.exit(-1);
       logger.info("There are " + vertexMap.size() + " vertices");
-      model = new FabricTreeModelNew(vertexMap, osmService.getFabric());
+      model = new FabricTreeModel(vertexMap, osmService.getFabric());
     }
     
     UserObjectTreeNode root = (UserObjectTreeNode) model.getRoot();

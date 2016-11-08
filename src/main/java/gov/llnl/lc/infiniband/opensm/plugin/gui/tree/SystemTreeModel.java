@@ -72,7 +72,7 @@ import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
 import gov.llnl.lc.logging.CommonLogger;
 
 
-public class SystemTreeModel extends FabricTreeModelNew implements CommonLogger
+public class SystemTreeModel extends FabricTreeModel implements CommonLogger
 {
   private IB_Guid SysGuid;
   private HashMap <String, IB_Vertex> VertexMap;

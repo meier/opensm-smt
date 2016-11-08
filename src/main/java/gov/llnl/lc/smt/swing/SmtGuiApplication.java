@@ -138,7 +138,7 @@ import gov.llnl.lc.infiniband.opensm.plugin.gui.text.SMT_SearchPanel;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.text.SearchIdentificationPanel;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.text.TimeListenerPanel;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.FabricDiscoveryPanel;
-import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.FabricTreeModelNew;
+import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.FabricTreeModel;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.FabricTreePanel;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.LinkTreeModel;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.LinkTreePanel;
@@ -1360,7 +1360,7 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
       System.exit(-1);
     }
     Message_Mgr.postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INIT, "Building the FabricTreeModel from the VertexMap "));
-    FabricTreeModelNew treeModel = new FabricTreeModelNew(vertexMap, OMS.getFabric());
+    FabricTreeModel treeModel = new FabricTreeModel(vertexMap, OMS.getFabric());
 
     Message_Mgr.postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INIT, "Initializing the FabricTreePanel"));
     UserObjectTreeNode root = (UserObjectTreeNode) treeModel.getRoot();
