@@ -132,7 +132,6 @@ public class OSM_System implements Serializable, CommonLogger, Comparable<OSM_Sy
     StringBuffer buff = new StringBuffer();
     if(isSystemGuid())
     {
-      System.err.println("This guid: " + SysGuid.toColonString() + " has " + GuidList.size() + " guids in it");
       buff.append("This guid: " + SysGuid.toColonString() + " has " + GuidList.size() + " guids in it");
       buff.append("\n");
       buff.append(toString());

@@ -55,6 +55,54 @@
  ********************************************************************/
 package gov.llnl.lc.smt.swing;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.DisplayMode;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+
+import javax.help.CSH;
+import javax.help.HelpBroker;
+import javax.help.HelpSet;
+import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JDialog;
+import javax.swing.JEditorPane;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.JTree;
+import javax.swing.JViewport;
+import javax.swing.KeyStroke;
+
 import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.core.IB_Link;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
@@ -63,6 +111,7 @@ import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Node;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Port;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_ServiceChangeListener;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_System;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
 import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port.PortCounterName;
 import gov.llnl.lc.infiniband.opensm.plugin.data.RT_Node;
@@ -141,54 +190,6 @@ import gov.llnl.lc.time.TimeListener;
 import gov.llnl.lc.time.TimeService;
 import gov.llnl.lc.time.TimeSliderPanel;
 import gov.llnl.lc.time.TimeStamp;
-
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.DisplayMode;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.InputEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-
-import javax.help.CSH;
-import javax.help.HelpBroker;
-import javax.help.HelpSet;
-import javax.swing.JButton;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JDialog;
-import javax.swing.JEditorPane;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.JTree;
-import javax.swing.JViewport;
-import javax.swing.KeyStroke;
 
 public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogger, OSM_ServiceChangeListener, TimeListener, ActionListener
 {
@@ -2023,6 +2024,12 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
         logger.severe("Unhandled SMT_Analysis Type: " + sType.getAnalysisName());
     }
     
+    if ((event.getSelectedObject() instanceof OSM_System) && !handled)
+    {
+      handled = handleSystemImageSelected(source, event);
+      logger.severe("Done handling System selected");
+    }
+    
     if ((event.getSelectedObject() instanceof IB_Vertex) && !handled)
     {
       handled = handleVertexSelected(source, event);
@@ -2098,6 +2105,18 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
       {
         SMT_SearchResultType type = result.getType();
         
+        if (type == SMT_SearchResultType.SEARCH_SYSTEM)
+        {
+          Object obj = result.getResultObject();
+          if((obj != null) && (obj instanceof OSM_System))
+          {
+            // generate a new SYSTEM event, which in turn will be "handled" by the system handler
+            OSM_System sys = (OSM_System)result.getResultObject();
+            GraphSelectionManager.getInstance().updateAllListeners(new IB_GraphSelectionEvent(this, this, sys));
+            handled = true;
+          }
+         }
+
         if (type == SMT_SearchResultType.SEARCH_PORT)
         {
           // generate a new PORT event, which in turn will be "handled" by the port handler
@@ -2320,80 +2339,70 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
   {
     // the source will always be the global graph selection manager
     // the event.source will be the parent object where the event came from
-    // the event.graphEvent is the object that was selected
+    // the event.graphEvent is the object that was selected (sys_guid)
 
     boolean handled = false;  // return true if this method handled (consumed) this event
     
     Object context  = event.getContextObject();    // this should be the IB_Vertex, or the switch node
     Object selected = event.getSelectedObject();   // this should be the UserObjectTreeNode, "sys_guid" object
     
-    IB_Guid swGuid  = null;
     IB_Guid sysGuid = null;
     
-    IB_Vertex sw = null;
-    RT_Node  rNode = null;
-    RT_Port  rPort = null;
-    
-    // process the context object first
+    // generally, this is triggered from a tree object - sys guid
     if(context != null)
     {
-      if(context instanceof IB_Vertex)
-      {
-        // typically when an RT_Node is selected
-        sw = (IB_Vertex)context;
-        swGuid = sw.getGuid();
-      }
-      
       if(selected instanceof UserObjectTreeNode)
       {
         UserObjectTreeNode tn = (UserObjectTreeNode) selected;
-//        System.err.println("A tree was selected! [" + tn.toString() + "]\n");
-//        System.err.println("ChildCount [" + tn.getChildCount() + "]\n");
         
         NameValueNode vmn = (NameValueNode) tn.getUserObject();
- //       System.err.println("The name of the object is: " + vmn.getMemberName() + "\n");
-        Object obj = vmn.getMemberObject();
+         Object obj = vmn.getMemberObject();
         if(obj instanceof String)
         {
-        	sysGuid = new IB_Guid((String)obj);
-            // TODO FIXME - make the TreeModel and panel dynamically updatable, so that
-            // I don't have to go through the Manager
-            
-            // how many nodes are associated with this system image guid?
-            ArrayList<IB_Guid> guidList = OMS.getFabric().getNodeGuidsForSystemGuid(sysGuid);
-            
-            if(guidList != null)
-              logger.fine("There are " + OMS.getFabric().getNodeGuidsForSystemGuid(sysGuid).size() + " nodes for this system guid");
-            else
-              logger.fine("Could not find guids for system guid: " + sysGuid.toColonString());
-            
-            // Build the Tree Model for System Image Guid, put it in a Tree Panel, put that in a Scroll Pane (in center) and hook it up as a listener
-            
-            LinkedHashMap<String, IB_Vertex> vertexMap = IB_Vertex.createVertexMap(OMS.getFabric(), guidList);
-            if (vertexMap == null)
-            {
-              logger.severe("The VetexMap for System " + sysGuid.toColonString() + " could not be built");
-              System.exit(-1);
-            }
-            Message_Mgr.postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INIT, "Building the System Tree from the VertexMap "));
-//            SystemTreeModel treeModel = new SystemTreeModel(vertexMap, sysGuid);
-            SystemTreeModel treeModel = new SystemTreeModel(OMS.getFabric(), sysGuid);
+          sysGuid = new IB_Guid((String)obj);
+          
+          OSM_System sys = OSM_System.getOSM_System(OMS.getFabric(), sysGuid);
+          if(sys != null)
+          {
+            // this will trigger handleSystemImageSelected(), where the real work is done
+            GraphSelectionManager.getInstance().updateAllListeners(new IB_GraphSelectionEvent(this, this, sys));
 
-            Message_Mgr.postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INIT, "Initializing the SystemTreePanel"));
-            SystemTreePanel vtp = new SystemTreePanel();
-            vtp.setTreeModel(treeModel);
-             
-            String tabName = "SYS: " + treeModel.getSystemNameString();
-//            String tabName = "SYS: " + sysGuid.toColonString();
-            JScrollPane scroller = new JScrollPane(vtp);
-            scroller.setName(tabName);
-            if (UpdateService != null)
-              UpdateService.addListener(vtp);
-            // now add this to the center tabbed pane
-            addToCenter(scroller, true, true);
+            handled = true;
+          }
         }
       }
+    }
+    return handled;
+  }
 
+  public boolean handleSystemImageSelected(IB_GraphSelectionUpdater source, IB_GraphSelectionEvent event)
+  {
+    // the source will always be the global graph selection manager
+    // the event.source will be the parent object where the event came from
+    // the event.graphEvent is the object that was selected
+
+    boolean handled = false;  // return true if this method handled (consumed) this event
+    
+    Object selected = event.getSelectedObject();   // this should be the OSM_System object
+    
+    if((selected != null) && (selected instanceof OSM_System))
+    {
+      OSM_System sys = (OSM_System)selected;
+      
+      SystemTreeModel treeModel = new SystemTreeModel(OMS.getFabric(), sys.getSysGuid());
+
+      Message_Mgr.postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INIT, "Initializing the SystemTreePanel"));
+      SystemTreePanel vtp = new SystemTreePanel();
+      vtp.setTreeModel(treeModel);
+       
+      String tabName = "SYS: " + treeModel.getSystemNameString();
+//      String tabName = "SYS: " + sysGuid.toColonString();
+      JScrollPane scroller = new JScrollPane(vtp);
+      scroller.setName(tabName);
+      if (UpdateService != null)
+        UpdateService.addListener(vtp);
+      // now add this to the center tabbed pane
+      addToCenter(scroller, true, true);
     }
     return handled;
   }

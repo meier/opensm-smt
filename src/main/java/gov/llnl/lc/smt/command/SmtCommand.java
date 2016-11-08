@@ -55,6 +55,20 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
+
 import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.core.IB_GuidType;
 import gov.llnl.lc.infiniband.core.IB_Link;
@@ -92,21 +106,6 @@ import gov.llnl.lc.smt.props.SmtProperty;
 import gov.llnl.lc.smt.swing.SmtSplashFrame;
 import gov.llnl.lc.system.Console;
 import gov.llnl.lc.time.TimeStamp;
-
-import java.awt.Dimension;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.Options;
 
 /**********************************************************************
  * This abstract class should be extended for all SMT Commands. It servers to
@@ -615,8 +614,8 @@ public abstract class SmtCommand implements SmtCommandInterface, SmtConstants, C
       System.err.println("No help or options for " + this.getClass().getName());
       return;
     }
-    Dimension d = Console.getScreenDimension();
-    int width = d.width < 32 ? 32: d.width -2;
+    int w = Console.getScreenWidth();
+    int width = w < 32 ? 32: w -2;
     HelpFormatter helpFormatter = new HelpFormatter();
     helpFormatter.setWidth(width);
     

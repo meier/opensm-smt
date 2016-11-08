@@ -55,6 +55,11 @@
  ********************************************************************/
 package gov.llnl.lc.smt.manager;
 
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map.Entry;
+
 import gov.llnl.lc.infiniband.core.IB_Address;
 import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.core.IB_GuidType;
@@ -74,11 +79,6 @@ import gov.llnl.lc.logging.CommonLogger;
 import gov.llnl.lc.smt.command.route.SmtMulticast;
 import gov.llnl.lc.smt.command.search.SMT_SearchResult;
 import gov.llnl.lc.smt.command.search.SMT_SearchResultType;
-
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map.Entry;
 
 /**********************************************************************
  * The SMT_SearchManager is a singleton (and therefore global) object that
@@ -195,8 +195,9 @@ public class SMT_SearchManager implements CommonLogger
     int number         = getTrailingNumber(searchString, true);
     IB_Guid sg         = getGuid(searchString);
 
-    IB_Guid NodeGuid = SMT_SearchManager.getGuidByType(searchString, IB_GuidType.NODE_GUID, oms);
-    IB_Guid PortGuid = SMT_SearchManager.getGuidByType(searchString, IB_GuidType.PORT_GUID, oms);
+    IB_Guid SystemGuid = SMT_SearchManager.getGuidByType(searchString, IB_GuidType.SYSTEM_GUID, oms);
+    IB_Guid NodeGuid   = SMT_SearchManager.getGuidByType(searchString, IB_GuidType.NODE_GUID, oms);
+    IB_Guid PortGuid   = SMT_SearchManager.getGuidByType(searchString, IB_GuidType.PORT_GUID, oms);
     if(Fabric.isUniquePortGuid(PortGuid))
     {
       // this is a port guid, which normally means its a channel adapter
@@ -208,6 +209,33 @@ public class SMT_SearchManager implements CommonLogger
     // use these types, to determine
     switch (type)
     {
+      case SEARCH_SYSTEM:
+        // only return a system, that matches the string
+        // if a switch guid is provided, return its system (if any)
+        // if a port guid is provided, return its system (if any)
+          if((SystemGuid != null) || (NodeGuid != null) || (PortGuid != null))
+          {
+            OSM_System sys = OSM_System.getOSM_System(Fabric, SystemGuid);
+            if(sys != null)
+              results.add(new SMT_SearchResult(type, searchString, sys, oms));
+            else if (NodeGuid != null)
+            {
+              OSM_Node node = Fabric.getOSM_Node(NodeGuid);
+              // didn't find a system guid, but perhaps this is a node, which has a system guid?
+              if(node != null)
+              {
+                SystemGuid = node.sbnNode.getSysGuid();
+                if(!NodeGuid.equals(SystemGuid))
+                {
+                  sys = OSM_System.getOSM_System(Fabric, SystemGuid);
+                  if(sys != null)
+                    results.add(new SMT_SearchResult(type, searchString, sys, oms));
+                }
+               }
+             }
+            }
+        break;
+        
       case SEARCH_NODE:
         // only return nodes that match the string
         // if a port guid is provided, return its parent node
@@ -755,12 +783,6 @@ public class SMT_SearchManager implements CommonLogger
   }
 
 
-
-  
-  
-  
-  
-
   /*-----------------------------------------------------------------------*/
 
   public Object clone() throws CloneNotSupportedException
@@ -797,6 +819,5 @@ public class SMT_SearchManager implements CommonLogger
   {
     return this.getClass().getSimpleName();
   }
-
 
 }

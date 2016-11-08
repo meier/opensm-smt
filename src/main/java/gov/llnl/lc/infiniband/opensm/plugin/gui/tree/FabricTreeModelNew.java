@@ -55,16 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.tree;
 
-import gov.llnl.lc.infiniband.core.IB_Guid;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Node;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_NodeType;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Port;
-import gov.llnl.lc.infiniband.opensm.plugin.data.SBN_Node;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
-import gov.llnl.lc.util.BinList;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -75,6 +65,15 @@ import java.util.Set;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
+
+import gov.llnl.lc.infiniband.core.IB_Guid;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Node;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_NodeType;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Port;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
+import gov.llnl.lc.util.BinList;
 
 public class FabricTreeModelNew implements TreeModel
 {  
@@ -123,195 +122,204 @@ public class FabricTreeModelNew implements TreeModel
     
     
     // determine the basic nature of the fabric
-    String RootName = fabric.getFabricName();
-    int maxDepth = IB_Vertex.getMaxDepth(VertexMap);
-    LinkedHashMap <String, IB_Vertex> topLevel = IB_Vertex.getVertexMapAtDepth(VertexMap, maxDepth);
+    String RootName                            = fabric.getFabricName();
+    int maxDepth                               = IB_Vertex.getMaxDepth(VertexMap);
+
+    // make sure its completely initialized, by creating the systems
     fabric.createSystemGuidBins(false);
-    BinList <IB_Guid> guidBins = fabric.getSystemGuidBins();
     
-    System.err.println("************ There are " + guidBins.size() + " valid system guids");
+    // if no systems, then the "root" is the fake top level             = 1
+    //   if systems, then each system gets a fake parent level for it   = 2
+    //      (unless it has its own fake top parent)                     = 1
+    int numVirtualLevels = fabric.getSystemGuidBins().size() > 0 ? 2: 1;
     
     // always create a virtual root node for the fabric (everything is a child of it)
-    IB_Vertex top = new IB_Vertex(new OSM_Node(), maxDepth+1, true, false, RootName);  // this is the artificial root node
-    rootVertex = top;
+    IB_Vertex top     = new IB_Vertex(new OSM_Node(), maxDepth+numVirtualLevels, true, false, RootName);  // this is the artificial root node
+    rootVertex        = top;
     NameValueNode vmn = new NameValueNode("", top);
-    rootVertexNode = new UserObjectTreeNode(vmn, true);
-    HashMap <String, IB_Vertex> neighborMap = new LinkedHashMap <String, IB_Vertex>();
-
+    rootVertexNode    = new UserObjectTreeNode(vmn, true);
     
-    if(guidBins.size() == 1)
+     // If there are any core, chassis, or system switches, add them first
+    if(fabric.getSystemGuidBins().size() > 0)
+      addSystems(rootVertexNode, fabric, VertexMap );
+    
+    // if no systems (just normal switches), then add all the nodes
+    if(rootVertexNode.getChildCount() < 1)
     {
-      if(guidBins.getMaxBinSize() < 2)
-      {
-        System.err.println("There is a single system, and it only contains a single guid");
-        System.exit(0);
-      }
-      else
-        System.err.println("************* There is a single system, and it contains " + guidBins.getMaxBinSize() + " guids");
+      // connect up my "children" by creating new artificial edges
+     LinkedHashMap <String, IB_Vertex> topLevel = IB_Vertex.getVertexMapAtDepth(VertexMap, maxDepth);
+     int rootPortNum = 0;
+     for (Entry<String, IB_Vertex> entry : topLevel.entrySet())
+     {
+       IB_Vertex v = entry.getValue();
+       // create an artificial edge between them (make up some port numbers)
+       OSM_Port rp= new OSM_Port(null, null, OSM_NodeType.SW_NODE);
+       rp.setPortNumber(rootPortNum++);
+       OSM_Port vp= new OSM_Port(null, null, OSM_NodeType.SW_NODE);
+       vp.setPortNumber(-1);        
+       
+       IB_Edge e = new IB_Edge(top, rp, v, vp);
+       rootVertex.addEdge(e);
+     }
+     addChildNodes(rootVertexNode, topLevel);
     }
-        
-    // If there are any core, chassis, or system switches, add them first
-    IB_Vertex sysVertex [] = null;
-    if(guidBins.size() > 0)
-    {
-      sysVertex= new IB_Vertex[guidBins.size()];
-      
-      // create virtual Vertex for each guid, representing a core switch, and put them at the top (if only core switch)
-      // or one down from the top if more than one
-      
-      // for each system guid, create a vertex, and then attach the existing vertex (with matching sys guids) as children
-      int k=0;  // the core switch index
-      for (ArrayList<IB_Guid> gList : guidBins)
-      {
-        // create a dummy Vertex for each system guid, and give it the system
-        // guid
-        String sGuid = guidBins.getKey(k);
-        IB_Guid sysGuid = new IB_Guid(sGuid);
-        SystemTreeModel treeModel = new SystemTreeModel(fabric, sysGuid);
-        int numChildren = treeModel.getChildCount(treeModel.rootVertexNode);
-        // did the model get created??
-        
-        int depth = treeModel.getRootVertex().getDepth();
-        maxDepth = depth;
-        String name = treeModel.getSystemNameString();
-        SBN_Node sn = new SBN_Node();
-        sn.node_guid = sysGuid.getGuid();
-        OSM_Node n = new OSM_Node(sn); // null constructor for artificial node
-        sysVertex[k] = new IB_Vertex(n, depth, false, false, name); // this is
-                                                                   // the core
-                                                                   // switch
-                                                                   // node
-        
-        System.err.println("There are " + numChildren + " child nodes in this system tree model");
-        System.err.println("There are " + depth + " depths in this system tree model");
-        System.err.println("The root vertex guid in this system tree model is: " + treeModel.getRootVertex().getGuid().toColonString());
-        System.err.println("The system guid is:                                " + sysGuid.toColonString());
-
-        // ASSUMPTION: core switches are part of the top most levels
-        // connect up the top level switches to these dummy Vertex
-
-        int rootPortNum = 0;
-        int numAdded = 0;
-        for (Entry<String, IB_Vertex> entry : topLevel.entrySet())
-        {
-          IB_Vertex v = entry.getValue();
-          // connect this vertex if its one of my children
-          if (gList.contains(v.getGuid()))
-          {
-            // create an artificial edge between them (make up some port
-            // numbers)
-            OSM_Port rp = new OSM_Port(null, null, OSM_NodeType.SW_NODE);
-            rp.setPortNumber(rootPortNum++);
-            OSM_Port vp = new OSM_Port(null, null, OSM_NodeType.SW_NODE);
-            vp.setPortNumber(-1);
-
-            IB_Edge e = new IB_Edge(sysVertex[k], rp, v, vp);
-            sysVertex[k].addEdge(e);
-            numAdded++;
-          }
-          
-          if(numAdded > 0)
-          {
-            // add this system to the root vertex
-            // create an artificial edge between them (make up some port numbers)
-            OSM_Port rp= new OSM_Port(null, null, OSM_NodeType.SW_NODE);
-            rp.setPortNumber(rootPortNum);
-            OSM_Port vp= new OSM_Port(null, null, OSM_NodeType.SW_NODE);
-            vp.setPortNumber(-1);        
-            
-            IB_Edge e = new IB_Edge(top, rp, v, vp);
-            top.addEdge(e);
-            
-            neighborMap.put(sysVertex[k].getKey(), v);
-            rootPortNum++;
-          }
-        }
-        k++;
-      }
-    }
-
-    // done creating core switch nodes, and hooking them up
-    if((sysVertex != null) && (sysVertex.length > 0))
-    {
-      // if there are more than one core switches, then create a parent or top vertex for these
-      // otherwise just use the core switch vertex for the top level node
-      if(sysVertex.length == 1)
-      {
-        System.err.println("I only have a single system guid");
-      }
-//        // connect the core switches
-//        int rootPortNum = 0;
-//        for(IB_Vertex s: sysVertex)
-//        {
-//          // create an artificial edge between them (make up some port numbers)
-//          OSM_Port rp= new OSM_Port(null, null, OSM_NodeType.SW_NODE);
-//          rp.setPortNumber(rootPortNum);
-//          OSM_Port vp= new OSM_Port(null, null, OSM_NodeType.SW_NODE);
-//          vp.setPortNumber(-1);        
-//          
-//          IB_Edge e = new IB_Edge(top, rp, s, vp);
-//          top.addEdge(e);
-//          
-//          neighborMap.put(s.getKey(), s);
-//          rootPortNum++;
-//        }
-        
-        // now add the children
-        addChildNodes(rootVertexNode, neighborMap, VertexMap);
-    }
-    else
-    {
-      // no system or core switches, just normal ones
-       // connect up my "children" by creating new artificial edges
-      int rootPortNum = 0;
-      for (Entry<String, IB_Vertex> entry : topLevel.entrySet())
-      {
-        IB_Vertex v = entry.getValue();
-        // create an artificial edge between them (make up some port numbers)
-        OSM_Port rp= new OSM_Port(null, null, OSM_NodeType.SW_NODE);
-        rp.setPortNumber(rootPortNum++);
-        OSM_Port vp= new OSM_Port(null, null, OSM_NodeType.SW_NODE);
-        vp.setPortNumber(-1);        
-        
-        IB_Edge e = new IB_Edge(top, rp, v, vp);
-        top.addEdge(e);
-      }
-      addChildNodes(rootVertexNode, topLevel, VertexMap);
-    }
-
-
-
-
  }
   
-  
-  private UserObjectTreeNode addChildNodes(UserObjectTreeNode parent, HashMap <String, IB_Vertex> neighborMap, HashMap <String, IB_Vertex> vertexMap)
+  private static UserObjectTreeNode addSwitches(UserObjectTreeNode parent, HashMap <String, IB_Vertex> neighborMap, IB_Guid sysGuid)
   {
     NameValueNode nvn = (NameValueNode) parent.getUserObject();
     IB_Vertex pv = (IB_Vertex) nvn.getMemberObject();
     int myDepth = pv.getDepth(); // add neighbors with lower depth
+
     HashMap <String, IB_Vertex> NeighborMap = IB_Vertex.sortVertexMap(neighborMap, true);
 
     for (Entry<String, IB_Vertex> entry : NeighborMap.entrySet())
     {
-      // by definition, its my neighbor, so connected to me
+      // only add children that match my system guid
       // its my child if its depth is lower
       IB_Vertex v = entry.getValue();
-      if(v.getDepth() == (myDepth -1))
+      if((v.getDepth() == (myDepth -1)) && (sysGuid.equals(new IB_Guid(v.getNode().sbnNode.sys_guid))))
       {
         // direct child, create and add it
-        NameValueNode vmn = new NameValueNode("", v);
+        NameValueNode vmn = new NameValueNode("switch", v);
         UserObjectTreeNode vtn = new UserObjectTreeNode(vmn, true);
         parent.add(vtn);
-        // logger.severe("Adding children at level: " + nn.getDepth());
 
         // now try to add its children
-        addChildNodes(vtn, v.getNeighborMap(), vertexMap);
+        addChildNodes(vtn, v.getNeighborMap());
       }
     }
     return parent;
   }
 
+  
+  private static UserObjectTreeNode addSystems(UserObjectTreeNode parent, OSM_Fabric fabric, HashMap <String, IB_Vertex> VertexMap )
+  {
+    int maxDepth                                     = IB_Vertex.getMaxDepth(VertexMap);
+    BinList <IB_Guid> systemGuidBins                 = fabric.getSystemGuidBins();
+    
+    // for each system guid, create a vertex, and then attach the existing vertex (with matching sys guids) as children
+    int k=0;  // the core switch index
+    for (ArrayList<IB_Guid> gList : systemGuidBins)
+    {
+      // get this system guid
+      String sGuid = systemGuidBins.getKey(k);
+      IB_Guid sysGuid = new IB_Guid(sGuid);
+      
+      // create a system model from the fabric
+      SystemTreeModel sTreeModel = new SystemTreeModel(fabric, sysGuid);
+      HashMap <String, IB_Vertex> systemVertexMap = sTreeModel.getVertexMap();
+      int sDepth = IB_Vertex.getMaxDepth(systemVertexMap);
+      UserObjectTreeNode systemVertexNode = (UserObjectTreeNode)sTreeModel.getRoot();
+      
+      // start with the top level switches in the system
+      LinkedHashMap <String, IB_Vertex> topSwitches = IB_Vertex.getVertexMapAtDepth(VertexMap, maxDepth);
+
+      IB_Vertex sysRootVertex    = sTreeModel.getRootVertex();
+      String name = sTreeModel.getSystemNameString();
+      
+      // if there is more than one switch at the max level, then create a fake vertex (with a dummy node), provided by the SystemTreeModel
+      if(topSwitches.size() > 1)
+      {
+        // create the fake vertex with a dummy node, provided by the SystemTreeModel
+        OSM_Node n = sysRootVertex.getNode();
+        n.sbnNode.node_type = (short) OSM_NodeType.SW_NODE.getType();  // force this to be a switch
+
+        // always create a virtual root node for the fabric (everything is a child of it)
+        IB_Vertex sv       = new IB_Vertex(n, maxDepth+1, false, false, name);  // this is the core switch node
+        NameValueNode svmn = new NameValueNode("", sv);
+        systemVertexNode   = new UserObjectTreeNode(svmn, true);
+        
+        // this is a top level (fake) node of a system
+        parent.add(systemVertexNode);
+      }
+      else
+      {
+        // decrement the depth, not using the fake node
+        NameValueNode nvn = (NameValueNode) parent.getUserObject();
+        IB_Vertex pv = (IB_Vertex) nvn.getMemberObject();
+        pv.setDepth(pv.getDepth() -1);
+
+        // add this node to the root, or parent node
+        systemVertexNode   = parent;
+       
+      }
+      // add all its top level switches, which in turn adds their children
+       addSwitches(systemVertexNode, topSwitches, sysGuid);
+       k++;
+    }
+    return parent;
+  }
+
+  private static UserObjectTreeNode addChildNodes(UserObjectTreeNode parent, HashMap <String, IB_Vertex> neighborMap)
+  {
+    if(neighborMap == null)
+      return parent;
+    
+    NameValueNode nvn = (NameValueNode) parent.getUserObject();
+    IB_Vertex pv = (IB_Vertex) nvn.getMemberObject();
+    int myDepth = pv.getDepth(); // add neighbors with equal and lower depth
+    HashMap <String, IB_Vertex> NeighborMap = IB_Vertex.sortVertexMap(neighborMap, true);
+    if((NeighborMap != null) && !(NeighborMap.isEmpty()))
+    {
+      for (Entry<String, IB_Vertex> entry : NeighborMap.entrySet())
+      {
+        // by definition, its my neighbor, so connected to me
+        // its my child if its depth is lower
+        IB_Vertex v = entry.getValue();
+        if(isNeighborMyChild(pv, v))
+        {
+          // direct child, create and add it
+          NameValueNode vmn = new NameValueNode("", v);
+          UserObjectTreeNode vtn = new UserObjectTreeNode(vmn, true);
+          parent.add(vtn);
+          // logger.severe("Adding children at level: " + nn.getDepth());
+
+          // now try to add its children
+          addChildNodes(vtn, v.getNeighborMap());
+        }
+      }      
+    }
+    return parent;
+  }
+
+  private static boolean isNeighborMyChild(IB_Vertex parent, IB_Vertex neighbor)
+  {
+    if((parent == null) || (neighbor == null))
+      return false;
+    
+    int myDepth          = parent.getDepth();
+    int neighborDepth    = neighbor.getDepth();
+    
+    // a child is exactly one less
+    if(myDepth == (neighborDepth +1))
+      return true;
+    
+    // is this neighbor a "peer", same depth, but connected to me?
+    if((myDepth == neighborDepth) && (neighborDepth == getMaxNeighborDepth(neighbor)))
+        return true;
+
+    return false;    
+  }
+  
+  
+  private static int getMaxNeighborDepth(IB_Vertex pv)
+  {
+    int maxD = 0;
+    if (pv != null)
+    {
+      LinkedHashMap<String, IB_Vertex> nMap = pv.getNeighborMap();
+
+      for (Entry<String, IB_Vertex> entry : nMap.entrySet())
+      {
+        // by definition, its my neighbor, so connected to me
+        // its my child if its depth is lower
+        IB_Vertex v = entry.getValue();
+        maxD = v.getDepth() > maxD ? v.getDepth() : maxD;
+      }
+    }
+    return maxD;
+  }
 
   @Override
   public Object getChild(Object parent, int index)

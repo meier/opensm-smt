@@ -55,6 +55,11 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.fabric;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+
 import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.core.IB_Link;
 import gov.llnl.lc.infiniband.core.IB_LinkType;
@@ -83,11 +88,6 @@ import gov.llnl.lc.smt.SmtConstants;
 import gov.llnl.lc.time.TimeStamp;
 import gov.llnl.lc.util.BinList;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-
 /**********************************************************************
  * Describe purpose and responsibility of SmtFabricStructure
  * <p>
@@ -114,6 +114,9 @@ public class SmtFabricStructure implements CommonLogger, SmtConstants
   public ArrayList<SmtAttributeStructure> PortWidths = new ArrayList<SmtAttributeStructure>();
   public ArrayList<SmtAttributeStructure> PortSpeeds = new ArrayList<SmtAttributeStructure>();
   public ArrayList<SmtAttributeStructure> PortState  = new ArrayList<SmtAttributeStructure>();
+  
+  public ArrayList<OSM_System> OsmSystems = new ArrayList<OSM_System>();
+
 
   public class SmtAttributeStructure implements Comparable<SmtAttributeStructure>
   {
@@ -554,11 +557,10 @@ public class SmtFabricStructure implements CommonLogger, SmtConstants
       
       OSM_System osm_sys = new OSM_System(sysGuid, fabric);
       osm_sys.determineStructure(fabric);
-      System.err.println(osm_sys.toContent());
+      OsmSystems.add(osm_sys);
 
       k++;
     }
-
      return true;
   }
 
@@ -680,25 +682,32 @@ public class SmtFabricStructure implements CommonLogger, SmtConstants
 
   public String toSystemContent()
   {
-    int numSystems = 1;
-    int numTop     = 3;
-    int numMiddle  = 2;
-    int numBottom  = 1;
-
+    int numSystems = OsmSystems.size();
     
     StringBuffer stringValue = new StringBuffer();
+    stringValue.append("<h3># Systems: "         + numSystems + "</h3>");
     if(numSystems > 0)
     {
-      stringValue.append("<h3># Systems: "         + numSystems + "</h3>");
+      int totalSwitches     = 0;
+      int totalPorts        = 0;
+      int totalExternalPorts  = 0;
+      
+      for(OSM_System os: OsmSystems)
+      {
+        totalSwitches    += os.getTotalSwitches();
+        totalPorts       += os.getTotalPorts();
+        totalExternalPorts += os.getTotalExternalPorts();
+      }
+
       stringValue.append("<blockquote>");
       stringValue.append(MEDIUM_FONT);
-      stringValue.append("switches/system: "       + numTop); 
+      stringValue.append("switches/system: "       + totalSwitches/numSystems); 
       stringValue.append("<br>");
-      stringValue.append("ports/switch: "          + numMiddle); 
+      stringValue.append("ports/switch: "          + totalPorts/totalSwitches); 
       stringValue.append("<br>");
-      stringValue.append("ports/system: "          + numMiddle); 
+      stringValue.append("ports/system: "          + totalPorts/numSystems); 
       stringValue.append("<br>");
-      stringValue.append("external ports/system: " + numBottom);
+      stringValue.append("external ports/system: " + totalExternalPorts/numSystems);
       stringValue.append("</blockquote>");
       stringValue.append("<br>");    
     }

@@ -120,7 +120,7 @@ public class IB_Vertex implements Comparable<IB_Vertex>, CommonLogger
     DecoratorOld = decorator;
   }
 
-  private void setDepth(int depth)
+  public void setDepth(int depth)
   {
     Depth = depth;
   }
@@ -183,8 +183,6 @@ public class IB_Vertex implements Comparable<IB_Vertex>, CommonLogger
   {
     return Depth;
   }
-  
-  
   
   /************************************************************
    * Method Name:
@@ -678,22 +676,24 @@ public class IB_Vertex implements Comparable<IB_Vertex>, CommonLogger
 //  
   public static LinkedHashMap<String, IB_Vertex> sortVertexMap(HashMap<String, IB_Vertex> vertexMap, boolean byName)
   {
-    // create a new sorted version of this map.  Sort by Name if true, otherwise by depth
-   LinkedHashMap<String, IB_Vertex> vMap = new LinkedHashMap<String, IB_Vertex>();
-   
-   if((vertexMap != null) && (vertexMap.entrySet() != null))
-   {
-   
-   List<Map.Entry<String, IB_Vertex>> entries = new LinkedList<Map.Entry<String, IB_Vertex>>(vertexMap.entrySet());
-   Collections.sort(entries, new SortVertexByMapEntry());    
-   for (Entry<String, IB_Vertex> entry : entries)
-   {
-       // create a new (sorted) hashmap
-     IB_Vertex v = entry.getValue();
-       vMap.put(entry.getKey(), v);
-   }
-   }
-   return vMap;
+    // create a new sorted version of this map. Sort by Name if true, otherwise
+    // by depth
+    LinkedHashMap<String, IB_Vertex> vMap = null;
+
+    if ((vertexMap != null) && (!vertexMap.isEmpty()) && (vertexMap.entrySet() != null))
+    {
+      vMap = new LinkedHashMap<String, IB_Vertex>();
+
+      List<Map.Entry<String, IB_Vertex>> entries = new LinkedList<Map.Entry<String, IB_Vertex>>(vertexMap.entrySet());
+      Collections.sort(entries, new SortVertexByMapEntry());
+      for (Entry<String, IB_Vertex> entry : entries)
+      {
+        // create a new (sorted) hashmap
+        IB_Vertex v = entry.getValue();
+        vMap.put(entry.getKey(), v);
+      }
+    }
+    return vMap;
   }
   
   public static class SortVertexByMapEntry implements Comparator <Map.Entry<String, IB_Vertex>>

@@ -55,12 +55,25 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.text;
 
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.AbstractMap;
+
+import javax.swing.JButton;
+import javax.swing.JEditorPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+
 import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.core.IB_GuidType;
 import gov.llnl.lc.infiniband.core.IB_Link;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Node;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Port;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_System;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
 import gov.llnl.lc.infiniband.opensm.plugin.data.RT_Node;
 import gov.llnl.lc.infiniband.opensm.plugin.data.RT_Port;
@@ -80,18 +93,6 @@ import gov.llnl.lc.smt.manager.MessageManager;
 import gov.llnl.lc.smt.manager.SMT_RouteManager;
 import gov.llnl.lc.smt.manager.SMT_SearchManager;
 import gov.llnl.lc.time.TimeStamp;
-
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.AbstractMap;
-
-import javax.swing.JButton;
-import javax.swing.JEditorPane;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
 
 public class SMT_SearchPanel extends JPanel implements  CommonLogger
 {
@@ -230,6 +231,9 @@ public class SMT_SearchPanel extends JPanel implements  CommonLogger
           OpenSmMonitorService oms = updater.getOMS();
           if (oms != null)
           {
+            String msg = "Searching for (" + searchText.getText() + ")";
+            logger.info( msg);
+            MessageManager.getInstance().postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INFO, msg));
             IB_Guid g = SMT_SearchManager.getGuidByType(searchText.getText(), IB_GuidType.NODE_GUID, oms);
             OSM_Fabric fabric = null;
             OSM_Node n = null;
@@ -428,11 +432,30 @@ public class SMT_SearchPanel extends JPanel implements  CommonLogger
       
       switch (sr.getType())
       {
+        case SEARCH_SYSTEM:
+          // fix the fields for this type
+          more = "";
+          other = "";
+          if((obj != null) && (obj instanceof OSM_System))
+          {
+            // I know its a System
+            OSM_System s = (OSM_System)obj;
+            name = s.getName();
+            attrib = s.getSysGuid().toColonString();
+            
+            // more will be # switches
+            more = "total switches: " + s.getTotalSwitches();
+            
+            // other will be # ports
+            other = "total ports: " + s.getTotalPorts();
+          }
+          break;
+          
         case SEARCH_NODE:
           // fix the fields for this type
           more = "";
           other = "";
-          if(obj != null)
+          if((obj != null) && (obj instanceof OSM_Node))
           {
             // I know its a Node
             OSM_Node n = (OSM_Node)obj;
@@ -454,7 +477,7 @@ public class SMT_SearchPanel extends JPanel implements  CommonLogger
           // fix the fields for this type
           more = "";
           other = "";
-           if(obj != null)
+          if((obj != null) && (obj instanceof OSM_Port))
            {
              // I know its a Port
              OSM_Port p = (OSM_Port)obj;
@@ -469,7 +492,7 @@ public class SMT_SearchPanel extends JPanel implements  CommonLogger
           // fix the fields for this type
           more = "";
           other = "";
-          if(obj != null)
+          if((obj != null) && (obj instanceof IB_Link))
           {
             // I know its a Link
             IB_Link l = (IB_Link)obj;
@@ -486,7 +509,7 @@ public class SMT_SearchPanel extends JPanel implements  CommonLogger
           // fix the fields for this type
           more = "";
           other = "";
-          if(obj != null)
+          if((obj != null) && (obj instanceof RT_Node))
           {
             // I know its a node
             RT_Node n = (RT_Node)obj;
@@ -504,7 +527,7 @@ public class SMT_SearchPanel extends JPanel implements  CommonLogger
           // fix the fields for this type
           more = "";
           other = "";
-          if(obj != null)
+          if((obj != null) && (obj instanceof RT_Port))
           {
             // I know its a port
             RT_Port p = (RT_Port)obj;
@@ -523,7 +546,7 @@ public class SMT_SearchPanel extends JPanel implements  CommonLogger
           // fix the fields for this type
           more = "";
           other = "";
-         if(obj != null)
+          if(obj != null)
           {
             // I know its a name/value pair
             AbstractMap.SimpleEntry<String, String> pair = (AbstractMap.SimpleEntry<String, String>)obj;
@@ -536,7 +559,7 @@ public class SMT_SearchPanel extends JPanel implements  CommonLogger
           // fix the fields for this type
           more = "";
           other = "";
-          if(obj != null)
+          if((obj != null) && (obj instanceof SBN_PartitionKey))
           {
             // I know its a name/value pair
             SBN_PartitionKey key = (SBN_PartitionKey)obj;
@@ -551,7 +574,7 @@ public class SMT_SearchPanel extends JPanel implements  CommonLogger
           // fix the fields for this type
           more = "";
           other = "";
-          if(obj != null)
+          if((obj != null) && (obj instanceof SBN_MulticastGroup))
           {
             // I know its a name/value pair
             SBN_MulticastGroup mg = (SBN_MulticastGroup)obj;
@@ -568,9 +591,9 @@ public class SMT_SearchPanel extends JPanel implements  CommonLogger
           // fix the fields for this type
           more = "";
           other = "";
-          if(obj != null)
+          if((obj != null) && (obj instanceof IB_Guid))
           {
-            // I know its a name/value pair
+            // I know its a guid
             IB_Guid g = (IB_Guid)obj;
             name      = g.toColonString();
             attrib    = Long.toString(g.getGuid());

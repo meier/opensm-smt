@@ -131,7 +131,7 @@ public class FabricTreePanel extends JPanel implements OSM_ServiceChangeListener
     // create a brand new tree, and set it all up
     tree = new JTree();
     
-    tree.setToolTipText("Explore the heirarchy of the fabrics links and nodes.");
+    tree.setToolTipText("Explore the hierarchy of the fabrics links and nodes.");
     tree.addTreeSelectionListener(new TreeSelectionListener()
     {
       public void valueChanged(TreeSelectionEvent arg0)
@@ -239,13 +239,33 @@ public class FabricTreePanel extends JPanel implements OSM_ServiceChangeListener
       }
     return false;
   }
-  
-  protected boolean isSystemGuidNode(IB_Vertex v)
+
+  protected boolean hasMatchingSystemGuid(IB_Vertex v)
   {
-    // return true if this vertex's node guid matches one of the system guids
+    // return true if this vertex's node guid, system guid match, and match a valid system guid
+    if(hasSystemGuid(v))
+    {
+      IB_Guid sg = new IB_Guid(v.getNode().sbnNode.sys_guid);
+      if(v.getGuid().equals(sg))
+        return true; 
+      
+      // the node guid and system guid are different, but may still want to return true, if this is the top
+      // singleton node
+      NameValueNode nvn = (NameValueNode) this.getTreeRootNode().getUserObject();
+      IB_Vertex rt = (IB_Vertex) nvn.getMemberObject();
+      
+      if((rt.getDepth() -1) == v.getDepth())
+        return true;
+    }
+    return false;
+  }
+  
+  protected boolean hasSystemGuid(IB_Vertex v)
+  {
+    // return true if this vertex's system guid match a valid system guid
     if((OMS == null) || (v == null) || (v.getGuid() == null))
     {
-      System.err.println("Cant determine SystemGuid ness");
+      System.err.println("Can't determine SystemGuid ness");
       if(OMS == null)
         System.err.println("OMS is null");
       if(v == null)
@@ -254,47 +274,52 @@ public class FabricTreePanel extends JPanel implements OSM_ServiceChangeListener
         System.err.println("vs guid is null");
       return false;
     }
-    
-    System.err.println("Checing to see if this Vertex has a matching system guid");
-    System.err.println("Vertex guid is 1: " + v.getGuid().toColonString());
-    System.err.println("Vertex guid is 2: " + new IB_Guid(v.getNode().sbnNode.sys_guid).toColonString());
-    
-    // are there any core switches in this fabric?
     OSM_Fabric fabric = OMS.getFabric();
     fabric.createSystemGuidBins(false);
 
     BinList <IB_Guid> guidBins = fabric.getSystemGuidBins();
+    
     if(guidBins.size() < 1)
       return false;
     
-    // we have at least one core switch (a system guid associated with multiple node guids)
+    // we have at least a single system guid, so we can continue
+    
+    // does this vertex system guid, match the KNOWN system guids?
+    IB_Guid sg = new IB_Guid(v.getNode().sbnNode.sys_guid);
     int k = 0;
-    IB_Guid sbg = new IB_Guid(v.getNode().sbnNode.sys_guid);
     for(ArrayList <IB_Guid> gList: guidBins)
     {
       // get the bins key, which is the guid string
       String sGuid = guidBins.getKey(k);
       IB_Guid sysGuid = new IB_Guid(sGuid);
-      System.err.println("System guid is: " + sysGuid.toColonString());
       
-      if((v.getGuid().equals(sysGuid)) || (sbg.equals(sysGuid)))
+      if(sg.equals(sysGuid))
         return true;
       k++;
     }
-//    int k = 0;
-//    for(ArrayList <IB_Guid> gList: guidBins)
-//    {
-//      // create a dummy Vertex for each system guid, and give it the system guid
-//      String sGuid = guidBins.getKey(k);
-//      IB_Guid sysGuid = new IB_Guid(sGuid);
-//      if(v.getGuid().equals(sysGuid))
-//        return true;
-//      k++;
-//    }
     return false;
   }
   
-
+  protected boolean isSystemWithSingleTop(IB_Vertex v)
+  {
+    // return true if this vertex's node guid, system guid match, and match a valid system guid
+    if(hasSystemGuid(v))
+    {
+      // the node guid and system guid are different, but may still want to return true, if this is the top
+      // singleton node
+      
+      IB_Guid sg = new IB_Guid(v.getNode().sbnNode.sys_guid);
+      if(sg.equals(v.getGuid()))   // Cant be the same, if this is a real switch
+        return false;
+      
+      NameValueNode nvn = (NameValueNode) this.getTreeRootNode().getUserObject();
+      IB_Vertex rt = (IB_Vertex) nvn.getMemberObject();
+      
+      if((rt.getDepth() -1) == v.getDepth())
+        return true;
+    }
+    return false;
+  }
   
   /************************************************************
    * Method Name: main
@@ -438,16 +463,22 @@ public class FabricTreePanel extends JPanel implements OSM_ServiceChangeListener
     nvn = (NameValueNode) getTreeRootNode().getUserObject();
     IB_Vertex r = (IB_Vertex) nvn.getMemberObject();
     
-    // is this vertex a system guid node?
-    if(isSystemGuidNode(v))
+    // is this vertex a system guid node? (a fake one, where the guid and system guid match??)
+    boolean isFakeSystemNode      = hasMatchingSystemGuid(v);
+    boolean isRealTopSystemSwitch = isSystemWithSingleTop(v);
+    
+    if(isFakeSystemNode || isRealTopSystemSwitch)
     {
-      //generate a sys_guid event
-      NameValueNode snvn = new NameValueNode("sys_guid", v.getGuid().toColonString());
+      //generate a sys_guid event (show the SYSTEM panel)
+      IB_Guid sg = new IB_Guid(v.getNode().sbnNode.sys_guid);
+      NameValueNode snvn = new NameValueNode("sys_guid", sg.toColonString());
       UserObjectTreeNode stn = new UserObjectTreeNode(snvn, false);
       
       GraphSelectionManager.getInstance().updateAllListeners(new IB_GraphSelectionEvent(thisPanel, v, stn));
     }
-    else if(!(v.equals(r)))
+    
+    // show the SWITCH panel (if a valid/real switch)
+    if((!(v.equals(r)) && !isFakeSystemNode) || isRealTopSystemSwitch )
        GraphSelectionManager.getInstance().updateAllListeners(new IB_GraphSelectionEvent(thisPanel, v, v));
     else
       logger.info("This looks like the dummy root node, do nothing");

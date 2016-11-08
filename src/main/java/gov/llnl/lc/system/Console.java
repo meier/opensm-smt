@@ -55,15 +55,15 @@
  ********************************************************************/
 package gov.llnl.lc.system;
 
-import gov.llnl.lc.parser.ParserUtils;
-
 import java.awt.Dimension;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
-import jcurses.system.Toolkit;
+import gov.llnl.lc.parser.ParserUtils;
 
 /**********************************************************************
  * Describe purpose and responsibility of Console
@@ -422,12 +422,63 @@ public class Console
     print(row, col, null, string);
   }
   
+  public static Dimension getScreenDimensionOrig()
+  {
+//    Toolkit.init();
+//    Dimension d = new Dimension(Toolkit.getScreenWidth(), Toolkit.getScreenHeight());
+//    Toolkit.shutdown();
+//    return d;
+      return null;
+  }
+  
   public static Dimension getScreenDimension()
   {
-    Toolkit.init();
-    Dimension d = new Dimension(Toolkit.getScreenWidth(), Toolkit.getScreenHeight());
-    Toolkit.shutdown();
+    Dimension d = new Dimension(getScreenWidth(), getScreenHeight());
     return d;
+  }
+  
+  private static int getTermDim(String attr)
+  {
+    /* TODO FIXME - not really portable, dependent on bash shell to find the
+     * current dimensions.  Previous method used the JNI for curses library,
+     * which is also not portable.  This method is more simple
+     */
+    int val = -1;
+    String[] attrStr = new String[] { "bash", "-c", "tput " + attr + " 2> /dev/tty" };
+
+    try
+    {
+      Process p = Runtime.getRuntime().exec(attrStr);
+      BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+      BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+
+      // read the output from the command
+      String s = null;
+      while ((s = stdInput.readLine()) != null)
+      {
+        // this is the value I want
+        val = Integer.parseInt(s);
+      }
+
+      // read any errors from the attempted command
+      while ((s = stdError.readLine()) != null)
+        System.err.println(s);
+    }
+    catch (Exception e)
+    {
+      System.err.println("Exception in private getTermDim");
+    }
+    return val;
+  }
+  
+  public static int getScreenWidth()
+  {
+    return getTermDim("cols");
+  }
+  
+  public static int getScreenHeight()
+  {
+    return getTermDim("lines");
   }
   
   public static Dimension getCursorPostition() throws IOException
@@ -537,6 +588,12 @@ public class Console
     Console.reset();
     System.out.println("Position: " + Console.getCursorPostition().toString());
 
+    Console.clearScreen();
+    
+    System.out.println("*****************************************");
+   System.out.println("Number of columns: " + Console.getScreenWidth());
+   System.out.println("Number of lines  : " + Console.getScreenHeight());
+   System.out.println("Dimensions  : " + Console.getScreenDimension().toString());
   }
 
 }

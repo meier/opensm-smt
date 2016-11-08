@@ -55,6 +55,12 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.tree;
 
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map.Entry;
+
 import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Node;
@@ -64,12 +70,6 @@ import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_System;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
 import gov.llnl.lc.logging.CommonLogger;
-
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map.Entry;
 
 
 public class SystemTreeModel extends FabricTreeModelNew implements CommonLogger
@@ -120,9 +120,6 @@ public class SystemTreeModel extends FabricTreeModelNew implements CommonLogger
     // get an OSM_System object, which contains the structure of the chassis
     OSM_System os = new OSM_System(sysGuid, fabric);
     
-    System.err.println("STM - The System Guid 1: " + sysGuid.toColonString());
-    
-
     // Build the Tree Model for System Image Guid
     
     LinkedHashMap<String, IB_Vertex> vertexMap = os.getVertexMap();
@@ -132,7 +129,6 @@ public class SystemTreeModel extends FabricTreeModelNew implements CommonLogger
     }
     else
     {
-      System.err.println("SMT - VertexMap size 1: " + vertexMap.size());
       createModel(os);
     }
   }
@@ -151,19 +147,18 @@ public class SystemTreeModel extends FabricTreeModelNew implements CommonLogger
     int maxDepth = IB_Vertex.getMaxDepth(VertexMap);
     LinkedHashMap <String, IB_Vertex> topLevel = IB_Vertex.getVertexMapAtDepth(VertexMap, maxDepth);
     
-    System.err.println("STM - The System Guid 2: " + SysGuid.toColonString());
-    System.err.println("SMT - VertexMap size 2: " + VertexMap.size());
-    System.err.println("SMT - System Name: " + sysName);
-    System.err.println("SMT - Num Top Level: " + topLevel.size());
-    System.err.println("SMT - Num Depths: " + maxDepth);
-    
-    if(topLevel.size() > 1)
+    if(topLevel.size() > 0)
     {
 //      System.err.println("Many top levels");
       // there are many top level nodes, so must create an artificial (single) root node
+      // make sure to give it the correct system guids
       maxDepth++;
       OSM_Node n = new OSM_Node();  // null constructor for artificial node
       n.sbnNode.node_type = (short) OSM_NodeType.SW_NODE.getType();  // force this to be a switch
+      n.sbnNode.node_guid = SysGuid.getGuid();
+      n.sbnNode.sys_guid  = SysGuid.getGuid();
+      n.pfmNode.node_guid = SysGuid.getGuid();
+      n.pfmNode.node_name = sysName;
       if((sysName == null) || (sysName.length() < 1))
         sysName = "UNKNOWN SYSTEM NAME";
       
@@ -189,24 +184,9 @@ public class SystemTreeModel extends FabricTreeModelNew implements CommonLogger
         top.setName(sysName);
       }
     }
-    else if (topLevel.size() == 1)
-    {
-      System.err.println("Single top level");
-      // there may be a single vertex at the top of a tree, but more likely this is just
-      // a normal switch - not an assembly of switches
-      rootReal = true;
-      // obtain the next depth, and connect it up
-      for (Entry<String, IB_Vertex> entry : topLevel.entrySet())
-      {
-        IB_Vertex v = entry.getValue();
-        top = v;
-      }
-      // point to the next level down
-      topLevel = IB_Vertex.getVertexMapAtDepth(VertexMap, maxDepth -1);
-    }
     else
     {
-      System.err.println("No top level nodes in the vertex map");
+      System.err.println("STM - No top level nodes in the vertex map");
       System.exit(-1);
     }
     
@@ -226,7 +206,7 @@ public class SystemTreeModel extends FabricTreeModelNew implements CommonLogger
       System.err.println("The UserObjectTreeNode for the root is NULL");
     else
     {
-      addSwitches(rootVertexNode, topLevel, VertexMap);
+      addSwitches(rootVertexNode, topLevel, SysGuid);
     }
  } 
   
@@ -287,7 +267,7 @@ public class SystemTreeModel extends FabricTreeModelNew implements CommonLogger
     return true;
   }
   
-  private UserObjectTreeNode addSwitches(UserObjectTreeNode parent, HashMap <String, IB_Vertex> neighborMap, HashMap <String, IB_Vertex> vertexMap)
+  private UserObjectTreeNode addSwitches(UserObjectTreeNode parent, HashMap <String, IB_Vertex> neighborMap, IB_Guid sysGuid)
   {
     NameValueNode nvn = (NameValueNode) parent.getUserObject();
     IB_Vertex pv = (IB_Vertex) nvn.getMemberObject();
@@ -300,7 +280,7 @@ public class SystemTreeModel extends FabricTreeModelNew implements CommonLogger
       // by definition, its my neighbor, so connected to me
       // its my child if its depth is lower
       IB_Vertex v = entry.getValue();
-      if((v.getDepth() == (myDepth -1)) && (SysGuid.equals(new IB_Guid(v.getNode().sbnNode.sys_guid))))
+      if((v.getDepth() == (myDepth -1)) && (sysGuid.equals(new IB_Guid(v.getNode().sbnNode.sys_guid))))
       {
         // direct child, create and add it
         NameValueNode vmn = new NameValueNode("switch", v);
@@ -308,7 +288,7 @@ public class SystemTreeModel extends FabricTreeModelNew implements CommonLogger
         parent.add(vtn);
 
         // now try to add its children
-        addSwitches(vtn, v.getNeighborMap(), vertexMap);
+        addSwitches(vtn, v.getNeighborMap(), sysGuid);
       }
     }
     return parent;
@@ -319,6 +299,38 @@ public class SystemTreeModel extends FabricTreeModelNew implements CommonLogger
       return SysGuid;
   }
     
+  /************************************************************
+   * Method Name:
+   *  getVertexMap
+  **/
+  /**
+   * Returns the value of vertexMap
+   *
+   * @return the vertexMap
+   *
+   ***********************************************************/
+  
+  public HashMap<String, IB_Vertex> getVertexMap()
+  {
+    return VertexMap;
+  }
+
+  /************************************************************
+   * Method Name:
+   *  getOSM_sys
+  **/
+  /**
+   * Returns the value of oSM_sys
+   *
+   * @return the oSM_sys
+   *
+   ***********************************************************/
+  
+  public OSM_System getOSM_sys()
+  {
+    return OSM_sys;
+  }
+
   public void setSystemGuid(IB_Guid sysGuid)
   {
       SysGuid = sysGuid;

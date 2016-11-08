@@ -72,6 +72,7 @@ import java.util.TreeSet;
  **********************************************************************/
 public enum SMT_SearchResultType
 {
+  SEARCH_SYSTEM(          11, "system",          "l",   "lists the available query options"),    
   SEARCH_NODE(             0, "node",            "l",   "lists the available query options"),    
   SEARCH_PORT(             1, "port",            "stat","provides a subnet status report"),    
   SEARCH_LINK(             2, "link",            "fab", "shows the current composition of the fabric"),    
@@ -90,7 +91,7 @@ public enum SMT_SearchResultType
    */
   public static final EnumSet<SMT_SearchResultType> SEARCH_ALL_TYPES = EnumSet.allOf(SMT_SearchResultType.class);
   
-  public static final EnumSet<SMT_SearchResultType> SEARCH_NORMAL_TYPES = EnumSet.range(SEARCH_NODE, SEARCH_SUBNET_PREFIX);
+  public static final EnumSet<SMT_SearchResultType> SEARCH_NORMAL_TYPES = EnumSet.range(SEARCH_SYSTEM, SEARCH_SUBNET_PREFIX);
   
   
   private static final Map<Integer,SMT_SearchResultType> lookup = new HashMap<Integer,SMT_SearchResultType>();
