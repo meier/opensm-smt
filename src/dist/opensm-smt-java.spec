@@ -4,8 +4,8 @@
 %define cmd_dir /usr/bin
 
 Name:           	opensm-smt-java
-Version:        	2.01
-Release:        	55%{?dist}
+Version:        	2.02
+Release:        	57%{?dist}
 Summary:        	Subnet monitoring tools for OpenSM, that use the OpenSM Monitoring Service
 
 Group:          	Development/Libraries
@@ -14,8 +14,8 @@ BuildRoot: 			%{_tmppath}/%{name}-%{version}
 Source0:        	%{name}-%{version}.tar.gz
 BuildArch:      	noarch
 
-BuildRequires:  	java-devel >= 1:1.6.0
-Requires:       	java >= 1:1.6.0
+BuildRequires:  	java-devel >= 1:1.8.0
+Requires:       	java >= 1:1.8.0
 Requires:       	llnl-curses-jni-libs
 BuildRequires:  	jpackage-utils
 BuildRequires:  	ant >= 1.6
@@ -79,6 +79,8 @@ rm -rf $RPM_BUILD_ROOT
 %{cmd_dir}/*
 
 %changelog
+* Wed Nov  9 2016 Tim Meier <meier3@llnl.gov> 2.02-57
+- version 2.02 release 57 with many system bug fixes
 * Mon Oct 17 2016 Tim Meier <meier3@llnl.gov> 2.01-55
 - version 2.01 release 55 include man pages and new commands
 * Thu Nov 19 2015 Tim Meier <meier3@llnl.gov> 2.01-51
