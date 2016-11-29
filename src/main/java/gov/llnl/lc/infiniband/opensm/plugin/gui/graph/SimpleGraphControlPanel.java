@@ -56,24 +56,29 @@
 package gov.llnl.lc.infiniband.opensm.plugin.gui.graph;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridLayout;
 import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
-import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
 
 import edu.uci.ics.jung.algorithms.layout.CircleLayout;
 import edu.uci.ics.jung.algorithms.layout.FRLayout;
@@ -91,10 +96,12 @@ import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ScalingControl;
 import edu.uci.ics.jung.visualization.subLayout.GraphCollapser;
+import gov.llnl.lc.smt.event.SmtMessage;
+import gov.llnl.lc.smt.event.SmtMessageType;
+import gov.llnl.lc.smt.filter.SmtFilter;
+import gov.llnl.lc.smt.manager.MessageManager;
+import gov.llnl.lc.smt.manager.SmtMessageUpdater;
 import gov.llnl.lc.smt.swing.SMT_FabricGraphPanel;
-import javax.swing.border.TitledBorder;
-import javax.swing.border.LineBorder;
-import java.awt.Color;
 
 /**********************************************************************
  * Describe purpose and responsibility of SimpleGraphControlPanel
@@ -111,7 +118,8 @@ public class SimpleGraphControlPanel extends JPanel
    * @wbp.parser.constructor
    */  
   SimpleCollapsableGraph SimpleGraph;
-
+  
+  private static SmtMessageUpdater   Message_Mgr = null;
 
   @SuppressWarnings("unchecked")
   private Class<? extends Layout>[] getCombos()
@@ -126,9 +134,6 @@ public class SimpleGraphControlPanel extends JPanel
     return layouts.toArray(new Class[0]);
   }
 
-
- 
-  
   /************************************************************
    * Method Name:
    *  SimpleGraphControlPanel
@@ -146,6 +151,8 @@ public class SimpleGraphControlPanel extends JPanel
     
     if(simpleGraph == null)
       return;
+    
+    Message_Mgr   = MessageManager.getInstance();
     
     final DefaultModalGraphMouse graphMouse = new DefaultModalGraphMouse();
     
@@ -195,7 +202,7 @@ public class SimpleGraphControlPanel extends JPanel
         Collection picked = new HashSet(vv.getPickedVertexState().getPicked());
         if (picked.size() > 1)
         {
-          System.out.println("The number picked is: " + picked.size());
+          System.out.println("SGCP: The number picked is: " + picked.size());
           Layout layout = SimpleGraph.getGraphLayout();
           GraphCollapser collapser = SimpleGraph.getCollapser();
 
@@ -363,6 +370,59 @@ public class SimpleGraphControlPanel extends JPanel
     collapseControls.add(expandEdges);
     collapseControls.add(reset);
     controls.add(collapseControls);
+    
+    JButton filter = new JButton("Filter");
+    filter.addActionListener(new ActionListener()
+    {
+
+      public void actionPerformed(ActionEvent e)
+      {
+        VisualizationViewer vv = SimpleGraph.getVisViewer();
+        Collection picked = new HashSet(vv.getPickedVertexState().getPicked());
+        if (picked.size() > 1)
+        {
+          String descript = SimpleGraph.getToolTipText();
+
+          SmtFilter flter = SmtFilter.createFilterFromCollection(descript + " (" + picked.size() + " nodes)", picked);
+          if(filter != null)
+            try
+            {
+              flter.setDescription("fabric:    " + descript);
+              
+              JFileChooser fileChooser = new JFileChooser();
+              fileChooser.setDialogTitle("Save the Filter to a file");
+
+              int userSelection = fileChooser.showSaveDialog(null);
+
+              if (userSelection == JFileChooser.APPROVE_OPTION)
+              {
+                File fileToSave = fileChooser.getSelectedFile();
+                try
+                {
+                  Message_Mgr.postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INFO,
+                      "Save filter to file: " + fileToSave.getAbsolutePath()));
+                  SmtFilter.writeFilter(fileToSave.getAbsolutePath(), flter, flter.getDescription());
+                }
+                catch (IOException e1)
+                {
+                  Message_Mgr.postMessage(new SmtMessage(SmtMessageType.SMT_MSG_SEVERE,
+                      "Error Saving filter to file: " + fileToSave.getAbsolutePath()));
+                }
+              }
+            }
+            catch (Exception e1)
+            {
+              // TODO Auto-generated catch block
+              e1.printStackTrace();
+            }
+          
+          vv.getPickedVertexState().clear();
+          vv.repaint();
+        }
+      }
+    });
+    
+    collapseControls.add(filter);
     controls.add(modeBox);
     controls.add(jcb);
     add(controls, BorderLayout.SOUTH);

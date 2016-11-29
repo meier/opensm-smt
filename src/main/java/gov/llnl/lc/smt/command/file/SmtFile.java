@@ -55,14 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.file;
 
-import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
-import gov.llnl.lc.smt.SmtConstants;
-import gov.llnl.lc.smt.command.SmtCommand;
-import gov.llnl.lc.smt.command.config.SmtConfig;
-import gov.llnl.lc.smt.props.SmtProperty;
-import gov.llnl.lc.time.TimeStamp;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -77,6 +69,17 @@ import java.util.stream.Collectors;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
+
+import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_FilteredCollection;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
+import gov.llnl.lc.smt.SmtConstants;
+import gov.llnl.lc.smt.command.SmtCommand;
+import gov.llnl.lc.smt.command.config.SmtConfig;
+import gov.llnl.lc.smt.filter.SmtFilter;
+import gov.llnl.lc.smt.props.SmtProperty;
+import gov.llnl.lc.time.TimeStamp;
+import gov.llnl.lc.util.filter.WhiteAndBlackListFilter;
 
 /**********************************************************************
  * Describe purpose and responsibility of SmtFile
@@ -164,6 +167,15 @@ public class SmtFile extends SmtCommand
       String fileName = compressFile(subCommandArg, config);
       System.out.println("\nCompressed output file: " + fileName);
       System.out.println(getFileInfo(fileName, includeTS));
+      
+    }
+    else if (subCommand.equalsIgnoreCase(SmtProperty.SMT_FILE_FILTER.getName()))
+    {
+      System.out.println("Filtering input file: " + subCommandArg);
+//      System.out.println("  using filter file: " + 
+      String fileName = filterFile(subCommandArg, config);
+      System.out.println("\nFiltered output file: " + fileName);
+//      System.out.println(getFileInfo(fileName, includeTS));
       
     }
     
@@ -325,8 +337,11 @@ public class SmtFile extends SmtCommand
           String type = o.getClass().getCanonicalName();
           if(!className.equals(type))
           {
-            logger.info("File NOT: " + className);
-            return "Could not get File Info";
+            logger.info("File NOT: " + className + " (" + type + ")");
+            continue;
+//            
+//            return "Could not get File Info";
+//            return "Could not get File Info";
           }
            
           // if I am here, then it worked, so I know the type of file it is
@@ -391,8 +406,6 @@ public class SmtFile extends SmtCommand
       }
     return "Could not obtain an object from the file File";
   }
-  
-
 
   /************************************************************
    * Method Name:
@@ -435,6 +448,9 @@ public class SmtFile extends SmtCommand
     Option extract = OptionBuilder.hasArg(true).hasArgs(9).withArgName( sp.getArgName() ).withValueSeparator('=').withDescription(  sp.getDescription() ).withLongOpt(sp.getName()).create( sp.getShortName() );
     sp = SmtProperty.SMT_LIST_TIMESTAMP;
     Option lTimeStamps = new Option( sp.getShortName(), sp.getName(), false, sp.getDescription() );    
+    sp = SmtProperty.SMT_FILE_FILTER;
+    Option fF  = OptionBuilder.hasArg(true).hasArgs(2).withArgName( sp.getArgName() ).withValueSeparator('=').withDescription(  sp.getDescription() ).withLongOpt(sp.getName()).create( sp.getShortName() );
+
     
     options.addOption( fType );
     options.addOption( info );
@@ -442,6 +458,7 @@ public class SmtFile extends SmtCommand
     options.addOption( concat );
     options.addOption( extract );
     options.addOption( lTimeStamps );
+    options.addOption( fF );
     
     return true;
   }
@@ -504,6 +521,16 @@ public class SmtFile extends SmtCommand
     {
       config.put(SmtProperty.SMT_SUBCOMMAND.getName(), sp.getName());
       saveConcatinationArgs(line.getOptionValues(sp.getName()), config);
+    }
+    
+    sp = SmtProperty.SMT_FILE_FILTER;
+    if(line.hasOption(sp.getName()))
+    {
+      // must be two arguments, first is filter filename,  final is output filename
+      
+      config.put(sp.getName(), line.getOptionValue(sp.getName()));
+      config.put(SmtProperty.SMT_SUBCOMMAND.getName(), sp.getName());
+      saveFilterArgs(line.getOptionValues(sp.getName()), config);
     }
     
     sp = SmtProperty.SMT_FILE_EXTRACT;
@@ -604,6 +631,16 @@ public class SmtFile extends SmtCommand
     }
   }
   
+  private void saveFilterArgs(String[] args, Map<String, String> config)
+  {
+    if((args != null && args.length > 0))
+    {
+      config.put(SmtProperty.SMT_FILTER_FILE.getName(), args[0]);
+      if(args.length > 1)
+        config.put(SmtProperty.SMT_WRITE_OMS_HISTORY.getName(), args[1]);
+    }
+  }
+  
   private String getFileName(SmtConfig config)
   {
     Map<String,String> map = config.getConfigMap();
@@ -652,6 +689,70 @@ public class SmtFile extends SmtCommand
     return fName;    
   }
   
+  private String filterFile(String inFile, SmtConfig config)
+  {
+    String inputFileName = convertSpecialFileName(inFile);
+    SmtFilter filter     = getFilter(config);
+    String fName         = getFileName(config);
+    
+    System.err.println("  using filter: " + filter.getFilterName());
+    
+    OMS_Collection origHistory;
+    try
+    {
+      origHistory = OMS_Collection.readOMS_Collection(inputFileName);
+      
+      // create a new, filtered, collection
+      OMS_FilteredCollection newHistory = new OMS_FilteredCollection();
+      newHistory.setFilterFileName(filter.getFilterFileName());
+      newHistory.setHistoryFileName(inputFileName);
+      for(OpenSmMonitorService oms: origHistory.getOSM_History().values())
+      {
+        // filter the original, and add to new History
+        newHistory.put(OpenSmMonitorService.getOpenSmMonitorService(oms, filter));
+      }
+      OMS_FilteredCollection.writeOMS_Collection(fName, newHistory);
+    }
+    catch (Exception e)
+    {
+      System.err.println("Could not filter file: " + inputFileName + ", to " + fName);
+      System.err.println("Exception: " + e.getMessage());
+      e.printStackTrace();
+    }
+    
+    return fName;    
+  }
+  
+
+  /************************************************************
+   * Method Name:
+   *  getFilter
+  **/
+  /**
+   * Describe the method here
+   *
+   * @see     describe related java objects
+   *
+   * @param config
+   * @return
+   ***********************************************************/
+  private SmtFilter getFilter(SmtConfig config)
+  {
+    Map<String,String> map = config.getConfigMap();
+    String val = map.get(SmtProperty.SMT_FILTER_FILE.getName());
+    SmtFilter filter = null;
+    try
+    {
+      filter = new SmtFilter(val);
+      System.err.println("Read in a filter file from: " + val);
+    }
+    catch (IOException e)
+    {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    return filter;
+  }
 
   private String extractFile(String inFile, SmtConfig config)
   {

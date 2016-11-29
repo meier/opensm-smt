@@ -141,7 +141,6 @@ public class TopAnalyzer implements CommonLogger, OSM_ServiceChangeListener
   // an empty filter
   protected static SmtFilter smtFilter     = new SmtFilter();
 
-
   /** the one and only <code>TopAnalyzer</code> Singleton **/
   private volatile static TopAnalyzer Top_Analyzer  = null;
 

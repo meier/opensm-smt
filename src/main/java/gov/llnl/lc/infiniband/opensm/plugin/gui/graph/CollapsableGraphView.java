@@ -351,7 +351,7 @@ public class CollapsableGraphView extends JApplet
         Collection picked = new HashSet(vv.getPickedVertexState().getPicked());
         if (picked.size() > 1)
         {
-          System.out.println("The number picked is: " + picked.size());
+          System.out.println("CGV: The number picked is: " + picked.size());
           Graph inGraph = layout.getGraph();
           Graph clusterGraph = collapser.getClusterGraph(inGraph, picked);
 

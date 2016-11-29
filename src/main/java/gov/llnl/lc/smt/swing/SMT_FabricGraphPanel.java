@@ -55,6 +55,14 @@
  ********************************************************************/
 package gov.llnl.lc.smt.swing;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.util.LinkedHashMap;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.SwingWorker;
+
 import edu.uci.ics.jung.graph.UndirectedSparseMultigraph;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Updater;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
@@ -76,14 +84,6 @@ import gov.llnl.lc.smt.manager.SMT_AnalysisManager;
 import gov.llnl.lc.smt.manager.SMT_AnalysisType;
 import gov.llnl.lc.smt.manager.SMT_AnalysisUpdater;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.util.LinkedHashMap;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.SwingWorker;
-
 /**********************************************************************
  * Describe purpose and responsibility of SMT_FabricGraphPanel
  * <p>
@@ -102,6 +102,7 @@ public class SMT_FabricGraphPanel extends JPanel implements OSM_ServiceChangeLis
   
   SMT_AnalysisType GraphType = SMT_AnalysisType.SMT_FABRIC_GRAPH;
   SimpleCollapsableGraph FabricGraph;
+  OSM_Fabric Fabric;
   OSM_Node SubnetManager;
 
   /************************************************************
@@ -136,7 +137,10 @@ public class SMT_FabricGraphPanel extends JPanel implements OSM_ServiceChangeLis
     return FabricGraph;
   }
 
-
+  public OSM_Fabric getFabric()
+  {
+    return Fabric;
+  }
 
   /************************************************************
    * Method Name:
@@ -152,8 +156,6 @@ public class SMT_FabricGraphPanel extends JPanel implements OSM_ServiceChangeLis
   {
     super();
   }
-
-
 
   /************************************************************
    * Method Name:
@@ -250,6 +252,11 @@ public class SMT_FabricGraphPanel extends JPanel implements OSM_ServiceChangeLis
   @Override
   public void osmFabricUpdate(OSM_Fabric osmFabric) throws Exception
   {
+    if(osmFabric != null)
+      Fabric = osmFabric;
+    if(Fabric != null)
+      FabricGraph.setToolTipText(Fabric.getFabricName());
+
     logger.info("The FabricGraphPanel got a Fabric update - do nothing, waiting for analysis");
   }
 
@@ -257,7 +264,13 @@ public class SMT_FabricGraphPanel extends JPanel implements OSM_ServiceChangeLis
   @Override
   public void osmServiceUpdate(OMS_Updater updater, OpenSmMonitorService osmService) throws Exception
   {
-    SubnetManager = osmService.getFabric().getManagementNode();
+    if((osmService != null) && (osmService.getFabric() != null))
+    {
+      Fabric = osmService.getFabric();
+      SubnetManager = Fabric.getManagementNode();
+      FabricGraph.setToolTipText(Fabric.getFabricName());
+
+    }
     logger.info("The FabricGraphPanel got an OMS update - do nothing, waiting for analysis");    
   }
 
