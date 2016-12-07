@@ -55,20 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.link;
 
-import gov.llnl.lc.infiniband.core.IB_Guid;
-import gov.llnl.lc.infiniband.core.IB_Link;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDelta;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Nodes;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Port;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Ports;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
-import gov.llnl.lc.smt.SmtConstants;
-import gov.llnl.lc.smt.command.SmtCommand;
-import gov.llnl.lc.smt.command.config.SmtConfig;
-import gov.llnl.lc.smt.props.SmtProperty;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -77,6 +63,23 @@ import java.util.Map.Entry;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
+
+import gov.llnl.lc.infiniband.core.IB_Guid;
+import gov.llnl.lc.infiniband.core.IB_Link;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDelta;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_LinkSpeed;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Node;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Nodes;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Port;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Ports;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
+import gov.llnl.lc.smt.SmtConstants;
+import gov.llnl.lc.smt.command.SmtCommand;
+import gov.llnl.lc.smt.command.config.SmtConfig;
+import gov.llnl.lc.smt.props.SmtProperty;
 
 /**********************************************************************
  * Describe purpose and responsibility of SmtRoute
@@ -119,7 +122,8 @@ public class SmtLink extends SmtCommand
 //      config.printConfig();
       map = config.getConfigMap();
       subCommand = map.get(SmtProperty.SMT_SUBCOMMAND.getName());
-      logger.severe(subCommand);
+      if(subCommand != null)
+        logger.info(subCommand);
       
       // check to see if the subCommand takes any arguments or values
       if(subCommand == null)
@@ -127,7 +131,15 @@ public class SmtLink extends SmtCommand
         subCommand = SmtProperty.SMT_HELP.getName();
       }
      }
-    
+
+    // attempt to identify the port
+    OSM_Fabric                    fabric = null;
+    OSM_Port                           p = null;
+    if((OMService != null) && (g != null))
+    {
+      fabric = OMService.getFabric();
+      p = fabric.getOSM_Port(OSM_Port.getOSM_PortKey(g.getGuid(), (short)pNum));
+    }
     if(OMService == null)
       logger.severe("The service is null");
 
@@ -154,14 +166,26 @@ public class SmtLink extends SmtCommand
         if(qType == null)
         {
           logger.severe("Invalid SmtLink query option");
-         subCommand = SmtProperty.SMT_HELP.getName();
-         return false;
+          subCommand = SmtProperty.SMT_HELP.getName();
+          return false;
         }
         
-        OSM_FabricDelta fd = null;
-        if(OMService != null)
+        OSM_FabricDelta                   fd = null;
+        LinkedHashMap<String, IB_Link> links = null;        
+        if((OMService != null) && (g != null))
+        {
           fd = getOSM_FabricDelta(false);
-
+          if(fd == null)
+          {
+            // this should not happen, but if so, can't go further
+            logger.severe("Could not produce FabricDelta's, suspect corrupt file.  Try -dump");
+            System.out.println("Could not produce FabricDelta's, suspect corrupt file.  Try -dump");
+            System.exit(0);
+          }
+          
+          fabric = fd.getFabric2();
+          links = fabric.getIB_Links(g);        
+        }
         switch (qType)
         {
           case LINK_LIST:
@@ -169,7 +193,11 @@ public class SmtLink extends SmtCommand
             break;
             
           case LINK_STATUS:
-            showStatus();
+            IB_Link link = IB_Link.getIB_Link(getAllLinks(), p);
+            if(link != null)
+              System.out.println(SmtLink.getLinkSummary(OMService, link));
+            else
+              showStatus();
             break;
             
           case LINK_LEVELS:
@@ -198,6 +226,12 @@ public class SmtLink extends SmtCommand
             
           case LINK_HOSTS:
             printStringMap(IB_LinkInfo.getCALinkInfoRecords(OMService, fd, !onlyMissing, includeMissing));
+            break;
+            
+          case LINK_SPEED:
+            OSM_LinkSpeed ls = getLinkSpeed(config);
+            dumpAllLinks(ls);
+            System.exit(0);
             break;
             
             default:
@@ -234,17 +268,37 @@ public class SmtLink extends SmtCommand
         showStatus();        
       }
       
-      if((g != null) || (pNum > 0))
+      if((g != null) || (p != null))
       {
-        OSM_Port                           p = null;
-        if((OMService != null) && (g != null))
-          p = OMService.getFabric().getOSM_Port(OSM_Port.getOSM_PortKey(g.getGuid(), (short)pNum));
         if(pNum < 1)
           printStringMap(IB_LinkInfo.getLinkInfoRecordsByGuid(g, OMService, getOSM_FabricDelta(false), !onlyMissing, includeMissing));
         else
           printStringMap(IB_LinkInfo.getLinkInfoRecordsByPort(p, OMService, getOSM_FabricDelta(false)));
       }
-    return false;
+    return true;
+  }
+
+  /************************************************************
+   * Method Name:
+   *  dumpAllLinks
+  **/
+  /**
+   * Describe the method here
+   *
+   * @see     describe related java objects
+   *
+   * @param ls
+   ***********************************************************/
+  private void dumpAllLinks(OSM_LinkSpeed lspeed)
+  {
+    // "ALL" IB_Links
+    ArrayList <IB_Link> ibla = getAllLinks();
+    if((ibla != null) && (lspeed != null))
+      for(IB_Link l: ibla)
+      {
+        if(lspeed == l.getSpeed())
+          printLinkInfo(l);
+      }
   }
 
   /************************************************************
@@ -267,7 +321,9 @@ public class SmtLink extends SmtCommand
     EXAMPLE ="examples:" + SmtConstants.NEW_LINE +
         "> smt-link -pn 10011 -q status           - provide a link summary" + SmtConstants.NEW_LINE + 
         "> smt-link -pn 10013 -q errors           - show the links that are currently experiencing errors" + SmtConstants.NEW_LINE + 
+        "> smt-link -q status 196 17              - show the link associated with lid 196 port 17" + SmtConstants.NEW_LINE + 
         "> smt-link -pn 10013 -q switches -oM T   - show only the down links between switches" + SmtConstants.NEW_LINE + 
+        "> smt-link -q speed EDR                  - show all of the EDR links" + SmtConstants.NEW_LINE + 
         "> smt-link -rH surface3h.his -dump       - dump all the link information" + SmtConstants.NEW_LINE  + ".";  // terminate with nl
 
     // create and initialize the common options for this command
@@ -437,6 +493,26 @@ public class SmtLink extends SmtCommand
   private void dumpAllLinks()
   {
     // "ALL" IB_Links
+    ArrayList <IB_Link> ibla = getAllLinks();
+    for(IB_Link l: ibla)
+    {
+      System.out.println(l.toContent());
+    }
+  }
+  
+  /************************************************************
+   * Method Name:
+   *  dumpAllLinks
+  **/
+  /**
+   * Describe the method here
+   *
+   * @see     describe related java objects
+   *
+   ***********************************************************/
+  private ArrayList <IB_Link> getAllLinks()
+  {
+    // "ALL" IB_Links
     ArrayList <IB_Link> ibla = null;
     OSM_Fabric Fabric = OMService.getFabric();
     OSM_Nodes AllNodes = (Fabric == null) ? null : Fabric.getOsmNodes();
@@ -446,12 +522,8 @@ public class SmtLink extends SmtCommand
     {
         // create IB_Links
         ibla = AllPorts.createIB_Links(AllNodes);
-        
-        for(IB_Link l: ibla)
-        {
-          System.out.println(l.toContent());
-        }
     }
+    return ibla;
   }
   
   private void showStatus()
@@ -500,6 +572,61 @@ public class SmtLink extends SmtCommand
     return true;
   }
   
+  private boolean printLinkInfo(IB_Link link)
+  {
+    IB_LinkInfo li = new IB_LinkInfo(link, OMService);
+    System.out.println(li.getLinkInfoLine(OMService));
+    return true;
+  }
+    
+  public static String getLinkSummary(OpenSmMonitorService oms, IB_Link link)
+  {
+    String formatString = "%17s:  %s";
+
+    StringBuffer buff = new StringBuffer();
+    if(oms != null)
+    {
+      OSM_Fabric fabric = oms.getFabric();
+      if(fabric != null)
+      {
+        if(link != null)
+        {
+          OSM_Port p = link.getEndpoint1();
+          IB_Guid g  = p.getNodeGuid();
+          OSM_Node n = fabric.getOSM_Node(g);
+          short pNum = (short)p.getPortNumber();
+
+          buff.append(String.format(formatString, "First Node name", n.pfmNode.node_name + SmtConstants.NEW_LINE));
+          buff.append(String.format(formatString, "guid", g.toColonString() + SmtConstants.NEW_LINE));
+          buff.append(String.format(formatString, "lid", p.getAddress().getLocalIdHexString() + " (" + p.getAddress().getLocalId() + ")" + SmtConstants.NEW_LINE));
+          buff.append(String.format(formatString, "port #", pNum + SmtConstants.NEW_LINE));
+          buff.append(String.format(formatString, "port address", OSM_Port.getOSM_PortKey(p) + SmtConstants.NEW_LINE));
+          buff.append(String.format(formatString, "errors", p.hasError() + SmtConstants.NEW_LINE));
+          buff.append(SmtConstants.NEW_LINE);
+
+          buff.append(String.format(formatString, "state", link.getStateString() + SmtConstants.NEW_LINE));
+          buff.append(String.format(formatString, "rate", link.getRate().getRateName() + SmtConstants.NEW_LINE));
+          buff.append(String.format(formatString, "speed", link.getSpeed().getSpeedName() + SmtConstants.NEW_LINE));
+          buff.append(String.format(formatString, "width", link.getWidth().getWidthName() + SmtConstants.NEW_LINE));
+          buff.append(SmtConstants.NEW_LINE);
+          
+          p = link.getEndpoint2();
+          g  = p.getNodeGuid();
+          n = fabric.getOSM_Node(g);
+          pNum = (short)p.getPortNumber();
+
+          buff.append(String.format(formatString, "Second Node name", n.pfmNode.node_name + SmtConstants.NEW_LINE));
+          buff.append(String.format(formatString, "guid", g.toColonString() + SmtConstants.NEW_LINE));
+          buff.append(String.format(formatString, "lid", p.getAddress().getLocalIdHexString() + " (" + p.getAddress().getLocalId() + ")" + SmtConstants.NEW_LINE));
+          buff.append(String.format(formatString, "port #", pNum + SmtConstants.NEW_LINE));
+          buff.append(String.format(formatString, "port address", OSM_Port.getOSM_PortKey(p) + SmtConstants.NEW_LINE));
+          buff.append(String.format(formatString, "errors", p.hasError() + SmtConstants.NEW_LINE));
+        }
+      }
+    }
+    return buff.toString();
+  }
+  
   private IB_Guid getNodeGuid(SmtConfig config, int pNum)
   {
     // if there are any arguments, they normally reference a node or port identifier
@@ -540,7 +667,20 @@ public class SmtLink extends SmtCommand
      return null;
   }
 
-  private int getPortNumber(SmtConfig config)
+  private static OSM_LinkSpeed getLinkSpeed(SmtConfig config)
+  {
+    // the query argument should represent the desired link speed
+    if(config != null)
+    {
+      Map<String,String> map = config.getConfigMap();
+      String lSpeed = map.get(SmtProperty.SMT_COMMAND_ARGS.getName());
+      if(lSpeed != null)
+        return OSM_LinkSpeed.getByName(lSpeed, true);
+    }
+    return null;
+  }
+  
+  private static int getPortNumber(SmtConfig config)
   {
     // if there are any arguments, they normally reference a port identifier
     // return 0, indicating couldn't be found, or nothing specified

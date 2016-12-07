@@ -80,6 +80,7 @@ public enum PortQuery
   PORT_TRAFFIC_CNT(           5, "traffic",          "t",   "shows the ports' traffic counters"),    
   PORT_LINK(                  6, "link",             "lk",  "displays the link associated with this port"),    
   PORT_ROUTE(                 7, "route",            "rt",  "provides a list of routes through this switch port"),    
+  PORT_SPEED(                10, "speed",            "s",   "list all ports with the specified speed (QDR is default)"),    
   PORT_LAST_QUERY(          999, "QueryEnd",         "end", "always the end of the property list");
   
   /*

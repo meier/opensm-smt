@@ -59,6 +59,7 @@ import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Updater;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
 import gov.llnl.lc.logging.CommonLogger;
 import gov.llnl.lc.smt.command.SmtCommand;
+import gov.llnl.lc.smt.data.SMT_UpdateService;
 import gov.llnl.lc.smt.event.SmtMessage;
 import gov.llnl.lc.smt.event.SmtMessageType;
 import gov.llnl.lc.smt.manager.MessageManager;
@@ -119,6 +120,12 @@ public class SmtGuiRunner implements Runnable, CommonLogger
         MessageManager.getInstance().postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INIT, "initializing the framework with the services"));
        app.initUpdateService(UpdateService);
        MessageManager.getInstance().postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INIT, "done initializing the application"));
+       if(UpdateService instanceof SMT_UpdateService)
+       {
+         SMT_UpdateService sus = (SMT_UpdateService)UpdateService;
+         if(sus.isFiltered())
+           MessageManager.getInstance().postMessage(new SmtMessage(SmtMessageType.SMT_MSG_WARNING, "History file has been filtered, OMS data is incomplete and may be inconsistent"));
+       }
        // give everything a little time to finish up initialization
        //  - seems to help slower clients (laptops and such) make sure threads are done
        TimeUnit.MILLISECONDS.sleep(300);

@@ -55,14 +55,15 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.data;
 
-import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.SMTUserObjectTreeCellRenderer;
-import gov.llnl.lc.smt.props.SmtProperties;
-
+import java.awt.Image;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.ImageIcon;
+
+import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.SMTUserObjectTreeCellRenderer;
+import gov.llnl.lc.smt.props.SmtProperties;
 
 /**********************************************************************
  * Describe purpose and responsibility of SmtIconType
@@ -110,6 +111,10 @@ public enum SmtIconType
   SMT_MORE_ICON(       202, "more",                "add.png",           "more",         "extra, more, or additional information"),
   SMT_HELP_ICON(       202, "help",                "help.png",           "help",         "a counter value maintained by the performance cuonter"),
   SMT_SEARCH_ICON(       202, "search",                "SearchSmall.png",           "search",         "a magnifying glass"),
+  SMT_CLUSTER_ICON(       202, "cluster",                "smt-cluster.png",           "cluster",         "a small cluster"),
+  SMT_CLUSTER1_ICON(       202, "cluster",                "smt-cluster1.png",           "cluster",         "a small cluster"),
+  SMT_CLUSTER2_ICON(       202, "cluster",                "smt-image.png",           "cluster",         "a small cluster"),
+  SMT_CLUSTER3_ICON(       202, "cluster",                "SplashSMT.png",           "cluster",         "a small cluster"),
   SMT_FINAL_ICON(         400, "end",                    "bullet_black.png",             "end",                    "the last icon");
 
   /*
@@ -162,6 +167,11 @@ public int getIconNum()
 public ImageIcon getIcon()
 {
   return Icon;
+  }
+
+public Image getImage()
+{
+  return Icon.getImage();
   }
 
 public String getIconName()

@@ -92,7 +92,7 @@ public abstract class SMT_AbstractUpdateService extends OMS_AbstractUpdateServic
    *  isFileMode
    **/
   /**
-   * Returns the value of fileMode
+   * Returns the value of fileMode, true if using a history file
    *
    * @return the fileMode
    *

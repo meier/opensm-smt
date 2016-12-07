@@ -55,6 +55,16 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.port;
 
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
+
 import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.core.IB_Link;
 import gov.llnl.lc.infiniband.core.IB_Port;
@@ -62,6 +72,7 @@ import gov.llnl.lc.infiniband.opensm.plugin.data.MLX_ExtPortInfo;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDelta;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDeltaAnalyzer;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_LinkSpeed;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Node;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_NodeType;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Port;
@@ -80,16 +91,6 @@ import gov.llnl.lc.smt.command.node.SmtNode;
 import gov.llnl.lc.smt.command.route.SmtRoute;
 import gov.llnl.lc.smt.props.SmtProperty;
 import gov.llnl.lc.util.BinList;
-
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
 
 /**********************************************************************
  * Describe purpose and responsibility of SmtPort
@@ -194,7 +195,8 @@ public class SmtPort extends SmtCommand
 //      config.printConfig();
       map = config.getConfigMap();
       subCommand = map.get(SmtProperty.SMT_SUBCOMMAND.getName());
-      logger.severe(subCommand);
+      if(subCommand != null)
+        logger.info(subCommand);
       
       // check to see if the subCommand takes any arguments or values
       if(subCommand == null)
@@ -210,21 +212,19 @@ public class SmtPort extends SmtCommand
     {
       fabric = OMService.getFabric();
       p = fabric.getOSM_Port(OSM_Port.getOSM_PortKey(g.getGuid(), (short)pNum));
-//      if(p == null)
-//        System.err.println("The guid is: " + g.toColonString() + ", pn: " + pNum);
     }
-
     
     // there should only be one subcommand (use big if statement)
-    if(subCommand.equalsIgnoreCase(SmtProperty.SMT_QUERY_TYPE.getName()))
+    String qName = SmtProperty.SMT_QUERY_TYPE.getName();
+    if(subCommand.equalsIgnoreCase(qName))
     {
-      PortQuery qType = PortQuery.getByName(map.get(SmtProperty.SMT_QUERY_TYPE.getName()));
+      PortQuery qType = PortQuery.getByName(map.get(qName));
       
       if(qType == null)
       {
-        logger.severe("Invalid SmtPort query option");
-       subCommand = SmtProperty.SMT_HELP.getName();
-       return false;
+        logger.severe("Invalid SmtPort query option (" + map.get(qName) + ")");
+        subCommand = SmtProperty.SMT_HELP.getName();
+        return false;
       }
       
       OSM_FabricDelta                   fd = null;
@@ -295,8 +295,14 @@ public class SmtPort extends SmtCommand
           System.exit(0);
           break;
           
+        case PORT_SPEED:
+          OSM_LinkSpeed ls = getLinkSpeed(config);
+          dumpAllPorts(ls);
+          System.exit(0);
+          break;
+          
           default:
-            System.out.println("That's not an option");
+            System.err.println("That's not an option");
             break;
        }
       if((g == null) || (pNum < 1))
@@ -324,7 +330,6 @@ public class SmtPort extends SmtCommand
       System.out.println(SmtPort.getStatus(OMService, false));
       return true;
     }
-   
     
     if((g == null) || (pNum < 1))
     {
@@ -513,6 +518,27 @@ public class SmtPort extends SmtCommand
   
   /************************************************************
    * Method Name:
+   *  dumpAllPorts
+  **/
+  /**
+   * Describe the method here
+   *
+   * @see     describe related java objects
+   *
+   ***********************************************************/
+  private void dumpAllPorts(OSM_LinkSpeed lspeed)
+  {
+    HashMap<String, OSM_Port> ports = getOSM_Ports();
+    for (OSM_Port p : ports.values())
+    {
+      if((p.isActive() && lspeed != null))
+        if(lspeed == OSM_LinkSpeed.get(p))
+          System.out.println(getPortSummary(OMService, p));
+    }
+  }
+  
+  /************************************************************
+   * Method Name:
    *  init
    **/
   /**
@@ -535,6 +561,7 @@ public class SmtPort extends SmtCommand
         "> smt-port -q counters -pn 10013 14 3  - same as above" + SmtConstants.NEW_LINE + 
         "> smt-port -pn 10013 14 3 -q errors    - similar to above, but only show error counters" + SmtConstants.NEW_LINE + 
         "> smt-port -q route ibcore1 L113 24    - using the switches name, show the routes through port 24" + SmtConstants.NEW_LINE + 
+        "> smt-port -q speed EDR                - show all of the EDR ports" + SmtConstants.NEW_LINE + 
         "> smt-port -rH surface3h.his -dump     - dump all information about all the ports" + SmtConstants.NEW_LINE  + ".";  // terminate with nl
 
     // create and initialize the common options for this command
@@ -561,9 +588,22 @@ public class SmtPort extends SmtCommand
     return true;
   }
 
-
-
   public static String getPortSummary(OpenSmMonitorService oms, IB_Guid g, short pNum)
+  {
+    if(oms != null)
+    {
+      OSM_Fabric fabric = oms.getFabric();
+      if(fabric != null)
+      {
+        OSM_Port p = fabric.getOSM_Port(OSM_Port.getOSM_PortKey(g.getGuid(), (short)pNum));
+        if(p != null)
+          return getPortSummary(oms, p);
+      }
+    }
+    return "Could not find port";
+  }
+
+  public static String getPortSummary(OpenSmMonitorService oms, OSM_Port p)
   {
     String formatString = "%17s:  %s";
 
@@ -573,11 +613,13 @@ public class SmtPort extends SmtCommand
       OSM_Fabric fabric = oms.getFabric();
       if(fabric != null)
       {
-        OSM_Node n = fabric.getOSM_Node(g);
-
-        if(n != null)
+        if(p != null)
         {
-          OSM_Port p = fabric.getOSM_Port(OSM_Port.getOSM_PortKey(g.getGuid(), (short)pNum));
+          IB_Guid g  = p.getNodeGuid();
+          OSM_Node n = fabric.getOSM_Node(g);
+
+          short pNum = (short)p.getPortNumber();
+          
           LinkedHashMap<String, IB_Link> links = fabric.getIB_Links(g);
           IB_Link l = OSM_Fabric.getIB_Link(g.getGuid(), (short)pNum, links);
           boolean isSwitch = OSM_Fabric.isSwitch(g, fabric);
@@ -858,6 +900,19 @@ public class SmtPort extends SmtCommand
        }
     }
      return 0;
+  }
+
+  private static OSM_LinkSpeed getLinkSpeed(SmtConfig config)
+  {
+    // the query argument should represent the desired link speed
+    if(config != null)
+    {
+      Map<String,String> map = config.getConfigMap();
+      String lSpeed = map.get(SmtProperty.SMT_COMMAND_ARGS.getName());
+      if(lSpeed != null)
+        return OSM_LinkSpeed.getByName(lSpeed, true);
+    }
+    return null;
   }
   
   private static String getAbbreviatedType(String s)

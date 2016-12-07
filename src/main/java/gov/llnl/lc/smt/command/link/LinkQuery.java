@@ -81,6 +81,7 @@ public enum LinkQuery
   LINK_DOWN(                  6, "down",             "d",    "show links (ports) that are down or missing"),    
   LINK_ACTIVE(                7, "active",           "a",    "show active links"),    
   LINK_ERROR(                 8, "errors",           "e",   "show links with dynamic errors"),    
+  LINK_SPEED(                10, "speed",            "s",   "list all links with the specified speed (QDR is default)"),    
   LINK_LAST_QUERY(          999, "QueryEnd",         "end",  "always the end of the property list");
   
   /*

@@ -55,20 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.smt.data;
 
-import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_List;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Configuration;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
-import gov.llnl.lc.infiniband.opensm.plugin.net.OsmServiceManager;
-import gov.llnl.lc.smt.command.SmtCommand;
-import gov.llnl.lc.smt.command.SmtCommandType;
-import gov.llnl.lc.smt.command.console.SmtConsoleManager;
-import gov.llnl.lc.smt.event.SmtMessage;
-import gov.llnl.lc.smt.event.SmtMessageType;
-import gov.llnl.lc.smt.manager.MessageManager;
-import gov.llnl.lc.time.TimeSliderListener;
-import gov.llnl.lc.time.TimeSliderPanel;
-
 import java.awt.event.ItemEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -82,6 +68,21 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JToggleButton;
 import javax.swing.event.ChangeEvent;
+
+import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_FilteredCollection;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_List;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Configuration;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
+import gov.llnl.lc.infiniband.opensm.plugin.net.OsmServiceManager;
+import gov.llnl.lc.smt.command.SmtCommand;
+import gov.llnl.lc.smt.command.SmtCommandType;
+import gov.llnl.lc.smt.command.console.SmtConsoleManager;
+import gov.llnl.lc.smt.event.SmtMessage;
+import gov.llnl.lc.smt.event.SmtMessageType;
+import gov.llnl.lc.smt.manager.MessageManager;
+import gov.llnl.lc.time.TimeSliderListener;
+import gov.llnl.lc.time.TimeSliderPanel;
 
 /**********************************************************************
  * The SMT_UpdateService is intended to be used with the SmtGui.  It
@@ -824,6 +825,28 @@ return omsList;
         logger.info("Wrap button was deselected");
       else
         logger.info("Wrap button was selected");
+  }
+
+  /************************************************************
+   * Method Name:
+   *  isFiltered
+  **/
+  /**
+   * Returns true if the "collection" has been filtered.
+   *
+   * @see     describe related java objects
+   *
+   * @return
+   ***********************************************************/
+  public boolean isFiltered()
+  {
+    // return true if the mode is OFF-LINE and the history file
+    // is actually an OMS_FilteredCollection
+    if(this.isFileMode())
+      if(getCollection() instanceof OMS_FilteredCollection)
+        return true;
+    
+    return false;
   }
 
 }

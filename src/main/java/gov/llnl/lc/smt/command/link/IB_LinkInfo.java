@@ -55,6 +55,13 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.link;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map.Entry;
+
 import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.core.IB_Link;
 import gov.llnl.lc.infiniband.core.IB_LinkType;
@@ -79,13 +86,6 @@ import gov.llnl.lc.infiniband.opensm.plugin.net.OsmServerStatus;
 import gov.llnl.lc.logging.CommonLogger;
 import gov.llnl.lc.smt.SmtConstants;
 import gov.llnl.lc.util.BinList;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map.Entry;
 
 /**********************************************************************
  * Describe purpose and responsibility of IB_LinkInfo
@@ -218,7 +218,7 @@ public class IB_LinkInfo implements CommonLogger
     return Vertex.getGuid().toColonString() + ":" + portNum;
   }
   
-  private String getLinkInfoLine(OpenSmMonitorService oms)
+  public String getLinkInfoLine(OpenSmMonitorService oms)
   {
     // get the name and lids
     if((Vertex == null) || (Edge == null))
@@ -361,6 +361,30 @@ public class IB_LinkInfo implements CommonLogger
     
     map.put(ili.getLinkKey(), ili.getLinkInfoLine(oms));
     return map;
+  }
+  
+  public IB_LinkInfo(OSM_Port p, OpenSmMonitorService oms)
+  {
+    super();
+    
+    if(( p == null) || (oms == null))
+      return;
+    
+    OSM_Fabric Fabric = oms.getFabric();
+    
+    // from this edge map, create the vertex map (this sets the levels too)
+    LinkedHashMap<String, IB_Vertex> vertexMap = IB_Vertex.createVertexMap(Fabric);
+    LinkedHashMap <String, IB_Edge> edgeMap    = IB_Vertex.createEdgeMap(IB_Vertex.createVertexMap(Fabric));
+    
+    // print the record for the edge.  Include both sides, because I don't have a vertex
+    Vertex   = IB_Vertex.getVertex(p, vertexMap);
+    Edge     = IB_Edge.getEdge(p, edgeMap);
+    Warning  = "";
+  }
+  
+  public IB_LinkInfo(IB_Link l, OpenSmMonitorService oms)
+  {
+    this(l.getEndpoint1(), oms);
   }
   
   private static LinkedHashMap<String, String> getLinkInfoRecords(IB_Edge edge, LinkedHashMap<String, IB_Vertex> vertexMap, OpenSmMonitorService oms, OSM_FabricDelta fd)
@@ -834,7 +858,7 @@ return map;
             num_links[3] = aLinkBins.getBin("Width: " + lw.getWidthName()) == null ? 0 : aLinkBins
                 .getBin("Width: " + lw.getWidthName()).size();
 
-            buff.append(String.format("%7s          %4d      %4d      %4d      %5d\n", lw.getWidthName(), num_links[0], num_links[1], num_links[2], num_links[3])); 
+            buff.append(String.format("%8s         %4d      %4d      %4d      %5d\n", lw.getWidthName(), num_links[0], num_links[1], num_links[2], num_links[3])); 
           }
         }
 
@@ -857,7 +881,7 @@ return map;
             num_links[3] = aLinkBins.getBin("Speed: " + ls.getSpeedName()) == null ? 0 : aLinkBins
                 .getBin("Speed: " + ls.getSpeedName()).size();
 
-            buff.append(String.format("%7s          %4d      %4d      %4d      %5d\n", ls.getSpeedName(), num_links[0], num_links[1], num_links[2], num_links[3])); 
+            buff.append(String.format("%8s         %4d      %4d      %4d      %5d\n", ls.getSpeedName(), num_links[0], num_links[1], num_links[2], num_links[3])); 
           }
         }
 
@@ -880,7 +904,7 @@ return map;
             num_links[3] = aLinkBins.getBin("Rate: " + lw.getRateName()) == null ? 0 : aLinkBins
                 .getBin("Rate: " + lw.getRateName()).size();
 
-            buff.append(String.format("%7s          %4d      %4d      %4d      %5d\n", lw.getRateName(), num_links[0], num_links[1], num_links[2], num_links[3])); 
+            buff.append(String.format("%8s         %4d      %4d      %4d      %5d\n", lw.getRateName(), num_links[0], num_links[1], num_links[2], num_links[3])); 
           }
         }
       }

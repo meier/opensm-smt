@@ -55,6 +55,7 @@
  ********************************************************************/
 package gov.llnl.lc.smt.swing;
 
+import gov.llnl.lc.infiniband.opensm.plugin.gui.data.SmtIconType;
 import gov.llnl.lc.smt.event.SmtEvent;
 import gov.llnl.lc.smt.event.SmtEventObject;
 import gov.llnl.lc.smt.prefs.SmtGuiPreferences;
@@ -146,6 +147,8 @@ public class SmtSplashFrame extends SmtFrame
   {
     setTitle(TitleString);
     setName(TitleString);
+    setIconImage(SmtIconType.SMT_FABRIC_ICON.getIcon().getImage());
+
     
     SplashPanel = new SmtSplashPanel((java.awt.event.ActionListener)this);
     SplashPanel.setTitle(TitleString);

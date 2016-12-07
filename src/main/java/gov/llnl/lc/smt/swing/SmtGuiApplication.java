@@ -125,6 +125,7 @@ import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionListener;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionUpdater;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.SystemErrGraphListener;
+import gov.llnl.lc.infiniband.opensm.plugin.gui.data.SmtIconType;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.graph.SimpleGraphControlPanel;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.text.FabricRootNodePopupMenu;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.text.FabricSummaryPanel;
@@ -164,6 +165,7 @@ import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.UserObjectTreeNode;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.VertexTreeModel;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.VertexTreePanel;
 import gov.llnl.lc.logging.CommonLogger;
+import gov.llnl.lc.smt.SmtConstants;
 import gov.llnl.lc.smt.command.SmtCommand;
 import gov.llnl.lc.smt.command.SmtCommandType;
 import gov.llnl.lc.smt.command.file.SmtFile;
@@ -186,6 +188,8 @@ import gov.llnl.lc.smt.manager.SmtMessageUpdater;
 import gov.llnl.lc.smt.prefs.SmtGuiPreferences;
 import gov.llnl.lc.smt.props.SmtProperties;
 import gov.llnl.lc.smt.props.SmtProperty;
+import gov.llnl.lc.system.Console;
+import gov.llnl.lc.system.Console.ConsoleColor;
 import gov.llnl.lc.time.TimeListener;
 import gov.llnl.lc.time.TimeService;
 import gov.llnl.lc.time.TimeSliderPanel;
@@ -659,14 +663,15 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
     return removed;
   }
   
-  private void setApplicationTitle(String FabricName, String Mode, String Other)
+  private void setApplicationTitle(String FabricName, String MiddleString, String RightString)
   {
     // create a useful title bar, providing prioritized information based on the argument order above
-    String fabricName = FabricName;
-    String toolName   = SmtCommandType.SMT_GUI_CMD.getToolName();
-    String fileName   = null;
-    String portNum    = "10011";
-    String hostNam    = "localhost";
+    String fabricName      = FabricName;
+    String toolName        = SmtCommandType.SMT_GUI_CMD.getToolName();
+    String fileName        = null;
+    String portNum         = "10011";
+    String hostNam         = "localhost";
+    boolean isFilteredFile = false;
     
     // how big is the title bar??
     Rectangle bounds = applicationFrame.getBounds();
@@ -683,6 +688,7 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
       if(OMS != null)
          fabricName = OMS.getFabricName(true);
       fileName = sus.getFile();
+      isFilteredFile = sus.isFiltered();
       portNum = sus.getPort();
       hostNam = sus.getHost();
     }
@@ -695,6 +701,9 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
     {
       modeStr = "Off-Line";
       optsStr = fileName;
+      // if the file is a "filtered" file, add a special character to indicate
+      // the data has been manipulated
+      
     }
     else
     {
@@ -702,10 +711,22 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
       optsStr = "-h " + hostNam + " -pn " + portNum;
     }
     
+    // smt-gui: FabricName   [On-Line]       (localhost port 10011)
+    // smt-gui: FabricName   [Off-Line]      (/hdd1/username/historyfile.his)
+    // smt-gui: FabricName   [MiddleString]  (RightString)
+    if(MiddleString == null)
+      MiddleString = modeStr;
+    if(RightString == null)
+      RightString = optsStr;
+    
+    if(isFilteredFile)
+      RightString = '\u03A8' + " - " + RightString;
+    
     StringBuffer buff = new StringBuffer();
     String TitleFormat = "%s: %s %" + npad + "s [%s] %" + npad + "s (%s)";
-    buff.append(String.format(TitleFormat, toolName, fabricName, " ", modeStr, " ", optsStr));
+    buff.append(String.format(TitleFormat, toolName, fabricName, " ", MiddleString, " ", RightString));
     applicationFrame.setTitle(buff.toString());
+    applicationFrame.setIconImage(SmtIconType.SMT_FABRIC_ICON.getIcon().getImage());
   }
 
   private void removeFromWest(int index)
@@ -1798,7 +1819,6 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
     
     final ArrayList<String> comd = new ArrayList<String>();
     // use the default script to invoke the command
-//    comd.add("/home/meier3/scripts/GitHubScripts/TstDevel/smt-gui.sh");
     comd.add("/usr/share/java/SubnetMonitorTool/bin/smt-gui");
     
     // try to use personal/custom/current settings for remainder

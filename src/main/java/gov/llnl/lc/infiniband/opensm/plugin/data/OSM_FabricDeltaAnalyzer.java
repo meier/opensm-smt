@@ -250,9 +250,12 @@ public class OSM_FabricDeltaAnalyzer implements CommonLogger
   
   public static boolean isSwitchPort(OSM_FabricDelta d, PFM_Port p)
   {
+    if(d == null || d.getFabric2() == null || p == null)
+      return false;
+    
     OSM_Fabric f = d.getFabric2();
     OSM_Node n = f.getOSM_Node(p.getNodeGuid());
-    return n.isSwitch();
+    return n == null ? false: n.isSwitch();
   }
 
   public static boolean includeThisPort(OSM_FabricDelta d, PFM_Port p, OSM_NodeType includeTypes)
@@ -950,9 +953,9 @@ public class OSM_FabricDeltaAnalyzer implements CommonLogger
     double U = (double)(rate * 100)/maxRate;
     if((U > 98) || (U < 0))
     {
-      System.err.println(pr.getPortChange().getPort1().toPFM_ID_String());
-      System.err.println("Arbitrarily setting utilization to zero, because it is incorrect: " + U);
-      System.err.println("PortRate:" + PFM_PortRate.toVerboseDiagnosticString(pr.getPortChange()));
+      logger.severe(pr.getPortChange().getPort1().toPFM_ID_String());
+      logger.severe("Arbitrarily setting utilization to zero, because it is incorrect: " + U);
+      logger.severe("PortRate:" + PFM_PortRate.toVerboseDiagnosticString(pr.getPortChange()));
       U = 0;
     }
     return U;
