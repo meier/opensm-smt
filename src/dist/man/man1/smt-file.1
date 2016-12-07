@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "SMT\-FILE" "1" "2016-09-29" "User Commands" "Subnet Monitoring Tools"
+.TH "SMT\-FILE" "1" "2016-12-07" "User Commands" "Subnet Monitoring Tools"
 .
 .SH "NAME"
 \fBsmt\-file\fR \- a tool for interrogating and manipulating \fBSMT\fR files
@@ -29,6 +29,32 @@ Although \fBOMS\fR history files have been optimized to be as small as possible,
 .
 .P
 A list of history files provides a means for describing an \fBOMS\fR history that spanns a timeframe so long that it would be impossible or impractical to cover with a single \fBOMS\fR history file\. It is customary, although not enforced, that a list of history files use the \fB\.lst\fR extension\. List files are simple text files, containing a single history file name per line\. Comments can be included by starting the line with the \fB#\fR character\.
+.
+.SS "Filter"
+A simple filter can be used to convert an existing history file to a \fBfiltered\fR history file\. This is a useful capability when the dynamic activity of only a small subset of the fabric is desired\. Perhaps the activity of a single node needs to be monitored, and there is no interest in the remainder of the fabric\. This can be easily achieved by using this simple black and white filter\.
+.
+.P
+The filter is described in a file which uses four special characters; \fB$\fR, \fB*\fR, \fB@\fR, and \fB#\fR\. They must be placed at the beginning of a new line\.
+.
+.TP
+\fB$ <Filter Name>\fR
+When placed at the beginning of a new line, this optional attribute gives the filter a name\. It should be unique, but its existence or uniquesness does not affect the filters functionality\. It is simply a \fBtag\fR or reference to help identify the filter\.
+.
+.TP
+\fB* White\fR
+When placed at the beginning of a new line, this directive indicates that all lines following this line will contain strings that should be white listed\. If the white list is empty, all strings are permitted\. If the white list is populated, then \fBONLY\fR strings contained in the white list will pass through the filter\.
+.
+.TP
+\fB* Black\fR
+When placed at the beginning of a new line, this directive indicates that all lines following this line will contain strings that should be black listed\. If the black list is empty, all strings are permitted\. If the black list is populated, then strings contained in the black list will be excluded, or filtered\.
+.
+.TP
+\fB@ <Filename>\fR
+When placed at the beginning of a new line, with a valid filename, the contents of the file is used to add filter directives\. This is useful for building complex filters from a collection of smaller or simple filters\.
+.
+.TP
+\fB# <Comment>\fR
+When placed at the beginning of a new line, the line will be ignored, and any text will be considered a comment\.
 .
 .SH "OPTIONS"
 .
@@ -65,6 +91,10 @@ creates a compressed \fBOUTPUT FILE\fR from the specified \fBOMS\fR History file
 joins or concatenates \fBOMS\fR history data from multiple files into a single \fBOUTPUT FILE\fR\. In this case the \fBSMT FILE\fR is a file that contains a list of \fBOMS\fR history files\. The snapshots from those files are all combined (in the provided order) to create a single \fBOUTPUT FILE\fR, which is just another \fBOMS\fR history file\. Care should be taken to make sure the resultant file is not too large to be used by the other \fBSMT\fR commands\. Most commands need to consume the entire file (to decompress, decrypt, and deserialize) before they can be used\. Huge files can result in long start times\.
 .
 .TP
+\fB\-filter\fR, \fB\-\-filter\fR=[FILTER FILE] [OUTPUT FILE]
+uses the supplied \fBFILTER FILE\fR to reduce the contents of the input \fBOMS\fR history file\. The \fBfiltered\fR history is written to the \fBOUTPUT FILE\fR\.
+.
+.TP
 \fB\-i\fR, \fB\-\-info\fR
 provides file type specific summary information about the contents of the file\. Obviously this only supports \fBSMT FILES\fR\.
 .
@@ -97,6 +127,10 @@ show HypeFR\.his details, including timestamps
 .TP
 \fBsmt\-file surface3h\.his \-c 4 compress\.his\fR
 compress surface3h\.his 4x and write to compress\.his
+.
+.TP
+\fBsmt\-file MyCab\.his \-filter cabFilter\.flt filteredCab\.his\fR
+produces a new \fBfiltered\fR history file using the supplied history and filter files
 .
 .TP
 \fBsmt\-file sierra3H\.his \-x Feb 25 12:35:08 2015 Feb 25 13:52:38 2015 sierraSmall\.his\fR

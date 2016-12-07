@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "SMT\-LINK" "1" "2016-10-10" "User Commands" "Subnet Monitoring Tools"
+.TH "SMT\-LINK" "1" "2016-12-07" "User Commands" "Subnet Monitoring Tools"
 .
 .SH "NAME"
 \fBsmt\-link\fR \- returns information about one or more links in the fabric
@@ -152,6 +152,10 @@ displays the hierarchy of links\. Level 0 is the number of \fBhost\fR links, and
 list the available query options (same as \-ql)
 .
 .TP
+\fBspeed [SDR|DDR|QDR|FDR|EDR]\fR
+shows all of the links configured for the specified speed\.
+.
+.TP
 \fBstatus\fR
 provides a status report, identical to using the \fB\-sr\fR command option\.
 .
@@ -194,8 +198,16 @@ list all of the links associated with this node guid
 list the link associated with this port id (could also use 0006:6a00:e300:4411 16)
 .
 .TP
+\fBsmt\-link \-pn 10011 0006:6a00:e300:4411 16 \-q status\fR
+provides a status report for the link associated with this port id
+.
+.TP
 \fBsmt\-link \-rH smallFab\.his bcore1 L224\fR
 list all of the links associated with this node name
+.
+.TP
+\fBsmt\-link \-q speed qdr \-pn 10018\fR
+shows all of the QDR links
 .
 .SH "AUTHOR"
 Tim Meier \fImeier3@llnl\.gov\fR

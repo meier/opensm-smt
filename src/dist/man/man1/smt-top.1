@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "SMT\-TOP" "1" "2016-10-27" "User Commands" "Subnet Monitoring Tools"
+.TH "SMT\-TOP" "1" "2016-12-07" "User Commands" "Subnet Monitoring Tools"
 .
 .SH "NAME"
 \fBsmt\-top\fR \- displays most active nodes, ports, or links
@@ -63,7 +63,11 @@ A graphical control, in the form of a horizontal slider, is available when using
 A simple filter can be used to restrict the "top" results\. This is a useful capability when the dynamic activity of only a small subset of the fabric is desired\. Perhaps the activity of a single node needs to be monitored, and there is no interest in the remainder of the fabric\. This can be easily achieved by using this simple black and white filter\.
 .
 .P
-The filter is described in a file which uses three special characters; \fB*\fR, \fB@\fR, and \fB#\fR\. They must be placed at the beginning of a new line\.
+The filter is described in a file which uses four special characters; \fB$\fR, \fB*\fR, \fB@\fR, and \fB#\fR\. They must be placed at the beginning of a new line\.
+.
+.TP
+\fB$ <Filter Name>\fR
+When placed at the beginning of a new line, this optional attribute gives the filter a name\. It should be unique, but its existence or uniquesness does not affect the filters functionality\. It is simply a \fBtag\fR or reference to help identify the filter\.
 .
 .TP
 \fB* White\fR
