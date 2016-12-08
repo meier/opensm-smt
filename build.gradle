@@ -44,7 +44,7 @@ dependencies {
     compile name: 'LcCommon'
     compile name: 'JLdapOtpInterface-2.02'
     compile name: 'LcSecureClientServer'
-    compile name: 'OsmClientServer-2.02'
+    compile name: 'OsmClientServer-2.03'
     compile name: 'commons-cli'
     compile name: 'commons-collections-3.2.1'
     compile name: 'guava-18.0'

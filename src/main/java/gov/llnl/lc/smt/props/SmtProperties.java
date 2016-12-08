@@ -86,7 +86,7 @@ public class SmtProperties extends Properties implements SmtConstants, CommonLog
    static final String SMT_IMAGE_DIR_KEY        = "SubnetMonitorTool.image.dir";
    static final String SMT_IMAGE_DIR            = "/gov/llnl/lc/smt/images/";
    static final String SMT_VERSION_KEY          = "SubnetMonitorTool.version";
-   static final String SMT_VERSION              = "2.0.2";
+   static final String SMT_VERSION              = "2.0.3";
 
 
    /************************************************************
