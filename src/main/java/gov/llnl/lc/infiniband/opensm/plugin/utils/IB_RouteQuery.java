@@ -55,14 +55,14 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.utils;
 
+import java.io.File;
+import java.io.FileWriter;
+
 import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.opensm.plugin.data.RT_Node;
 import gov.llnl.lc.system.CommandLineArguments;
 import gov.llnl.lc.system.CommandLineExecutor;
 import gov.llnl.lc.system.CommandLineResults;
-
-import java.io.File;
-import java.io.FileWriter;
 
 /**********************************************************************
  * Describe purpose and responsibility of IB_RouteQuery

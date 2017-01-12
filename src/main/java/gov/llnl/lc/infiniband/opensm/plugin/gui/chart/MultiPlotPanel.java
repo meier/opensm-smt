@@ -58,10 +58,10 @@ package gov.llnl.lc.infiniband.opensm.plugin.gui.chart;
 import java.awt.LayoutManager;
 import java.util.List;
 
-import gov.llnl.lc.logging.CommonLogger;
-
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+
+import gov.llnl.lc.logging.CommonLogger;
 
 /**********************************************************************
  * Describe purpose and responsibility of MultiPlotPanel

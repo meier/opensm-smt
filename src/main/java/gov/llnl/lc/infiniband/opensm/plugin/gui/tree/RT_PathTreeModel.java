@@ -55,12 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.tree;
 
-import gov.llnl.lc.infiniband.core.IB_Guid;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Port;
-import gov.llnl.lc.infiniband.opensm.plugin.data.RT_Path;
-import gov.llnl.lc.infiniband.opensm.plugin.data.RT_PathLeg;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
-
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -70,6 +64,11 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+
+import gov.llnl.lc.infiniband.core.IB_Guid;
+import gov.llnl.lc.infiniband.opensm.plugin.data.RT_Path;
+import gov.llnl.lc.infiniband.opensm.plugin.data.RT_PathLeg;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
 
 public class RT_PathTreeModel extends DefaultTreeModel
 {  

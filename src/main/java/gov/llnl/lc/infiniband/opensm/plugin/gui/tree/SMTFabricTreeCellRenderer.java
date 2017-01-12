@@ -55,19 +55,19 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.tree;
 
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDeltaAnalyzer;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_NodeType;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
-import gov.llnl.lc.infiniband.opensm.plugin.gui.data.SmtIconType;
-import gov.llnl.lc.logging.CommonLogger;
-import gov.llnl.lc.smt.manager.SMT_AnalysisManager;
-
 import java.awt.Component;
 import java.util.Enumeration;
 
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeModel;
+
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDeltaAnalyzer;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_NodeType;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
+import gov.llnl.lc.infiniband.opensm.plugin.gui.data.SmtIconType;
+import gov.llnl.lc.logging.CommonLogger;
+import gov.llnl.lc.smt.manager.SMT_AnalysisManager;
 
 /**********************************************************************
  * Describe purpose and responsibility of SMTFabricTreeCellRenderer

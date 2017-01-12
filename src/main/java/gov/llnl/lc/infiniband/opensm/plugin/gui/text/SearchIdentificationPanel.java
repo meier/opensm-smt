@@ -55,9 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.text;
 
-import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
-import gov.llnl.lc.logging.CommonLogger;
-
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.io.IOException;
@@ -67,6 +64,9 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.TitledBorder;
+
+import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
+import gov.llnl.lc.logging.CommonLogger;
 
 public class SearchIdentificationPanel extends JPanel implements CommonLogger
 {

@@ -55,11 +55,11 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.graph;
 
-import gov.llnl.lc.util.BinList;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
+
+import gov.llnl.lc.util.BinList;
 
 public class IB_Decorator
 {

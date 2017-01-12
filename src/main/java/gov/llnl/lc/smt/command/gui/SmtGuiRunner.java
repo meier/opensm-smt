@@ -55,6 +55,8 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.gui;
 
+import java.util.concurrent.TimeUnit;
+
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Updater;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
 import gov.llnl.lc.logging.CommonLogger;
@@ -64,8 +66,6 @@ import gov.llnl.lc.smt.event.SmtMessage;
 import gov.llnl.lc.smt.event.SmtMessageType;
 import gov.llnl.lc.smt.manager.MessageManager;
 import gov.llnl.lc.smt.swing.SmtGuiApplication;
-
-import java.util.concurrent.TimeUnit;
 
 /**********************************************************************
  * Describe purpose and responsibility of SmtGuiRunner

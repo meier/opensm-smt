@@ -55,8 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.time;
 
-import gov.llnl.lc.logging.CommonLogger;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -81,6 +79,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.NumberFormatter;
+
+import gov.llnl.lc.logging.CommonLogger;
 
 public class TimeSliderPanel extends JPanel implements Runnable, CommonLogger
 {

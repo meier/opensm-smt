@@ -55,11 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.text;
 
-import gov.llnl.lc.logging.CommonLogger;
-import gov.llnl.lc.smt.SmtConstants;
-import gov.llnl.lc.smt.command.about.SmtAbout;
-import gov.llnl.lc.smt.command.about.SmtAboutRecord;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.util.ArrayList;
@@ -67,6 +62,11 @@ import java.util.ArrayList;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
+
+import gov.llnl.lc.logging.CommonLogger;
+import gov.llnl.lc.smt.SmtConstants;
+import gov.llnl.lc.smt.command.about.SmtAbout;
+import gov.llnl.lc.smt.command.about.SmtAboutRecord;
 
 public class SMT_AboutPanel extends JPanel implements CommonLogger
 {

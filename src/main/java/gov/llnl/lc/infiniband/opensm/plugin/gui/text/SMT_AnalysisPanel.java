@@ -55,6 +55,17 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.text;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.EnumSet;
+
+import javax.swing.JEditorPane;
+import javax.swing.JPanel;
+import javax.swing.border.TitledBorder;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+
 import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDeltaAnalyzer;
@@ -74,17 +85,6 @@ import gov.llnl.lc.smt.data.SMT_UpdateService;
 import gov.llnl.lc.smt.manager.GraphSelectionManager;
 import gov.llnl.lc.smt.manager.SMT_AnalysisType;
 import gov.llnl.lc.smt.manager.SMT_AnalysisUpdater;
-
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.EnumSet;
-
-import javax.swing.JEditorPane;
-import javax.swing.JPanel;
-import javax.swing.border.TitledBorder;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
 
 public class SMT_AnalysisPanel extends JPanel implements SMT_AnalysisChangeListener,  CommonLogger
 {

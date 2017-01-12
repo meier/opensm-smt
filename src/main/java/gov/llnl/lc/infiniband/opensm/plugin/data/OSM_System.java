@@ -55,17 +55,17 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.data;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map.Entry;
+
 import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
 import gov.llnl.lc.logging.CommonLogger;
 import gov.llnl.lc.smt.SmtConstants;
 import gov.llnl.lc.util.BinList;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map.Entry;
 
 /**********************************************************************
  * An OSM System describes a collection of IB Switches that have a

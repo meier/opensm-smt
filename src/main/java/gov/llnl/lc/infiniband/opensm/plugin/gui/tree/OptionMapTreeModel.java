@@ -55,10 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.tree;
 
-import gov.llnl.lc.infiniband.opensm.plugin.data.MAD_Counter;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
-
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -69,6 +65,10 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+
+import gov.llnl.lc.infiniband.opensm.plugin.data.MAD_Counter;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
 
 public class OptionMapTreeModel extends DefaultTreeModel
 {  

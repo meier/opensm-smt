@@ -55,9 +55,9 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.data;
 
-import gov.llnl.lc.time.TimeStamp;
-
 import java.util.Properties;
+
+import gov.llnl.lc.time.TimeStamp;
 
 
 public interface OMS_Updater

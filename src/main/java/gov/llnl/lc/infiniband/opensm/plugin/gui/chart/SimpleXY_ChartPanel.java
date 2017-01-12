@@ -55,30 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.chart;
 
-import gov.llnl.lc.infiniband.opensm.plugin.data.MAD_Counter;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDelta;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDeltaAnalyzer;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDeltaCollection;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Node;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_NodeType;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Port;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Stats;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
-import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port.PortCounterName;
-import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_PortChange;
-import gov.llnl.lc.infiniband.opensm.plugin.event.OSM_EventStats;
-import gov.llnl.lc.infiniband.opensm.plugin.event.OsmEvent;
-import gov.llnl.lc.logging.CommonLogger;
-import gov.llnl.lc.smt.command.fabric.SmtFabricStructure;
-import gov.llnl.lc.smt.data.SMT_UpdateService;
-import gov.llnl.lc.smt.event.SmtMessage;
-import gov.llnl.lc.smt.event.SmtMessageType;
-import gov.llnl.lc.smt.manager.MessageManager;
-import gov.llnl.lc.smt.manager.SMT_AnalysisType;
-import gov.llnl.lc.time.TimeStamp;
-
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -102,6 +78,30 @@ import org.jfree.data.time.RegularTimePeriod;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYDataset;
+
+import gov.llnl.lc.infiniband.opensm.plugin.data.MAD_Counter;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDelta;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDeltaAnalyzer;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDeltaCollection;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Node;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_NodeType;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Port;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Stats;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
+import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port.PortCounterName;
+import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_PortChange;
+import gov.llnl.lc.infiniband.opensm.plugin.event.OSM_EventStats;
+import gov.llnl.lc.infiniband.opensm.plugin.event.OsmEvent;
+import gov.llnl.lc.logging.CommonLogger;
+import gov.llnl.lc.smt.command.fabric.SmtFabricStructure;
+import gov.llnl.lc.smt.data.SMT_UpdateService;
+import gov.llnl.lc.smt.event.SmtMessage;
+import gov.llnl.lc.smt.event.SmtMessageType;
+import gov.llnl.lc.smt.manager.MessageManager;
+import gov.llnl.lc.smt.manager.SMT_AnalysisType;
+import gov.llnl.lc.time.TimeStamp;
 
 public class SimpleXY_ChartPanel extends ChartPanel implements CommonLogger
 {

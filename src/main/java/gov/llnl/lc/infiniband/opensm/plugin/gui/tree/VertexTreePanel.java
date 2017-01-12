@@ -55,24 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.tree;
 
-import gov.llnl.lc.infiniband.core.IB_Guid;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Updater;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Port;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_ServiceChangeListener;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
-import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port.PortCounterName;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionEvent;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionListener;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionUpdater;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphUpdater;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.SystemErrGraphListener;
-import gov.llnl.lc.logging.CommonLogger;
-import gov.llnl.lc.smt.data.SMT_UpdateService;
-import gov.llnl.lc.smt.manager.GraphSelectionManager;
-import gov.llnl.lc.smt.manager.SMT_RouteManager;
-
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Panel;
@@ -95,6 +77,24 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
+
+import gov.llnl.lc.infiniband.core.IB_Guid;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Updater;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Port;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_ServiceChangeListener;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
+import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port.PortCounterName;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionEvent;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionListener;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionUpdater;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphUpdater;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.SystemErrGraphListener;
+import gov.llnl.lc.logging.CommonLogger;
+import gov.llnl.lc.smt.data.SMT_UpdateService;
+import gov.llnl.lc.smt.manager.GraphSelectionManager;
+import gov.llnl.lc.smt.manager.SMT_RouteManager;
 
 public class VertexTreePanel extends JPanel implements OSM_ServiceChangeListener, CommonLogger, IB_GraphSelectionListener
 {

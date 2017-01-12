@@ -55,17 +55,17 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.utils;
 
-import gov.llnl.lc.infiniband.core.IB_Guid;
-import gov.llnl.lc.infiniband.opensm.plugin.data.RT_Node;
-import gov.llnl.lc.logging.CommonLogger;
-import gov.llnl.lc.parser.Parser;
-import gov.llnl.lc.time.TimeStamp;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
+
+import gov.llnl.lc.infiniband.core.IB_Guid;
+import gov.llnl.lc.infiniband.opensm.plugin.data.RT_Node;
+import gov.llnl.lc.logging.CommonLogger;
+import gov.llnl.lc.parser.Parser;
+import gov.llnl.lc.time.TimeStamp;
 
 /**********************************************************************
  * Describe purpose and responsibility of IB_RouteParser

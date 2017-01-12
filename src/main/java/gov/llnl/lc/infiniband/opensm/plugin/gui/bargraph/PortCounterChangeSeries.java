@@ -55,6 +55,15 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.bargraph;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
+
+import org.jfree.data.category.DefaultCategoryDataset;
+
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDelta;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDeltaCollection;
 import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port.PortCounterName;
@@ -65,15 +74,6 @@ import gov.llnl.lc.time.TimeStamp;
 import gov.llnl.lc.util.BinList;
 import gov.llnl.lc.util.BinValueKeys;
 import gov.llnl.lc.util.ValueRange;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.TimeUnit;
-
-import org.jfree.data.category.DefaultCategoryDataset;
 
 public class PortCounterChangeSeries implements BarGraphDataSeries
 {

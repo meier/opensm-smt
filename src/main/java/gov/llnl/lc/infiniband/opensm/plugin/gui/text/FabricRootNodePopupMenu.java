@@ -55,13 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.text;
 
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionEvent;
-import gov.llnl.lc.smt.event.SmtMessage;
-import gov.llnl.lc.smt.event.SmtMessageType;
-import gov.llnl.lc.smt.manager.GraphSelectionManager;
-import gov.llnl.lc.smt.manager.MessageManager;
-import gov.llnl.lc.smt.manager.SMT_AnalysisType;
-
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -69,6 +62,13 @@ import java.awt.event.ActionListener;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionEvent;
+import gov.llnl.lc.smt.event.SmtMessage;
+import gov.llnl.lc.smt.event.SmtMessageType;
+import gov.llnl.lc.smt.manager.GraphSelectionManager;
+import gov.llnl.lc.smt.manager.MessageManager;
+import gov.llnl.lc.smt.manager.SMT_AnalysisType;
 
 public class FabricRootNodePopupMenu extends JPopupMenu implements ActionListener
 {

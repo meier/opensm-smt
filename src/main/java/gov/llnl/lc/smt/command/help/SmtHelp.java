@@ -55,14 +55,14 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.help;
 
-import gov.llnl.lc.smt.SmtConstants;
-import gov.llnl.lc.smt.command.SmtCommand;
-import gov.llnl.lc.smt.command.config.SmtConfig;
-
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.cli.CommandLine;
+
+import gov.llnl.lc.smt.SmtConstants;
+import gov.llnl.lc.smt.command.SmtCommand;
+import gov.llnl.lc.smt.command.config.SmtConfig;
 
 /**********************************************************************
  * Describe purpose and responsibility of SmtHelp

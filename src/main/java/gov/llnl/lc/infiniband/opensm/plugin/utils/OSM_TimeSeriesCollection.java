@@ -55,13 +55,13 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.utils;
 
+import java.util.ArrayList;
+
 import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port.PortCounterName;
 import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_PortChange;
 import gov.llnl.lc.time.TimeStamp;
 import gov.llnl.lc.util.BinList;
 import gov.llnl.lc.util.BinValueKeys;
-
-import java.util.ArrayList;
 
 public class OSM_TimeSeriesCollection
 {

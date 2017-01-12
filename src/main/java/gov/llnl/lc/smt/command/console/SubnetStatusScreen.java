@@ -55,17 +55,16 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.console;
 
-import gov.llnl.lc.infiniband.core.IB_Guid;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_UpdateProvider;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Updater;
-import gov.llnl.lc.infiniband.opensm.plugin.data.SBN_Manager;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_UpdateProvider.UpdaterType;
-import gov.llnl.lc.smt.props.SmtProperty;
-
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import gov.llnl.lc.infiniband.core.IB_Guid;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_UpdateProvider;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_UpdateProvider.UpdaterType;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Updater;
+import gov.llnl.lc.infiniband.opensm.plugin.data.SBN_Manager;
+import gov.llnl.lc.smt.props.SmtProperty;
 import jcurses.system.InputChar;
 import jcurses.system.Toolkit;
 

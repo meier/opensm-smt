@@ -55,11 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.tree;
 
-import gov.llnl.lc.infiniband.opensm.xml.IB_FabricConf;
-import gov.llnl.lc.infiniband.opensm.xml.IB_FabricNameElement;
-import gov.llnl.lc.infiniband.opensm.xml.IB_LinkListElement;
-import gov.llnl.lc.infiniband.opensm.xml.IB_PortElement;
-
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -71,6 +66,11 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import org.w3c.dom.Comment;
+
+import gov.llnl.lc.infiniband.opensm.xml.IB_FabricConf;
+import gov.llnl.lc.infiniband.opensm.xml.IB_FabricNameElement;
+import gov.llnl.lc.infiniband.opensm.xml.IB_LinkListElement;
+import gov.llnl.lc.infiniband.opensm.xml.IB_PortElement;
 
 public class FabricConfTreeModel extends DefaultTreeModel
 {  

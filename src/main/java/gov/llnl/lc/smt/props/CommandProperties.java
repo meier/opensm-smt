@@ -55,9 +55,9 @@
  ********************************************************************/
 package gov.llnl.lc.smt.props;
 
-import gov.llnl.lc.logging.CommonLogger;
-
 import java.util.Properties;
+
+import gov.llnl.lc.logging.CommonLogger;
 
 /**********************************************************************
  * Describe purpose and responsibility of CommandProperties

@@ -55,19 +55,17 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.top;
 
-import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Updater;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_ServiceChangeListener;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
-import gov.llnl.lc.smt.SmtConstants;
-import gov.llnl.lc.smt.command.SmtCommand;
-import gov.llnl.lc.smt.command.config.SmtConfig;
-import gov.llnl.lc.smt.props.SmtProperty;
-
 import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
+
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_ServiceChangeListener;
+import gov.llnl.lc.smt.SmtConstants;
+import gov.llnl.lc.smt.command.SmtCommand;
+import gov.llnl.lc.smt.command.config.SmtConfig;
+import gov.llnl.lc.smt.props.SmtProperty;
 
 
 /**********************************************************************

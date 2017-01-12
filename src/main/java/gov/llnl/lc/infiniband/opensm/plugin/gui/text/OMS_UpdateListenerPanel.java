@@ -55,6 +55,12 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.text;
 
+import java.awt.BorderLayout;
+
+import javax.swing.JEditorPane;
+import javax.swing.JPanel;
+import javax.swing.SwingWorker;
+
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Updater;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_ServiceChangeListener;
@@ -67,12 +73,6 @@ import gov.llnl.lc.smt.event.SmtMessageType;
 import gov.llnl.lc.smt.manager.MessageManager;
 import gov.llnl.lc.smt.manager.SMT_AnalysisUpdater;
 import gov.llnl.lc.time.TimeStamp;
-
-import java.awt.BorderLayout;
-
-import javax.swing.JEditorPane;
-import javax.swing.JPanel;
-import javax.swing.SwingWorker;
 
 public class OMS_UpdateListenerPanel extends JPanel implements OSM_ServiceChangeListener, SMT_AnalysisChangeListener, CommonLogger
 {

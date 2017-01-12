@@ -55,11 +55,11 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.data;
 
-import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port.PortCounterName;
-import gov.llnl.lc.logging.CommonLogger;
-
 import java.util.Comparator;
 import java.util.EnumSet;
+
+import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port.PortCounterName;
+import gov.llnl.lc.logging.CommonLogger;
 
 public class PFM_PortChangeComparator implements Comparator<PFM_PortChange>, CommonLogger
 {

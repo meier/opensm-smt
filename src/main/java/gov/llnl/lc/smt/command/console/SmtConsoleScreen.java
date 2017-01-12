@@ -55,6 +55,8 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.console;
 
+import java.util.HashMap;
+
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Updater;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Stats;
@@ -64,9 +66,6 @@ import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
 import gov.llnl.lc.infiniband.opensm.plugin.net.OsmServerStatus;
 import gov.llnl.lc.net.ObjectSession;
 import gov.llnl.lc.time.TimeStamp;
-
-import java.util.HashMap;
-
 import jcurses.system.CharColor;
 import jcurses.system.InputChar;
 import jcurses.system.Toolkit;

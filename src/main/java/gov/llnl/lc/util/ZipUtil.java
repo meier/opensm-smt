@@ -55,8 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.util;
 
-import gov.llnl.lc.logging.CommonLogger;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -71,6 +69,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+
+import gov.llnl.lc.logging.CommonLogger;
 
 /**********************************************************************
  * ZipUtil is a static utility class that can compress a list of files 

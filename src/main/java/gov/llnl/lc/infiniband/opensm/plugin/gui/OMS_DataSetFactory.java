@@ -55,13 +55,13 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui;
 
+import java.util.ArrayList;
+
 import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDeltaCollection;
 import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port.PortCounterName;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.bargraph.PortCounterChangeSeries;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.bargraph.SwitchPortCounterSeries;
-
-import java.util.ArrayList;
 
 /**********************************************************************
  * Describe purpose and responsibility of OMS_DataSetFactory

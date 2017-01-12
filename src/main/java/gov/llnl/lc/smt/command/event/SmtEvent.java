@@ -55,6 +55,13 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.event;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
+
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDelta;
@@ -67,13 +74,6 @@ import gov.llnl.lc.smt.command.SmtCommand;
 import gov.llnl.lc.smt.command.config.SmtConfig;
 import gov.llnl.lc.smt.data.SMT_UpdateService;
 import gov.llnl.lc.smt.props.SmtProperty;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
 
 /**********************************************************************
  * Describe purpose and responsibility of SmtEvent

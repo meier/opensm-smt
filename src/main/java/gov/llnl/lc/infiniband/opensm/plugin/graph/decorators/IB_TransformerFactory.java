@@ -55,14 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.graph.decorators;
 
-import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.graph.util.Context;
-import edu.uci.ics.jung.visualization.VisualizationViewer;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Node;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Port;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
-
 import java.awt.Color;
 import java.awt.Paint;
 import java.awt.Shape;
@@ -70,6 +62,14 @@ import java.awt.Stroke;
 import java.util.Collection;
 
 import org.apache.commons.collections15.Transformer;
+
+import edu.uci.ics.jung.graph.Graph;
+import edu.uci.ics.jung.graph.util.Context;
+import edu.uci.ics.jung.visualization.VisualizationViewer;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Node;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Port;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
 
 public class IB_TransformerFactory
 {

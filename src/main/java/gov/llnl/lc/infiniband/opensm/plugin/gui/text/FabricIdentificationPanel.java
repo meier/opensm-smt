@@ -55,11 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.text;
 
-import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
-import gov.llnl.lc.logging.CommonLogger;
-import gov.llnl.lc.smt.command.fabric.SmtFabricStructure;
-import gov.llnl.lc.smt.command.fabric.SmtFabricStructure.SmtAttributeStructure;
-
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
@@ -78,6 +73,11 @@ import javax.swing.ListSelectionModel;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.AbstractMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
+
+import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
+import gov.llnl.lc.logging.CommonLogger;
+import gov.llnl.lc.smt.command.fabric.SmtFabricStructure;
+import gov.llnl.lc.smt.command.fabric.SmtFabricStructure.SmtAttributeStructure;
 
 public class FabricIdentificationPanel extends JPanel implements CommonLogger
 {

@@ -4,8 +4,8 @@
 %define cmd_dir /usr/bin
 
 Name:           	opensm-smt-java
-Version:        	2.03
-Release:        	59%{?dist}
+Version:        	2.04
+Release:        	61%{?dist}
 Summary:        	Subnet monitoring tools for OpenSM, that use the OpenSM Monitoring Service
 
 Group:          	Development/Libraries

@@ -55,12 +55,12 @@
  ********************************************************************/
 package gov.llnl.lc.smt.prefs;
 
-import gov.llnl.lc.logging.CommonLogger;
-import gov.llnl.lc.smt.command.SmtCommand;
-
 import java.awt.Rectangle;
 
 import javax.swing.JCheckBoxMenuItem;
+
+import gov.llnl.lc.logging.CommonLogger;
+import gov.llnl.lc.smt.command.SmtCommand;
 
 
 /**********************************************************************

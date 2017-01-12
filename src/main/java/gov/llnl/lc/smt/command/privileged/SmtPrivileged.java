@@ -55,6 +55,12 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.privileged;
 
+import java.util.Map;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
+
 import gov.llnl.lc.infiniband.core.IB_Address;
 import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.opensm.plugin.OsmNativeCommand;
@@ -68,12 +74,6 @@ import gov.llnl.lc.smt.props.SmtProperty;
 import gov.llnl.lc.system.CommandLineArguments;
 import gov.llnl.lc.system.CommandLineResults;
 import gov.llnl.lc.system.Console;
-
-import java.util.Map;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
 
 /**********************************************************************
  * The SmtPrivileged command is a convenient tool to invoke

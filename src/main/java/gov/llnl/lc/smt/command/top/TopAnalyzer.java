@@ -55,6 +55,14 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.top;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
 import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_AbstractUpdateService;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_List;
@@ -77,14 +85,6 @@ import gov.llnl.lc.system.Console;
 import gov.llnl.lc.system.Console.ConsoleColor;
 import gov.llnl.lc.system.Console.ConsoleControl;
 import gov.llnl.lc.time.TimeStamp;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**********************************************************************
  * Describe purpose and responsibility of TopAnalyzer

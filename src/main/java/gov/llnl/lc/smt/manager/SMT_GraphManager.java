@@ -55,6 +55,8 @@
  ********************************************************************/
 package gov.llnl.lc.smt.manager;
 
+import java.util.Collection;
+
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionEvent;
@@ -64,8 +66,6 @@ import gov.llnl.lc.infiniband.opensm.plugin.gui.graph.SimpleGraphControlPanel;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.graph.SimpleGraphPopupMenu;
 import gov.llnl.lc.logging.CommonLogger;
 import gov.llnl.lc.smt.swing.SMT_FabricGraphPanel;
-
-import java.util.Collection;
 
 /**********************************************************************
  * The SMT_GraphManager is a singleton (and therefore global) object that

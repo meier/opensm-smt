@@ -55,17 +55,17 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.text;
 
+import java.awt.BorderLayout;
+
+import javax.swing.JEditorPane;
+import javax.swing.JPanel;
+
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_CollectionChangeListener;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Updater;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
 import gov.llnl.lc.smt.SmtConstants;
 import gov.llnl.lc.time.TimeStamp;
-
-import java.awt.BorderLayout;
-
-import javax.swing.JEditorPane;
-import javax.swing.JPanel;
 
 public class OMS_CollectionListenerPanel extends JPanel implements OMS_CollectionChangeListener
 {

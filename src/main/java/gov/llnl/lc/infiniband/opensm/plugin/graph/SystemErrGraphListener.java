@@ -55,12 +55,12 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.graph;
 
-import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.FabricTreePanel;
-import gov.llnl.lc.smt.manager.SMT_AnalysisType;
-
 import java.awt.event.ActionEvent;
 
 import javax.swing.JMenuItem;
+
+import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.FabricTreePanel;
+import gov.llnl.lc.smt.manager.SMT_AnalysisType;
 
 
 /**********************************************************************

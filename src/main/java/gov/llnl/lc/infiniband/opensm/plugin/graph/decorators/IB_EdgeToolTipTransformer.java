@@ -57,12 +57,12 @@ package gov.llnl.lc.infiniband.opensm.plugin.graph.decorators;
 
 import java.util.Collection;
 
+import org.apache.commons.collections15.Transformer;
+
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
-
-import org.apache.commons.collections15.Transformer;
 
 public class IB_EdgeToolTipTransformer implements Transformer<IB_Edge, String>
 {

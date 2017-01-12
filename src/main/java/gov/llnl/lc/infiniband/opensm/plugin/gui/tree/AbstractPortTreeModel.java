@@ -55,14 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.tree;
 
-import gov.llnl.lc.infiniband.core.IB_Guid;
-import gov.llnl.lc.infiniband.opensm.plugin.data.MLX_ExtPortInfo;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Port;
-import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port;
-import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port.PortCounterName;
-import gov.llnl.lc.infiniband.opensm.plugin.data.SBN_PortInfo;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
-
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Enumeration;
@@ -73,6 +65,14 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+
+import gov.llnl.lc.infiniband.core.IB_Guid;
+import gov.llnl.lc.infiniband.opensm.plugin.data.MLX_ExtPortInfo;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Port;
+import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port;
+import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port.PortCounterName;
+import gov.llnl.lc.infiniband.opensm.plugin.data.SBN_PortInfo;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
 
 public abstract class AbstractPortTreeModel extends DefaultTreeModel
 {  

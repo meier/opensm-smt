@@ -55,6 +55,13 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.gui;
 
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
+
 import gov.llnl.lc.smt.SmtConstants;
 import gov.llnl.lc.smt.command.SmtCommand;
 import gov.llnl.lc.smt.command.config.SmtConfig;
@@ -64,13 +71,6 @@ import gov.llnl.lc.smt.manager.MessageManager;
 import gov.llnl.lc.smt.props.SmtProperty;
 import gov.llnl.lc.smt.swing.SmtGuiApplication;
 import gov.llnl.lc.time.TimeStamp;
-
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
 
 /**********************************************************************
  * Describe purpose and responsibility of SmtGui

@@ -55,15 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.tree;
 
-import gov.llnl.lc.infiniband.opensm.plugin.data.RT_Path;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionEvent;
-import gov.llnl.lc.logging.CommonLogger;
-import gov.llnl.lc.smt.event.SmtMessage;
-import gov.llnl.lc.smt.event.SmtMessageType;
-import gov.llnl.lc.smt.manager.GraphSelectionManager;
-import gov.llnl.lc.smt.manager.MessageManager;
-import gov.llnl.lc.smt.manager.SMT_AnalysisType;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -73,6 +64,15 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
+
+import gov.llnl.lc.infiniband.opensm.plugin.data.RT_Path;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionEvent;
+import gov.llnl.lc.logging.CommonLogger;
+import gov.llnl.lc.smt.event.SmtMessage;
+import gov.llnl.lc.smt.event.SmtMessageType;
+import gov.llnl.lc.smt.manager.GraphSelectionManager;
+import gov.llnl.lc.smt.manager.MessageManager;
+import gov.llnl.lc.smt.manager.SMT_AnalysisType;
 
 public class RT_PathPopupMenu extends JPopupMenu implements ActionListener, CommonLogger
 {

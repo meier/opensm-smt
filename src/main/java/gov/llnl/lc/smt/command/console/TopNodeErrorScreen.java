@@ -55,6 +55,13 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.console;
 
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_UpdateProvider;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_UpdateProvider.UpdaterType;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Updater;
@@ -65,14 +72,6 @@ import gov.llnl.lc.smt.command.SmtCommand;
 import gov.llnl.lc.smt.command.top.TopAnalyzer;
 import gov.llnl.lc.smt.filter.SmtFilter;
 import gov.llnl.lc.smt.props.SmtProperty;
-
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
 import jcurses.system.InputChar;
 import jcurses.system.Toolkit;
 

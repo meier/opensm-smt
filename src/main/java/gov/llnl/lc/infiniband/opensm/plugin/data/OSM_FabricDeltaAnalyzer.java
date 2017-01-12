@@ -55,6 +55,17 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.data;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
+
 import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.core.IB_Link;
 import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port.PortCounterName;
@@ -66,17 +77,6 @@ import gov.llnl.lc.smt.SmtConstants;
 import gov.llnl.lc.smt.command.top.TopAnalyzer;
 import gov.llnl.lc.time.TimeStamp;
 import gov.llnl.lc.util.BinList;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
 /**********************************************************************
  * Describe purpose and responsibility of OSM_FabricDeltaAnalyzer

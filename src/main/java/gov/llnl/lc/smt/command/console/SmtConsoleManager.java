@@ -55,6 +55,8 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.console;
 
+import java.util.Properties;
+
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_NConnectionBasedService;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_UpdateProvider;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_UpdateProvider.UpdaterType;
@@ -70,9 +72,6 @@ import gov.llnl.lc.smt.props.SmtProperty;
 import gov.llnl.lc.time.TimeListener;
 import gov.llnl.lc.time.TimeService;
 import gov.llnl.lc.time.TimeStamp;
-
-import java.util.Properties;
-
 import jcurses.system.Toolkit;
 
 /**********************************************************************

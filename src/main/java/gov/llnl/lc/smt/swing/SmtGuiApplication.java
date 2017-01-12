@@ -58,6 +58,7 @@ package gov.llnl.lc.smt.swing;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.DisplayMode;
 import java.awt.GraphicsDevice;
@@ -102,6 +103,11 @@ import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
+
+import org.jdesktop.swingx.JXMultiSplitPane;
+import org.jdesktop.swingx.MultiSplitLayout;
+import org.jdesktop.swingx.MultiSplitLayout.Divider;
+import org.jdesktop.swingx.MultiSplitLayout.Leaf;
 
 import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.core.IB_Link;
@@ -165,7 +171,6 @@ import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.UserObjectTreeNode;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.VertexTreeModel;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.VertexTreePanel;
 import gov.llnl.lc.logging.CommonLogger;
-import gov.llnl.lc.smt.SmtConstants;
 import gov.llnl.lc.smt.command.SmtCommand;
 import gov.llnl.lc.smt.command.SmtCommandType;
 import gov.llnl.lc.smt.command.file.SmtFile;
@@ -188,8 +193,6 @@ import gov.llnl.lc.smt.manager.SmtMessageUpdater;
 import gov.llnl.lc.smt.prefs.SmtGuiPreferences;
 import gov.llnl.lc.smt.props.SmtProperties;
 import gov.llnl.lc.smt.props.SmtProperty;
-import gov.llnl.lc.system.Console;
-import gov.llnl.lc.system.Console.ConsoleColor;
 import gov.llnl.lc.time.TimeListener;
 import gov.llnl.lc.time.TimeService;
 import gov.llnl.lc.time.TimeSliderPanel;
@@ -218,6 +221,7 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
   
   // these need to be visible locally
   private static JFrame applicationFrame;
+  private static Container contentPane;
   private static JClosableTabbedPane textTabbedPane;
   private static JClosableTabbedPane westTabbedPane;
   private static JClosableTabbedPane centerTabbedPane;
@@ -832,6 +836,27 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
   private void initialize()
   {
     applicationFrame = new JFrame();
+    contentPane      = new JXMultiSplitPane();
+    
+    MultiSplitLayout.Split modelRoot = new MultiSplitLayout.Split();
+    modelRoot.setRowLayout(false);
+    
+    MultiSplitLayout.Split topRow    = new MultiSplitLayout.Split();
+    topRow.setRowLayout(true);
+    
+    Leaf left = new MultiSplitLayout.Leaf("left");
+    left.setWeight(0.15);
+
+    Leaf center = new MultiSplitLayout.Leaf("center");
+    center.setWeight(0.8);
+
+    topRow.setChildren(left, new Divider(), center);
+    
+    modelRoot.setChildren(topRow, new Divider(), new MultiSplitLayout.Leaf("bottom"));
+    MultiSplitLayout msl = new MultiSplitLayout(modelRoot);
+    msl.setFloatingDividers(true);
+
+    contentPane = new JXMultiSplitPane(msl);
     
     Dimension maxD = getAveAvailableScreenDimension();
     
@@ -849,13 +874,15 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
         destroy("Done!");
       }
     });
-        
+    
     applicationFrame.getContentPane().setLayout(new BorderLayout(0, 0));
     
     JMenuBar menuBar = new JMenuBar();
     menuBar.setForeground(Color.WHITE);
     menuBar.setBackground(Color.GRAY);
+    
     applicationFrame.getContentPane().add(menuBar, BorderLayout.NORTH);
+    applicationFrame.getContentPane().add(contentPane, BorderLayout.CENTER);
     
     JMenu mnNewMenu = new JMenu("Fabric");
     mnNewMenu.setForeground(Color.WHITE);
@@ -1276,7 +1303,10 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
     
     addToSouth(scrollPaneM2);
     southPanel = new JPanel();
-    applicationFrame.getContentPane().add(southPanel, BorderLayout.SOUTH);
+    
+//    contentPane.add(southPanel, BorderLayout.SOUTH);
+    contentPane.add(southPanel, "bottom");
+    
     southPanel.setLayout(new BorderLayout(0, 0));
     southPanel.setPreferredSize(msgDim);  // the size of this panel
 
@@ -1306,7 +1336,9 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
     Dimension fabDim = new Dimension((maxD.width)/8, maxD.height - (maxD.height)/8);
     westTabbedPane = new JClosableTabbedPane(JTabbedPane.TOP);
     westTabbedPane.setPreferredSize(fabDim);  // the size of this panel
-    applicationFrame.getContentPane().add(westTabbedPane, BorderLayout.WEST);
+    
+//    contentPane.add(westTabbedPane, BorderLayout.WEST);
+    contentPane.add(westTabbedPane, "left");
 
     JTree tree = new JTree();
     JScrollPane scrollPaneF = new JScrollPane(tree);
@@ -1314,7 +1346,8 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
     addToWest(scrollPaneF);
 
     centerTabbedPane = new JClosableTabbedPane(JTabbedPane.TOP);
-    applicationFrame.getContentPane().add(centerTabbedPane, BorderLayout.CENTER);
+//    contentPane.add(centerTabbedPane, BorderLayout.CENTER);
+    contentPane.add(centerTabbedPane, "center");
     
     JTextArea textArea = new JTextArea();
     textArea.setEditable(false);

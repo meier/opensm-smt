@@ -55,10 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.chart;
 
-import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
-import gov.llnl.lc.logging.CommonLogger;
-import gov.llnl.lc.smt.manager.SMT_AnalysisType;
-
 import java.awt.BorderLayout;
 
 import javax.swing.JFrame;
@@ -69,6 +65,10 @@ import javax.swing.event.ChangeListener;
 import org.jfree.chart.event.ChartChangeEvent;
 import org.jfree.chart.event.ChartChangeListener;
 import org.jfree.ui.RefineryUtilities;
+
+import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
+import gov.llnl.lc.logging.CommonLogger;
+import gov.llnl.lc.smt.manager.SMT_AnalysisType;
 
 /**********************************************************************
  * A parent Panel container for the elements that show port utilization

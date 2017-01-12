@@ -55,14 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.tree;
 
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionEvent;
-import gov.llnl.lc.logging.CommonLogger;
-import gov.llnl.lc.smt.event.SmtMessage;
-import gov.llnl.lc.smt.event.SmtMessageType;
-import gov.llnl.lc.smt.manager.GraphSelectionManager;
-import gov.llnl.lc.smt.manager.MessageManager;
-import gov.llnl.lc.smt.manager.SMT_AnalysisType;
-
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
@@ -72,6 +64,14 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeModel;
+
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionEvent;
+import gov.llnl.lc.logging.CommonLogger;
+import gov.llnl.lc.smt.event.SmtMessage;
+import gov.llnl.lc.smt.event.SmtMessageType;
+import gov.llnl.lc.smt.manager.GraphSelectionManager;
+import gov.llnl.lc.smt.manager.MessageManager;
+import gov.llnl.lc.smt.manager.SMT_AnalysisType;
 
 /**********************************************************************
  * Describe purpose and responsibility of SystemTreePopupMenu

@@ -55,6 +55,14 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.fabric;
 
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
+
 import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.core.IB_Link;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_WhatsUpInfo;
@@ -84,14 +92,6 @@ import gov.llnl.lc.smt.command.route.SmtRoute;
 import gov.llnl.lc.smt.props.SmtProperty;
 import gov.llnl.lc.system.whatsup.WhatsUpInfo;
 import gov.llnl.lc.util.SystemConstants;
-
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
 
 /**********************************************************************
  * Describe purpose and responsibility of SmtFabric

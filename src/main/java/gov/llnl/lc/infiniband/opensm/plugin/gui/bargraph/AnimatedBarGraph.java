@@ -55,11 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.bargraph;
 
-import gov.llnl.lc.infiniband.core.IB_Guid;
-import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port.PortCounterName;
-import gov.llnl.lc.infiniband.opensm.plugin.gui.OMS_DataSetFactory;
-import gov.llnl.lc.util.ValueRange;
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GradientPaint;
@@ -83,6 +78,11 @@ import org.jfree.data.Range;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
+
+import gov.llnl.lc.infiniband.core.IB_Guid;
+import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port.PortCounterName;
+import gov.llnl.lc.infiniband.opensm.plugin.gui.OMS_DataSetFactory;
+import gov.llnl.lc.util.ValueRange;
 
 /**
  * A simple demonstration application showing how to create a dynamic bar chart.

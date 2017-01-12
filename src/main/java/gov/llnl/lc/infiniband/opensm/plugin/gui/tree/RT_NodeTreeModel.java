@@ -55,28 +55,22 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.tree;
 
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
+
 import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
 import gov.llnl.lc.infiniband.opensm.plugin.data.RT_Node;
 import gov.llnl.lc.infiniband.opensm.plugin.data.RT_Port;
 import gov.llnl.lc.infiniband.opensm.plugin.data.RT_Table;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex.SortVertexByMapEntry;
 import gov.llnl.lc.logging.CommonLogger;
-
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
-
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
 
 /**********************************************************************
  * Describe purpose and responsibility of RT_PortTreeModel

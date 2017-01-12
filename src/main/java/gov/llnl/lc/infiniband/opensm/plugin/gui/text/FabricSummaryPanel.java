@@ -55,6 +55,14 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.text;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.util.ArrayList;
+
+import javax.swing.JEditorPane;
+import javax.swing.JPanel;
+import javax.swing.border.TitledBorder;
+
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Updater;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_ServiceChangeListener;
@@ -68,14 +76,6 @@ import gov.llnl.lc.smt.command.about.SmtAboutRecord;
 import gov.llnl.lc.smt.command.fabric.SmtFabricStructure;
 import gov.llnl.lc.smt.manager.MessageManager;
 import gov.llnl.lc.time.TimeStamp;
-
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.util.ArrayList;
-
-import javax.swing.JEditorPane;
-import javax.swing.JPanel;
-import javax.swing.border.TitledBorder;
 
 public class FabricSummaryPanel extends JPanel implements OSM_ServiceChangeListener,  CommonLogger
 {

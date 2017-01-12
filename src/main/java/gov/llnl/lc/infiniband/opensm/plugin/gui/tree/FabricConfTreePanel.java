@@ -55,17 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.tree;
 
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Configuration;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionEvent;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionListener;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionUpdater;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.SystemErrGraphListener;
-import gov.llnl.lc.infiniband.opensm.plugin.net.OsmClientApi;
-import gov.llnl.lc.infiniband.opensm.plugin.net.OsmServiceManager;
-import gov.llnl.lc.infiniband.opensm.plugin.net.OsmSession;
-import gov.llnl.lc.logging.CommonLogger;
-
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Panel;
@@ -83,6 +72,17 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeModel;
+
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Configuration;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionEvent;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionListener;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionUpdater;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.SystemErrGraphListener;
+import gov.llnl.lc.infiniband.opensm.plugin.net.OsmClientApi;
+import gov.llnl.lc.infiniband.opensm.plugin.net.OsmServiceManager;
+import gov.llnl.lc.infiniband.opensm.plugin.net.OsmSession;
+import gov.llnl.lc.logging.CommonLogger;
 
 public class FabricConfTreePanel extends JPanel implements CommonLogger, IB_GraphSelectionListener
 {

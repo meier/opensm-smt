@@ -55,15 +55,15 @@
  ********************************************************************/
 package gov.llnl.lc.smt.swing;
 
-import gov.llnl.lc.logging.CommonLogger;
-import gov.llnl.lc.smt.event.SmtEvent;
-import gov.llnl.lc.smt.event.SmtEventListener;
-import gov.llnl.lc.smt.event.SmtEventObject;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JFrame;
+
+import gov.llnl.lc.logging.CommonLogger;
+import gov.llnl.lc.smt.event.SmtEvent;
+import gov.llnl.lc.smt.event.SmtEventListener;
+import gov.llnl.lc.smt.event.SmtEventObject;
 
 /**********************************************************************
  * Describe purpose and responsibility of SmtFrame

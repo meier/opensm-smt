@@ -55,15 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.tree;
 
-import gov.llnl.lc.infiniband.core.IB_Guid;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_NodeType;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Port;
-import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Node;
-import gov.llnl.lc.infiniband.opensm.plugin.data.SBN_Node;
-import gov.llnl.lc.infiniband.opensm.plugin.data.SBN_Switch;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
-
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -73,6 +64,15 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+
+import gov.llnl.lc.infiniband.core.IB_Guid;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_NodeType;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Port;
+import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Node;
+import gov.llnl.lc.infiniband.opensm.plugin.data.SBN_Node;
+import gov.llnl.lc.infiniband.opensm.plugin.data.SBN_Switch;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
 
 //public class VertexTreeModel implements TreeModel
 public class VertexTreeModel extends DefaultTreeModel

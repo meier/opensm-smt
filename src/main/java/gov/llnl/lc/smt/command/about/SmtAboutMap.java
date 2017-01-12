@@ -55,9 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.about;
 
-import gov.llnl.lc.infiniband.opensm.plugin.gui.chart.XY_PlotType;
-import gov.llnl.lc.smt.command.SmtCommandType;
-
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;

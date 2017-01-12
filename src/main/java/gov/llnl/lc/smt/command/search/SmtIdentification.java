@@ -55,6 +55,12 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.search;
 
+import java.util.Map;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
+
 import gov.llnl.lc.infiniband.core.IB_Address;
 import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.core.IB_GuidType;
@@ -76,12 +82,6 @@ import gov.llnl.lc.smt.command.server.SmtServer;
 import gov.llnl.lc.smt.command.system.SmtSystem;
 import gov.llnl.lc.smt.manager.SMT_SearchManager;
 import gov.llnl.lc.smt.props.SmtProperty;
-
-import java.util.Map;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
 
 /**********************************************************************
  * Describe purpose and responsibility of SmtIdentification

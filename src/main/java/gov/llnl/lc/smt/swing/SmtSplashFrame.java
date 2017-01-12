@@ -55,15 +55,15 @@
  ********************************************************************/
 package gov.llnl.lc.smt.swing;
 
-import gov.llnl.lc.infiniband.opensm.plugin.gui.data.SmtIconType;
-import gov.llnl.lc.smt.event.SmtEvent;
-import gov.llnl.lc.smt.event.SmtEventObject;
-import gov.llnl.lc.smt.prefs.SmtGuiPreferences;
-
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 
 import javax.swing.JFrame;
+
+import gov.llnl.lc.infiniband.opensm.plugin.gui.data.SmtIconType;
+import gov.llnl.lc.smt.event.SmtEvent;
+import gov.llnl.lc.smt.event.SmtEventObject;
+import gov.llnl.lc.smt.prefs.SmtGuiPreferences;
 
 /**********************************************************************
  * Describe purpose and responsibility of SmtSplashFrame

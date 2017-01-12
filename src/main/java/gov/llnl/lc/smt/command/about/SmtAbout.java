@@ -55,11 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.about;
 
-import gov.llnl.lc.smt.SmtConstants;
-import gov.llnl.lc.smt.command.SmtCommand;
-import gov.llnl.lc.smt.command.config.SmtConfig;
-import gov.llnl.lc.smt.props.SmtProperty;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -68,6 +63,11 @@ import java.util.Map;
 import java.util.jar.Manifest;
 
 import org.apache.commons.cli.CommandLine;
+
+import gov.llnl.lc.smt.SmtConstants;
+import gov.llnl.lc.smt.command.SmtCommand;
+import gov.llnl.lc.smt.command.config.SmtConfig;
+import gov.llnl.lc.smt.props.SmtProperty;
 
 /**********************************************************************
  * Describe purpose and responsibility of SmtAbout

@@ -55,14 +55,14 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.graph.decorators;
 
-import edu.uci.ics.jung.visualization.VisualizationViewer;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
-
 import java.awt.Color;
 import java.awt.Paint;
 
 import org.apache.commons.collections15.Transformer;
+
+import edu.uci.ics.jung.visualization.VisualizationViewer;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
 
 public class IB_VertexDrawTransformer implements Transformer<IB_Vertex, Paint>
 {

@@ -55,11 +55,11 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.data;
 
-import gov.llnl.lc.smt.command.SmtCommand;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+
+import gov.llnl.lc.smt.command.SmtCommand;
 
 public class OMS_NFileBasedService extends OMS_AbstractUpdateService
 {

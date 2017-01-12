@@ -55,7 +55,13 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.console;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_UpdateProvider;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_UpdateProvider.UpdaterType;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Updater;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_NodeType;
@@ -64,16 +70,9 @@ import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Ports;
 import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Node;
 import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_NodePortStatus;
 import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_UpdateProvider.UpdaterType;
 import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port.PortCounterName;
 import gov.llnl.lc.smt.props.SmtProperty;
 import gov.llnl.lc.util.BinList;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
 import jcurses.system.CharColor;
 import jcurses.system.InputChar;
 import jcurses.system.Toolkit;

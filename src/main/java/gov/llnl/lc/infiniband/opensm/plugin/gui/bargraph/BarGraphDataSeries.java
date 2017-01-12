@@ -57,10 +57,10 @@ package gov.llnl.lc.infiniband.opensm.plugin.gui.bargraph;
 
 import java.util.ArrayList;
 
+import org.jfree.data.category.DefaultCategoryDataset;
+
 import gov.llnl.lc.time.TimeStamp;
 import gov.llnl.lc.util.ValueRange;
-
-import org.jfree.data.category.DefaultCategoryDataset;
 
 public interface BarGraphDataSeries
 {

@@ -55,18 +55,12 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.data;
 
-import gov.llnl.lc.infiniband.core.IB_Guid;
-import gov.llnl.lc.infiniband.core.IB_Link;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
-import gov.llnl.lc.infiniband.opensm.xml.IB_FabricConf;
-import gov.llnl.lc.infiniband.opensm.xml.IB_LinkListElement;
-import gov.llnl.lc.infiniband.opensm.xml.IB_PortElement;
-import gov.llnl.lc.logging.CommonLogger;
-import gov.llnl.lc.time.TimeStamp;
-
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+
+import gov.llnl.lc.infiniband.core.IB_Guid;
+import gov.llnl.lc.logging.CommonLogger;
+import gov.llnl.lc.time.TimeStamp;
 
 /**********************************************************************
  * Describe purpose and responsibility of OSM_FabricAnalyzer

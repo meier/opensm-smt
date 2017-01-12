@@ -55,15 +55,15 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.text;
 
-import gov.llnl.lc.smt.event.SmtMessage;
-import gov.llnl.lc.smt.event.SmtMessageListener;
-import gov.llnl.lc.smt.manager.MessageManager;
-import gov.llnl.lc.smt.manager.SmtMessageUpdater;
-
 import java.awt.BorderLayout;
 
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
+
+import gov.llnl.lc.smt.event.SmtMessage;
+import gov.llnl.lc.smt.event.SmtMessageListener;
+import gov.llnl.lc.smt.manager.MessageManager;
+import gov.llnl.lc.smt.manager.SmtMessageUpdater;
 
 public class MessageListenerPanel extends JPanel implements SmtMessageListener
 {

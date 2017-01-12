@@ -55,10 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.data;
 
-import gov.llnl.lc.infiniband.core.IB_Address;
-import gov.llnl.lc.infiniband.core.IB_Guid;
-import gov.llnl.lc.infiniband.opensm.plugin.utils.IB_RouteParser;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -73,6 +69,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import gov.llnl.lc.infiniband.core.IB_Address;
+import gov.llnl.lc.infiniband.core.IB_Guid;
+import gov.llnl.lc.infiniband.opensm.plugin.utils.IB_RouteParser;
 
 /**********************************************************************
  * This represents the routing table for a switch node.  Every switch

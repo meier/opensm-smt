@@ -55,17 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.data;
 
-import gov.llnl.lc.infiniband.core.IB_Guid;
-import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.RT_PathTreeModel;
-import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.RT_PathTreePanel;
-import gov.llnl.lc.infiniband.opensm.plugin.utils.IB_RouteParser;
-import gov.llnl.lc.infiniband.opensm.plugin.utils.IB_RouteQuery;
-import gov.llnl.lc.smt.SmtConstants;
-import gov.llnl.lc.smt.command.SmtCommand;
-import gov.llnl.lc.smt.manager.GraphSelectionManager;
-import gov.llnl.lc.time.TimeStamp;
-import gov.llnl.lc.util.BinList;
-
 import java.awt.BorderLayout;
 import java.io.BufferedReader;
 import java.io.File;
@@ -87,6 +76,17 @@ import java.util.zip.GZIPOutputStream;
 
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
+
+import gov.llnl.lc.infiniband.core.IB_Guid;
+import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.RT_PathTreeModel;
+import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.RT_PathTreePanel;
+import gov.llnl.lc.infiniband.opensm.plugin.utils.IB_RouteParser;
+import gov.llnl.lc.infiniband.opensm.plugin.utils.IB_RouteQuery;
+import gov.llnl.lc.smt.SmtConstants;
+import gov.llnl.lc.smt.command.SmtCommand;
+import gov.llnl.lc.smt.manager.GraphSelectionManager;
+import gov.llnl.lc.time.TimeStamp;
+import gov.llnl.lc.util.BinList;
 
 /**********************************************************************
  * Describe purpose and responsibility of RT_Table

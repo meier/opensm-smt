@@ -55,13 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.utils;
 
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDelta;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDeltaCollection;
-import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port;
-import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port.PortCounterName;
-import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_PortChange;
-import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_PortChangeComparator;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -69,6 +62,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDelta;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDeltaCollection;
+import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port;
+import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port.PortCounterName;
+import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_PortChange;
+import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_PortChangeComparator;
 
 
 /**********************************************************************

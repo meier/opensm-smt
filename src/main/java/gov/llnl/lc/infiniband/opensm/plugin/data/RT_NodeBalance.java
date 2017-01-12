@@ -55,15 +55,15 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.data;
 
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
-import gov.llnl.lc.smt.SmtConstants;
-import gov.llnl.lc.util.BinList;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
+
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
+import gov.llnl.lc.smt.SmtConstants;
+import gov.llnl.lc.util.BinList;
 
 /**********************************************************************
  * A Nodes routing table is considered to be balanced, if the following

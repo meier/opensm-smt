@@ -55,8 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.smt.manager;
 
-import java.util.HashMap;
-
 import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Updater;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
@@ -69,11 +67,8 @@ import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.graph.SimpleGraphPopupMenu;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.VertexTreePopupMenu;
 import gov.llnl.lc.logging.CommonLogger;
-import gov.llnl.lc.smt.data.SMT_AbstractUpdateService;
-import gov.llnl.lc.smt.event.SmtHeartBeat;
 import gov.llnl.lc.smt.event.SmtMessage;
 import gov.llnl.lc.smt.event.SmtMessageType;
-import gov.llnl.lc.time.TimeStamp;
 
 
 /**********************************************************************

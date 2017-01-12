@@ -55,10 +55,10 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.data;
 
+import java.util.ArrayList;
+
 import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.logging.CommonLogger;
-
-import java.util.ArrayList;
 
 /**********************************************************************
  * Describe purpose and responsibility of RT_Path

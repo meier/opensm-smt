@@ -55,6 +55,13 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.graph;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map.Entry;
+
 import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.core.IB_Link;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Node;
@@ -68,13 +75,6 @@ import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_PortRate;
 import gov.llnl.lc.infiniband.opensm.plugin.data.RT_PathLeg;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.decorators.IB_EdgeDecorator;
 import gov.llnl.lc.logging.CommonLogger;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map.Entry;
 
 public class IB_Edge implements Comparable<IB_Edge>, CommonLogger
 {

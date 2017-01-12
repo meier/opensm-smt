@@ -55,8 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.chart;
 
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Depth;
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -66,6 +64,8 @@ import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Depth;
 
 public class HeatMapDepthPanel extends JPanel
 {

@@ -55,17 +55,17 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.record;
 
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.cli.CommandLine;
+
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Configuration;
 import gov.llnl.lc.smt.SmtConstants;
 import gov.llnl.lc.smt.command.SmtCommand;
 import gov.llnl.lc.smt.command.config.SmtConfig;
 import gov.llnl.lc.smt.props.SmtProperty;
-
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.cli.CommandLine;
 
 /**********************************************************************
  * Describe purpose and responsibility of SmtTop

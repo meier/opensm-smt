@@ -55,10 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.chart;
 
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Port;
-import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port.PortCounterName;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
-
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.text.SimpleDateFormat;
@@ -87,6 +83,10 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.DateCellRenderer;
 import org.jfree.ui.NumberCellRenderer;
 import org.jfree.ui.RefineryUtilities;
+
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Port;
+import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port.PortCounterName;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
 
 /**********************************************************************
  * This Plot contains a normal PortCounterXYplotPanel AND a PortCounterTable.

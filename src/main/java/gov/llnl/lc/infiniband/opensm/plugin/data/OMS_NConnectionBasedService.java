@@ -55,10 +55,10 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.data;
 
+import java.util.concurrent.TimeUnit;
+
 import gov.llnl.lc.infiniband.opensm.plugin.net.OsmServiceManager;
 import gov.llnl.lc.smt.props.SmtProperty;
-
-import java.util.concurrent.TimeUnit;
 
 public class OMS_NConnectionBasedService extends OMS_AbstractUpdateService
 {

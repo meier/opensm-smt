@@ -55,6 +55,13 @@
  ********************************************************************/
 package gov.llnl.lc.smt.swing;
 
+import java.awt.BorderLayout;
+
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
 import gov.llnl.lc.logging.CommonLogger;
 import gov.llnl.lc.smt.event.SmtMessage;
 import gov.llnl.lc.smt.event.SmtMessageListener;
@@ -62,13 +69,6 @@ import gov.llnl.lc.smt.event.SmtMessageType;
 import gov.llnl.lc.smt.manager.MessageManager;
 import gov.llnl.lc.smt.manager.SmtMessageUpdater;
 import gov.llnl.lc.smt.props.SmtProperties;
-
-import java.awt.BorderLayout;
-
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 
 public class SmtSplashPanel extends JPanel implements CommonLogger, SmtMessageListener
 {

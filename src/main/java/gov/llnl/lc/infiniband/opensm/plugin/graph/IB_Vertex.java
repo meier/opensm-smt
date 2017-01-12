@@ -55,6 +55,19 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.graph;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Node;
@@ -72,19 +85,6 @@ import gov.llnl.lc.infiniband.opensm.plugin.graph.decorators.IB_Decorator;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.decorators.IB_VertexDecorator;
 import gov.llnl.lc.logging.CommonLogger;
 import gov.llnl.lc.util.BinList;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 /**********************************************************************
  * Given a set of Edges, compile a list of the Vertices

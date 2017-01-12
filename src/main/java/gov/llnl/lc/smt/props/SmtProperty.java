@@ -55,16 +55,16 @@
  ********************************************************************/
 package gov.llnl.lc.smt.props;
 
-import gov.llnl.lc.net.NetworkConstants;
-import gov.llnl.lc.smt.command.SmtCommandType;
-import gov.llnl.lc.smt.command.event.EventQuery;
-
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeSet;
+
+import gov.llnl.lc.net.NetworkConstants;
+import gov.llnl.lc.smt.command.SmtCommandType;
+import gov.llnl.lc.smt.command.event.EventQuery;
 
 /**********************************************************************
  * An SmtPropertyEnum supports smt command configuration.  This includes

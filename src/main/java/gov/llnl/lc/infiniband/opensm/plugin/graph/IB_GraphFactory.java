@@ -55,6 +55,14 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.graph;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import edu.uci.ics.jung.graph.UndirectedSparseMultigraph;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Node;
@@ -63,14 +71,6 @@ import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.decorators.IB_Decorator;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.decorators.IB_LevelTransformer;
 import gov.llnl.lc.logging.CommonLogger;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Map.Entry;
 
 /**
  * @author meier3

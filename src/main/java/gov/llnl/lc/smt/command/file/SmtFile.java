@@ -79,7 +79,6 @@ import gov.llnl.lc.smt.command.config.SmtConfig;
 import gov.llnl.lc.smt.filter.SmtFilter;
 import gov.llnl.lc.smt.props.SmtProperty;
 import gov.llnl.lc.time.TimeStamp;
-import gov.llnl.lc.util.filter.WhiteAndBlackListFilter;
 
 /**********************************************************************
  * Describe purpose and responsibility of SmtFile

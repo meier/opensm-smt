@@ -55,6 +55,8 @@
  ********************************************************************/
 package gov.llnl.lc.smt.data;
 
+import java.util.LinkedHashMap;
+
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_AbstractUpdateService;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_ServiceChangeListener;
@@ -62,8 +64,6 @@ import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
 import gov.llnl.lc.smt.SmtConstants;
 import gov.llnl.lc.smt.props.SmtProperty;
-
-import java.util.LinkedHashMap;
 
 public abstract class SMT_AbstractUpdateService extends OMS_AbstractUpdateService implements SMT_Updater
 {

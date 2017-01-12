@@ -55,16 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.tree;
 
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Port;
-import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port.PortCounterName;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
-import gov.llnl.lc.infiniband.opensm.plugin.gui.chart.PortCounterCrossHairXYplot;
-import gov.llnl.lc.infiniband.opensm.plugin.gui.chart.PortCounterXYplot;
-import gov.llnl.lc.logging.CommonLogger;
-import gov.llnl.lc.smt.event.SmtMessage;
-import gov.llnl.lc.smt.event.SmtMessageType;
-import gov.llnl.lc.smt.manager.MessageManager;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -76,6 +66,16 @@ import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 
 import org.jfree.ui.RefineryUtilities;
+
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Port;
+import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port.PortCounterName;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
+import gov.llnl.lc.infiniband.opensm.plugin.gui.chart.PortCounterCrossHairXYplot;
+import gov.llnl.lc.infiniband.opensm.plugin.gui.chart.PortCounterXYplot;
+import gov.llnl.lc.logging.CommonLogger;
+import gov.llnl.lc.smt.event.SmtMessage;
+import gov.llnl.lc.smt.event.SmtMessageType;
+import gov.llnl.lc.smt.manager.MessageManager;
 
 public class PortCounterPopupMenu extends JPopupMenu implements ActionListener, CommonLogger
 {

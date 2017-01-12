@@ -55,14 +55,14 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.graph.decorators;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map.Entry;
+
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Node;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
 import gov.llnl.lc.logging.CommonLogger;
 import gov.llnl.lc.util.BinList;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map.Entry;
 
 public class IB_Decorator implements CommonLogger
 {

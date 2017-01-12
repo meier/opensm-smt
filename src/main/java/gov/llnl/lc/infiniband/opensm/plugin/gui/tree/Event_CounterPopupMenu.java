@@ -55,15 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.tree;
 
-import gov.llnl.lc.infiniband.opensm.plugin.event.OSM_EventStats;
-import gov.llnl.lc.infiniband.opensm.plugin.event.OsmEvent;
-import gov.llnl.lc.infiniband.opensm.plugin.gui.chart.XY_PlotFrame;
-import gov.llnl.lc.infiniband.opensm.plugin.gui.chart.XY_PlotType;
-import gov.llnl.lc.logging.CommonLogger;
-import gov.llnl.lc.smt.event.SmtMessage;
-import gov.llnl.lc.smt.event.SmtMessageType;
-import gov.llnl.lc.smt.manager.MessageManager;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -75,6 +66,15 @@ import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 
 import org.jfree.ui.RefineryUtilities;
+
+import gov.llnl.lc.infiniband.opensm.plugin.event.OSM_EventStats;
+import gov.llnl.lc.infiniband.opensm.plugin.event.OsmEvent;
+import gov.llnl.lc.infiniband.opensm.plugin.gui.chart.XY_PlotFrame;
+import gov.llnl.lc.infiniband.opensm.plugin.gui.chart.XY_PlotType;
+import gov.llnl.lc.logging.CommonLogger;
+import gov.llnl.lc.smt.event.SmtMessage;
+import gov.llnl.lc.smt.event.SmtMessageType;
+import gov.llnl.lc.smt.manager.MessageManager;
 
 public class Event_CounterPopupMenu extends JPopupMenu implements ActionListener, CommonLogger
 {

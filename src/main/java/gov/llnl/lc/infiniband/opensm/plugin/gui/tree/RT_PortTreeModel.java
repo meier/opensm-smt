@@ -55,19 +55,18 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.tree;
 
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
-import gov.llnl.lc.infiniband.opensm.plugin.data.RT_Node;
-import gov.llnl.lc.infiniband.opensm.plugin.data.RT_Port;
-import gov.llnl.lc.infiniband.opensm.plugin.data.RT_Table;
-
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
+
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
+import gov.llnl.lc.infiniband.opensm.plugin.data.RT_Node;
+import gov.llnl.lc.infiniband.opensm.plugin.data.RT_Port;
+import gov.llnl.lc.infiniband.opensm.plugin.data.RT_Table;
 
 /**********************************************************************
  * Describe purpose and responsibility of RT_PortTreeModel

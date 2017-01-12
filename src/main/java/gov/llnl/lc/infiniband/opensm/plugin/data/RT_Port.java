@@ -55,14 +55,14 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.data;
 
-import gov.llnl.lc.infiniband.core.IB_Address;
-import gov.llnl.lc.infiniband.core.IB_Guid;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import gov.llnl.lc.infiniband.core.IB_Address;
+import gov.llnl.lc.infiniband.core.IB_Guid;
 
 /**********************************************************************
  * This represents the subset of routes from a node that passes through

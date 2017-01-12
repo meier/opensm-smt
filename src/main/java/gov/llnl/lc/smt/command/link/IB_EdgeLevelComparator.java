@@ -55,11 +55,11 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.link;
 
+import java.util.Comparator;
+
 import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
 import gov.llnl.lc.logging.CommonLogger;
-
-import java.util.Comparator;
 
 public class IB_EdgeLevelComparator implements CommonLogger, Comparator<IB_Edge>
 {

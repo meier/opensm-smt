@@ -55,6 +55,14 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.utilize;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
+
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_List;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_NodeType;
@@ -68,14 +76,6 @@ import gov.llnl.lc.smt.manager.SMT_AnalysisManager;
 import gov.llnl.lc.smt.manager.SMT_AnalysisUpdater;
 import gov.llnl.lc.smt.props.SmtProperty;
 import gov.llnl.lc.time.TimeStamp;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
 
 
 /**********************************************************************

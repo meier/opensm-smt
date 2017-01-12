@@ -55,15 +55,15 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.console;
 
-import gov.llnl.lc.smt.command.SmtCommand;
-import gov.llnl.lc.smt.command.config.SmtConfig;
-import gov.llnl.lc.smt.props.SmtProperty;
-
 import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
+
+import gov.llnl.lc.smt.command.SmtCommand;
+import gov.llnl.lc.smt.command.config.SmtConfig;
+import gov.llnl.lc.smt.props.SmtProperty;
 
 /**********************************************************************
  * The SmtCommand version of an SmtConsoleManager.  Its primary purpose

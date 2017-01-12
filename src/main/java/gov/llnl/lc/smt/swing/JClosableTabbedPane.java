@@ -55,9 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.smt.swing;
 
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionEvent;
-import gov.llnl.lc.smt.manager.GraphSelectionManager;
-
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
@@ -71,6 +68,9 @@ import java.awt.event.MouseMotionListener;
 
 import javax.swing.Icon;
 import javax.swing.JTabbedPane;
+
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionEvent;
+import gov.llnl.lc.smt.manager.GraphSelectionManager;
 
 /**********************************************************************
  * Describe purpose and responsibility of JClosableTabbedPane

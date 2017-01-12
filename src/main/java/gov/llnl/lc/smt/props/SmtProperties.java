@@ -55,10 +55,10 @@
  ********************************************************************/
 package gov.llnl.lc.smt.props;
 
+import java.util.Properties;
+
 import gov.llnl.lc.logging.CommonLogger;
 import gov.llnl.lc.smt.SmtConstants;
-
-import java.util.Properties;
 
 
 /**********************************************************************

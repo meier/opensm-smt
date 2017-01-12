@@ -55,16 +55,16 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.data;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
 import gov.llnl.lc.infiniband.opensm.plugin.net.OsmSession;
 import gov.llnl.lc.logging.CommonLogger;
 import gov.llnl.lc.smt.command.SmtCommand;
 import gov.llnl.lc.smt.props.SmtProperty;
 import gov.llnl.lc.time.TimeStamp;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 /**********************************************************************
  * Describe purpose and responsibility of OMS_FileBasedService

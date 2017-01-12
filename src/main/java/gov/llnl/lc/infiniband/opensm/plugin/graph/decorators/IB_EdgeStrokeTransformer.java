@@ -55,14 +55,14 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.graph.decorators;
 
-import edu.uci.ics.jung.visualization.VisualizationViewer;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
-
 import java.awt.BasicStroke;
 import java.awt.Stroke;
 
 import org.apache.commons.collections15.Transformer;
+
+import edu.uci.ics.jung.visualization.VisualizationViewer;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
 
 public class IB_EdgeStrokeTransformer implements Transformer<IB_Edge, Stroke>
 {

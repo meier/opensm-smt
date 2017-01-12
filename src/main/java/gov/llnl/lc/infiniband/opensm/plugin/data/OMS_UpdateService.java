@@ -55,13 +55,13 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.data;
 
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
 import gov.llnl.lc.infiniband.opensm.plugin.net.OsmServiceManager;
 import gov.llnl.lc.infiniband.opensm.plugin.net.OsmSession;
 import gov.llnl.lc.logging.CommonLogger;
 import gov.llnl.lc.time.TimeStamp;
-
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 /**********************************************************************
  * Describe purpose and responsibility of OMS_UpdateService

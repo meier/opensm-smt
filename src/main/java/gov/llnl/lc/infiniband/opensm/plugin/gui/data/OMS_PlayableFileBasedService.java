@@ -55,14 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.data;
 
-import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_AbstractUpdateService;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
-import gov.llnl.lc.smt.command.SmtCommand;
-import gov.llnl.lc.smt.command.SmtCommandType;
-import gov.llnl.lc.smt.command.console.SmtConsoleManager;
-import gov.llnl.lc.time.TimeSliderListener;
-import gov.llnl.lc.time.TimeSliderPanel;
-
 import java.awt.event.ItemEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -76,6 +68,14 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JToggleButton;
 import javax.swing.event.ChangeEvent;
+
+import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_AbstractUpdateService;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
+import gov.llnl.lc.smt.command.SmtCommand;
+import gov.llnl.lc.smt.command.SmtCommandType;
+import gov.llnl.lc.smt.command.console.SmtConsoleManager;
+import gov.llnl.lc.time.TimeSliderListener;
+import gov.llnl.lc.time.TimeSliderPanel;
 
 public class OMS_PlayableFileBasedService extends OMS_AbstractUpdateService implements TimeSliderListener
 {

@@ -55,12 +55,12 @@
  ********************************************************************/
 package gov.llnl.lc.smt.data;
 
+import java.util.LinkedHashMap;
+
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Updater;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
-
-import java.util.LinkedHashMap;
 
 
 public interface SMT_Updater extends OMS_Updater

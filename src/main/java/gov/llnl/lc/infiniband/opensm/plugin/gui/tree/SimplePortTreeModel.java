@@ -55,10 +55,10 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.tree;
 
+import javax.swing.tree.TreeNode;
+
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Port;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
-
-import javax.swing.tree.TreeNode;
 
 
 public class SimplePortTreeModel extends AbstractPortTreeModel

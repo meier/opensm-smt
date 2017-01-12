@@ -55,13 +55,13 @@
  ********************************************************************/
 package gov.llnl.lc.smt.manager;
 
+import javax.swing.SwingWorker;
+
 import gov.llnl.lc.infiniband.opensm.plugin.gui.text.FabricIdentificationPanel;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.FabricDiscoveryPanel;
 import gov.llnl.lc.logging.CommonLogger;
 import gov.llnl.lc.smt.event.SmtMessage;
 import gov.llnl.lc.smt.event.SmtMessageType;
-
-import javax.swing.SwingWorker;
 
 /**********************************************************************
  * Describe purpose and responsibility of OMS_DiscoverWorker

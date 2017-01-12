@@ -56,13 +56,6 @@
 
 package gov.llnl.lc.infiniband.opensm.plugin.gui.tree;
 
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_ActivityType;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDelta;
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_NodeActivity;
-import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_PortChange;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
-
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.util.ArrayList;
@@ -79,6 +72,13 @@ import javax.swing.ListSelectionModel;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.AbstractMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
+
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_ActivityType;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDelta;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_NodeActivity;
+import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_PortChange;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
 
 /**
   *

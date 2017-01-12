@@ -55,6 +55,13 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.graph.decorators;
 
+import java.awt.Paint;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+
+import org.apache.commons.collections15.Transformer;
+
 import edu.uci.ics.jung.graph.UndirectedSparseMultigraph;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Node;
@@ -62,13 +69,6 @@ import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
 import gov.llnl.lc.logging.CommonLogger;
 import gov.llnl.lc.util.BinList;
-
-import java.awt.Paint;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-
-import org.apache.commons.collections15.Transformer;
 
 public class IB_VertexFillTransformer implements Transformer<IB_Vertex, Paint>, CommonLogger
 {

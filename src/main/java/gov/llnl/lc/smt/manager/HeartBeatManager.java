@@ -55,6 +55,8 @@
  ********************************************************************/
 package gov.llnl.lc.smt.manager;
 
+import java.util.HashMap;
+
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Updater;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_ServiceChangeListener;
@@ -66,8 +68,6 @@ import gov.llnl.lc.smt.event.SmtHeartBeatListener;
 import gov.llnl.lc.smt.event.SmtMessage;
 import gov.llnl.lc.smt.event.SmtMessageType;
 import gov.llnl.lc.time.TimeStamp;
-
-import java.util.HashMap;
 
 /**********************************************************************
  * Describe purpose and responsibility of HeartBeatManager

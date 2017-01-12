@@ -55,12 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.chart;
 
-import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Depth;
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
-import gov.llnl.lc.logging.CommonLogger;
-import gov.llnl.lc.time.TimeStamp;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -91,6 +85,12 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RectangleAnchor;
 import org.jfree.ui.RefineryUtilities;
+
+import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Depth;
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
+import gov.llnl.lc.logging.CommonLogger;
+import gov.llnl.lc.time.TimeStamp;
 
 /**********************************************************************
  * Describe purpose and responsibility of PortHeatMapPlotPanel

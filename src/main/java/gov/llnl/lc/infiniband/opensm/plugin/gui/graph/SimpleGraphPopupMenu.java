@@ -55,6 +55,18 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.graph;
 
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Collection;
+
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
+
 import edu.uci.ics.jung.visualization.picking.MultiPickedState;
 import gov.llnl.lc.infiniband.opensm.plugin.data.RT_Path;
 import gov.llnl.lc.infiniband.opensm.plugin.data.RT_PathLeg;
@@ -67,18 +79,6 @@ import gov.llnl.lc.smt.event.SmtMessageType;
 import gov.llnl.lc.smt.manager.MessageManager;
 import gov.llnl.lc.smt.manager.SMT_GraphManager;
 import gov.llnl.lc.smt.manager.SMT_RouteManager;
-
-import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Collection;
-
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.JSeparator;
-import javax.swing.SwingConstants;
 
 public class SimpleGraphPopupMenu extends JPopupMenu implements ActionListener, CommonLogger
 {

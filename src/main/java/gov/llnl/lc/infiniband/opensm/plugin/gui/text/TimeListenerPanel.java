@@ -55,17 +55,17 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.text;
 
+import java.awt.BorderLayout;
+
+import javax.swing.JEditorPane;
+import javax.swing.JPanel;
+
 import gov.llnl.lc.smt.SmtConstants;
 import gov.llnl.lc.smt.event.SmtHeartBeat;
 import gov.llnl.lc.smt.event.SmtHeartBeatListener;
 import gov.llnl.lc.smt.manager.SmtHeartBeatUpdater;
 import gov.llnl.lc.time.TimeListener;
 import gov.llnl.lc.time.TimeStamp;
-
-import java.awt.BorderLayout;
-
-import javax.swing.JEditorPane;
-import javax.swing.JPanel;
 
 public class TimeListenerPanel extends JPanel implements TimeListener, SmtHeartBeatListener
 {

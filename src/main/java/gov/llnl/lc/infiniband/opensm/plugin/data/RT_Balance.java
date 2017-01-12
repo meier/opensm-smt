@@ -55,16 +55,16 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.data;
 
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
-import gov.llnl.lc.smt.SmtConstants;
-import gov.llnl.lc.util.BinList;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
+import gov.llnl.lc.smt.SmtConstants;
+import gov.llnl.lc.util.BinList;
 
 /**********************************************************************
  * Describe purpose and responsibility of RT_Balance

@@ -55,6 +55,11 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.data;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Node;
@@ -66,11 +71,6 @@ import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Depth;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
 import gov.llnl.lc.logging.CommonLogger;
-
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 public class HM_Port implements Comparable<HM_Port>, CommonLogger
 {

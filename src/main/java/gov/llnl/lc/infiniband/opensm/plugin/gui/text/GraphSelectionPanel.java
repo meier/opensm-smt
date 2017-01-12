@@ -55,6 +55,15 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.text;
 
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.util.Iterator;
+
+import javax.swing.JCheckBox;
+import javax.swing.JEditorPane;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionEvent;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionListener;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_GraphSelectionUpdater;
@@ -68,15 +77,6 @@ import gov.llnl.lc.smt.SmtConstants;
 import gov.llnl.lc.smt.manager.GraphSelectionManager;
 import gov.llnl.lc.smt.manager.SMT_AnalysisType;
 import gov.llnl.lc.smt.swing.JClosableTabbedPane;
-
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.util.Iterator;
-
-import javax.swing.JCheckBox;
-import javax.swing.JEditorPane;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
 
 public class GraphSelectionPanel extends JPanel implements IB_GraphSelectionListener, CommonLogger
 {

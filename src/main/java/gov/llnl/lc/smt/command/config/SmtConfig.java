@@ -55,12 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.config;
 
-import gov.llnl.lc.smt.SmtConstants;
-import gov.llnl.lc.smt.command.SmtCommand;
-import gov.llnl.lc.smt.props.CommandProperties;
-import gov.llnl.lc.smt.props.SmtProperties;
-import gov.llnl.lc.smt.props.SmtProperty;
-
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.File;
@@ -80,6 +74,12 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+
+import gov.llnl.lc.smt.SmtConstants;
+import gov.llnl.lc.smt.command.SmtCommand;
+import gov.llnl.lc.smt.props.CommandProperties;
+import gov.llnl.lc.smt.props.SmtProperties;
+import gov.llnl.lc.smt.props.SmtProperty;
 
 /**********************************************************************
  * This is the SMT Command responsible for handling command configuration.

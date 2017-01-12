@@ -55,6 +55,15 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.chart;
 
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import org.jfree.data.general.HeatMapDataset;
+
 import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
@@ -71,15 +80,6 @@ import gov.llnl.lc.infiniband.opensm.plugin.gui.data.HM_Port;
 import gov.llnl.lc.logging.CommonLogger;
 import gov.llnl.lc.smt.command.SmtCommand;
 import gov.llnl.lc.time.TimeStamp;
-
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import org.jfree.data.general.HeatMapDataset;
 
 public class PortHeatMapDataSet implements HeatMapDataset, CommonLogger
 {

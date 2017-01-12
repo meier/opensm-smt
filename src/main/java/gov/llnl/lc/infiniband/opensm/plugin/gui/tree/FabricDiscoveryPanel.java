@@ -55,12 +55,13 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.tree;
 
-import gov.llnl.lc.logging.CommonLogger;
-
 import java.awt.GridLayout;
 
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
+
+import gov.llnl.lc.logging.CommonLogger;
+import gov.llnl.lc.smt.manager.OMS_DiscoverWorker;
 
 /**********************************************************************
  * Describe purpose and responsibility of FabricDiscoveryPanel

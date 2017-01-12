@@ -55,10 +55,6 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.help;
 
-import gov.llnl.lc.logging.CommonLogger;
-import gov.llnl.lc.smt.prefs.SmtGuiPreferences;
-import gov.llnl.lc.smt.swing.SmtGuiApplication;
-
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.HeadlessException;
@@ -71,6 +67,10 @@ import javax.help.HelpBroker;
 import javax.help.HelpSet;
 import javax.help.JHelp;
 import javax.swing.JFrame;
+
+import gov.llnl.lc.logging.CommonLogger;
+import gov.llnl.lc.smt.prefs.SmtGuiPreferences;
+import gov.llnl.lc.smt.swing.SmtGuiApplication;
 
 /**********************************************************************
  * Describe purpose and responsibility of SmtHelp

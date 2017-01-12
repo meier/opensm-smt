@@ -55,12 +55,12 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.chart;
 
-import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.Event_CounterPopupMenu;
-import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.MAD_CounterPopupMenu;
-
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+
+import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.Event_CounterPopupMenu;
+import gov.llnl.lc.infiniband.opensm.plugin.gui.tree.MAD_CounterPopupMenu;
 
 /**********************************************************************
  * Describe purpose and responsibility of XY_PlotType

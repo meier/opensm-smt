@@ -55,9 +55,9 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.tree;
 
-import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
-
 import javax.swing.tree.DefaultMutableTreeNode;
+
+import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
 
 public class VertexTreeNode extends DefaultMutableTreeNode
 {

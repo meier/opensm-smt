@@ -55,13 +55,13 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.about;
 
-import gov.llnl.lc.smt.SmtConstants;
-
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.jar.Attributes;
 import java.util.jar.Attributes.Name;
 import java.util.jar.Manifest;
+
+import gov.llnl.lc.smt.SmtConstants;
 
 public class SmtAboutRecord
 {

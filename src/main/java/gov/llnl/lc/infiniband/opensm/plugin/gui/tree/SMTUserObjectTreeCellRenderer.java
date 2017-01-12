@@ -55,6 +55,14 @@
  ********************************************************************/
 package gov.llnl.lc.infiniband.opensm.plugin.gui.tree;
 
+import java.awt.Component;
+
+import javax.swing.JTree;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeNode;
+
 import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDeltaAnalyzer;
 import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port;
@@ -63,14 +71,6 @@ import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
 import gov.llnl.lc.infiniband.opensm.plugin.gui.data.SmtIconType;
 import gov.llnl.lc.logging.CommonLogger;
 import gov.llnl.lc.smt.manager.SMT_AnalysisManager;
-
-import java.awt.Component;
-
-import javax.swing.JTree;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreeNode;
 
 /**********************************************************************
  * Describe purpose and responsibility of SMTUserObjectTreeCellRenderer

@@ -55,11 +55,10 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.console;
 
-import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
-
 import java.util.HashMap;
 import java.util.Map;
 
+import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
 import jcurses.system.InputChar;
 import jcurses.system.Toolkit;
 

@@ -55,13 +55,13 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command;
 
-import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_ServiceChangeListener;
-import gov.llnl.lc.smt.command.config.SmtConfig;
-
 import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
+
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_ServiceChangeListener;
+import gov.llnl.lc.smt.command.config.SmtConfig;
 
 /**********************************************************************
  * Describe purpose and responsibility of SmtCommandInterface

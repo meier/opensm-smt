@@ -55,17 +55,17 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command;
 
-import gov.llnl.lc.smt.SmtConstants;
-import gov.llnl.lc.smt.command.config.SmtConfig;
-import gov.llnl.lc.smt.props.SmtProperties;
-import gov.llnl.lc.smt.props.SmtProperty;
-
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
+
+import gov.llnl.lc.smt.SmtConstants;
+import gov.llnl.lc.smt.command.config.SmtConfig;
+import gov.llnl.lc.smt.props.SmtProperties;
+import gov.llnl.lc.smt.props.SmtProperty;
 
 /**********************************************************************
  * Describe purpose and responsibility of SubnetMonitorTool
