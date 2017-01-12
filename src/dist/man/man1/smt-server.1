@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "SMT\-SERVER" "1" "2016-10-10" "User Commands" "Subnet Monitoring Tools"
+.TH "SMT\-SERVER" "1" "2017-01-12" "User Commands" "Subnet Monitoring Tools"
 .
 .SH "NAME"
 \fBsmt\-server\fR \- a tool for obtaining information about the OpenSM Monitoring Service (\fBOMS\fR)
@@ -10,7 +10,7 @@
 \fBsmt\-server\fR [OMS SOURCE] [OPTIONS \fIargs\fR]
 .
 .SH "DESCRIPTION"
-This SMT command displays high level information about the OpenSM Monitoring Service (OMS) on the remote or server side, as providedded by the OMS SOURCE\. OMS/SMT is fundamentally a client/server architecture, and the OMS is the server side\. This SMT command is a client application which can interrogate the service to obtain various attributes\. In the most simple use\-case, this command can tell if the service is running\. It can also tell what version, how heavily it is being used, and its health via the various heartbeats\.
+This SMT command displays high level information about the OpenSM Monitoring Service (OMS) on the remote or server side, as provided by the OMS SOURCE\. OMS/SMT is fundamentally a client/server architecture, and the OMS is the server side\. This SMT command is a client application which can interrogate the service to obtain various attributes\. In the most simple use\-case, this command can tell if the service is running\. It can also tell what version, how heavily it is being used, and its health via the various heartbeats\.
 .
 .SH "OMS SOURCE"
 Most SMT commands require one or more snapshots of the data provided by the OpenSM Monitoring Service (\fBOMS\fR)\. These data snapshots can be provided directly (\fIOnline\fR) via a connection to the OpenSM Monitoring Service, or in a post\-mortem (\fIOffline\fR) fashion by using an OMS history file\.
