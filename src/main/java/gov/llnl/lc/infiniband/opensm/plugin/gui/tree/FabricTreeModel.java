@@ -309,6 +309,8 @@ public class FabricTreeModel implements TreeModel
     if (pv != null)
     {
       LinkedHashMap<String, IB_Vertex> nMap = pv.getNeighborMap();
+      if((nMap == null)  || (nMap.size() < 1))
+        return maxD;
 
       for (Entry<String, IB_Vertex> entry : nMap.entrySet())
       {

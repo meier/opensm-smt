@@ -1112,8 +1112,10 @@ public class IB_Vertex implements Comparable<IB_Vertex>, CommonLogger
   public LinkedHashMap <String, IB_Vertex> getNeighborMap()
   {
     // a list of all the IB_Vertex at the other end of the edges
+    // or return a null map if no neighbors
+    
     LinkedHashMap<String, IB_Vertex> vertexMap = null;
-    if (Edges != null)
+    if ((Edges != null) && (Edges.size() > 0))
     {
       vertexMap = new LinkedHashMap<String, IB_Vertex>();
       for (Entry<String, IB_Edge> entry : Edges.entrySet())
@@ -1126,7 +1128,6 @@ public class IB_Vertex implements Comparable<IB_Vertex>, CommonLogger
         
         if(!this.equals(e.getEndpoint2()))
           vertexMap.put(e.getEndpoint2().getKey(), e.getEndpoint2());
-        
       }
     }
     return vertexMap;

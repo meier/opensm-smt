@@ -691,37 +691,49 @@ public class SmtFile extends SmtCommand
   private String filterFile(String inFile, SmtConfig config)
   {
     String inputFileName = convertSpecialFileName(inFile);
-    SmtFilter filter     = getFilter(config);
-    String fName         = getFileName(config);
-    
-    System.err.println("  using filter: " + filter.getFilterName());
-    
     OMS_Collection origHistory;
     try
     {
       origHistory = OMS_Collection.readOMS_Collection(inputFileName);
-      
-      // create a new, filtered, collection
-      OMS_FilteredCollection newHistory = new OMS_FilteredCollection();
-      newHistory.setFilterFileName(filter.getFilterFileName());
-      newHistory.setHistoryFileName(inputFileName);
-      for(OpenSmMonitorService oms: origHistory.getOSM_History().values())
-      {
-        // filter the original, and add to new History
-        newHistory.put(OpenSmMonitorService.getOpenSmMonitorService(oms, filter));
-      }
-      OMS_FilteredCollection.writeOMS_Collection(fName, newHistory);
     }
-    catch (Exception e)
+    catch (Exception e1)
     {
-      System.err.println("Could not filter file: " + inputFileName + ", to " + fName);
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
+      // TODO Auto-generated catch block
+      e1.printStackTrace();
+      return null;
     }
-    
-    return fName;    
-  }
-  
+
+    OpenSmMonitorService OMS = origHistory.getCurrentOMS();
+    SmtFilter filter = getFilter(config, OMS);
+    String fName = getFileName(config);
+
+    if ((filter != null) && !filter.hasEmptyFilter())
+    {
+      try
+      {
+        // create a new, filtered, collection
+        OMS_FilteredCollection newHistory = new OMS_FilteredCollection();
+        newHistory.setFilterFileName(filter.getFilterFileName());
+        newHistory.setHistoryFileName(inputFileName);
+        for (OpenSmMonitorService oms : origHistory.getOSM_History().values())
+        {
+          // filter the original, and add to new History
+          newHistory.put(OpenSmMonitorService.getOpenSmMonitorService(oms, filter));
+        }
+        OMS_FilteredCollection.writeOMS_Collection(fName, newHistory);
+      }
+      catch (Exception e)
+      {
+        System.err.println("Could not filter file: " + inputFileName + ", to " + fName);
+        System.err.println("Exception: " + e.getMessage());
+        e.printStackTrace();
+      }
+    }
+    else
+      System.err.println("Invalid filter file specification");
+
+    return fName;
+  }  
 
   /************************************************************
    * Method Name:
@@ -735,15 +747,23 @@ public class SmtFile extends SmtCommand
    * @param config
    * @return
    ***********************************************************/
-  private SmtFilter getFilter(SmtConfig config)
+  private SmtFilter getFilter(SmtConfig config, OpenSmMonitorService OMS)
   {
     Map<String,String> map = config.getConfigMap();
     String val = map.get(SmtProperty.SMT_FILTER_FILE.getName());
     SmtFilter filter = null;
+    
     try
     {
-      filter = new SmtFilter(val);
-      System.err.println("Read in a filter file from: " + val);
+      filter = new SmtFilter(val, OMS);
+      if(!filter.hasEmptyFilter())
+        System.err.println("Read in a filter file from: " + val);
+      else
+      {
+        System.err.println("Could not read the filter file");
+        return null;
+      }
+      
     }
     catch (IOException e)
     {

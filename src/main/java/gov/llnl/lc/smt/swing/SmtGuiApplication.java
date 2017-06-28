@@ -502,6 +502,7 @@ public class SmtGuiApplication implements IB_GraphSelectionListener, CommonLogge
     // now also add the control panel down in the message area
     SimpleGraphControlPanel gcp = new SimpleGraphControlPanel(fgp.getFabricGraph());
     Graph_Mgr.setGraphControlPanel(gcp);
+    UpdateService.addListener(gcp);
 
     JScrollPane scrollPaneControls = new JScrollPane(gcp);
     scrollPaneControls.setName(GControlName);

@@ -55,7 +55,9 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.fabric;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -71,6 +73,7 @@ import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDelta;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDeltaAnalyzer;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Node;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_NodeType;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Nodes;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Stats;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Subnet;
@@ -78,6 +81,7 @@ import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_SysInfo;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
 import gov.llnl.lc.infiniband.opensm.plugin.data.RT_Table;
 import gov.llnl.lc.infiniband.opensm.plugin.data.SBN_Manager;
+import gov.llnl.lc.infiniband.opensm.plugin.data.SBN_Node;
 import gov.llnl.lc.infiniband.opensm.plugin.net.OsmAdminApi;
 import gov.llnl.lc.infiniband.opensm.plugin.net.OsmServerStatus;
 import gov.llnl.lc.infiniband.opensm.plugin.net.OsmServiceManager;
@@ -399,6 +403,213 @@ public class SmtFabric extends SmtCommand
 
     return true;
   }
+  
+  /************************************************************
+   * Method Name:
+   *  getHostNameList
+  **/
+  /**
+   * In this context, "HOST" is a compute node, with one or more
+   * Host Channel Adapters (HCA) associated with it.  Host names
+   * and their respective HCA names may not be similar.  There is
+   * no mechanism to enforce this.
+   * 
+   * This method makes a "best effort" guess, at returning a list
+   * of names, derived from the HCA names, that (hopefully) should
+   * reflect the names of the compute nodes.
+   * 
+   * This list should be the same or smaller than the list of HCA
+   * names.
+   *
+   * @see     describe related java objects
+   *
+   * @param OMService
+   * @return
+   ***********************************************************/
+  public static ArrayList<String> getHostNameList(OpenSmMonitorService OMService)
+  {
+    ArrayList<String> names = new ArrayList<String>();
+    if(OMService == null)
+    {
+      logger.severe("Can't get Host names from a null object");
+      return names;
+    }
+    ArrayList<String> hcaNames = getHcaNameList(OMService);
+    if((hcaNames == null) || (hcaNames.isEmpty()))
+    {
+      logger.severe("Can't get Host names without HCA names");
+      return names;
+    }
+    OSM_Fabric  Fabric  = OMService.getFabric();
+    
+    String fabName = Fabric.getFabricName(true);
+    fabName = fabName.replaceAll("[0-9]","");
+    
+    // ideally, the hcaNames should be some form of the fabric name
+    // and optionally contain an interface description after it
+    
+//    System.out.println("Fabric Name: " + fabName);
+    for(String n: hcaNames)
+    {
+      // split the HCA name up into words, and find the one(s)
+      // that contain the fabric name.  Add it to the list
+      // if it hasn't already been added (unique only)
+      String [] words = n.split(" ");
+      for(String w: words)
+      {
+        if(w.contains(fabName))
+        {
+          if(!names.contains(w))
+            names.add(w);
+        }
+      }
+      System.out.println(n);
+    }
+    // ideally, we have a collection of hosts with numbers
+    // and we want to sort them by number (not natural order)
+    
+    java.util.Collections.sort(names, SmtFabric.HostNameComparator);
+    
+//    System.out.println("And now the actual hosts");
+//    for(String h: names)
+//      System.out.println(h);
+//    
+    return null;
+  }
+  
+  public static Comparator<String> HostNameComparator = new Comparator<String>()
+  {
+
+    public int compare(String s1, String s2) 
+    {
+      // sort by using the trailing numbers
+      String h1 = s1.toLowerCase().replaceAll("[a-z]", "");
+      String h2 = s2.toLowerCase().replaceAll("[a-z]", "");
+      
+      // hopefully, all I have left are numbers
+      int n1 = Integer.parseInt(h1);
+      int n2 = Integer.parseInt(h2);
+      
+      return n1-n2;
+     }
+    };
+
+  /************************************************************
+   * Method Name:
+   *  getHcaNameList
+  **/
+  /**
+   * Returns the names of the Host Channel Adapters (HCA) in the
+   * fabric.
+   *
+   * @see     describe related java objects
+   *
+   * @param OMService
+   * @return
+   ***********************************************************/
+    public static ArrayList<String> getHcaNameList(OpenSmMonitorService OMService)
+    {
+      ArrayList<String> names = new ArrayList<String>();
+      if(OMService == null)
+      {
+        logger.severe("Can't get HCAs from a null object");
+        return names;
+      }
+      OSM_Fabric  Fabric  = OMService.getFabric();
+      OSM_Nodes AllNodes = (Fabric == null) ? null : Fabric.getOsmNodes();
+      ArrayList<SBN_Node> sbna = new ArrayList<SBN_Node>(Arrays.asList(AllNodes.getSubnNodes()));
+      
+      for (SBN_Node sn : sbna)
+      {
+        if (OSM_NodeType.get(sn) == OSM_NodeType.CA_NODE)
+        {
+          IB_Guid g = new IB_Guid(sn.node_guid);
+          String name = Fabric.getNameFromGuid(g);
+          names.add(name);
+        }
+      }
+      return names;
+    }
+
+    public static ArrayList<String> getHcaNamesFromHostName(OpenSmMonitorService OMService, String hostName)
+    {
+      ArrayList<String> names = new ArrayList<String>();
+      ArrayList<String> hcaNames = getHcaNameList(OMService);
+      if((hostName == null) || (hcaNames == null) || (hcaNames.isEmpty()))
+      {
+        logger.severe("Can't get HCA names with null objects");
+        return names;
+      }
+      // there will be zero to two matching HCA names for this hostName
+      for(String n: hcaNames)
+      {
+        if(n.toLowerCase().contains(hostName.toLowerCase()))
+          names.add(n);
+      }
+      return names;
+    }
+
+    public static String getHostNameForGuid(OpenSmMonitorService OMService, IB_Guid guid)
+    {
+      if((guid == null) || (OMService == null))
+      {
+        logger.severe("Can't get HCA names with null objects");
+        return null;
+      }
+      OSM_Fabric  Fabric = OMService.getFabric();
+      String fabName     = Fabric.getFabricName(true);
+      fabName            = fabName.replaceAll("[0-9]","");
+      String hcaName     = Fabric.getNameFromGuid(guid);
+      
+      // ideally, the fabric name will be in the hcaName somewhere, find it and return it
+      String [] words = hcaName.split(" ");
+      for(String w: words)
+      {
+        if(w.contains(fabName))
+          return w;
+      }
+      return null;
+    }
+
+    public static ArrayList<IB_Guid> getGuidsForHostName(OpenSmMonitorService OMService, String hostName)
+    {
+      ArrayList<IB_Guid> guids = new ArrayList<IB_Guid>();
+      if((hostName == null) || (OMService == null))
+      {
+        logger.severe("Can't get HCA names with null objects");
+        return guids;
+      }
+      OSM_Fabric  Fabric  = OMService.getFabric();
+      ArrayList<String> hcaNames = getHcaNamesFromHostName(OMService, hostName);
+      // there will be zero to two matching HCA names for this hostName
+      for(String n: hcaNames)
+      {
+        IB_Guid g = Fabric.getGuidFromName(n);
+        if(g != null)
+          guids.add(g);          
+      }
+//      System.out.println("HostName: " + hostName);
+//      for(IB_Guid hg: guids)
+//        System.out.println("Guid: " + hg.toColonString());
+      return guids;
+    }
+
+    public static ArrayList<IB_Guid> getGuidsFromHostNameList(OpenSmMonitorService OMService, ArrayList<String> hostNames)
+    {
+      ArrayList<IB_Guid> guids = new ArrayList<IB_Guid>();
+      if((hostNames == null) || (hostNames.isEmpty()) || (OMService == null))
+      {
+        logger.severe("Can't get HCA names with null objects");
+        return guids;
+      }
+      for(String n: hostNames)
+      {
+        ArrayList<IB_Guid> gL = getGuidsForHostName(OMService, n);
+        if((gL != null) && (!gL.isEmpty()))
+          guids.addAll(gL);
+      }
+      return guids;
+    }
 
   public static String getStatus(OpenSmMonitorService OMService)
   {
@@ -530,10 +741,13 @@ public class SmtFabric extends SmtCommand
       {
          OMS_WhatsUpInfo owu = new OMS_WhatsUpInfo(whatsUp, nodes);
          OSM_Fabric  Fabric  = OMService.getFabric();
-         System.out.println("Whats up on " + Fabric.getFabricName() + "?");
+         String fabName = Fabric.getFabricName(true);
+         System.out.println("Whats up on " + fabName + "?");
          System.out.println(owu.toInfo(" "));
       }
      }
+    getHostNameList(OMService);
+    getGuidsForHostName(OMService, "catalyst282");
    }
   
   public static String getErrorNodeSummary(OSM_FabricDeltaAnalyzer fda, LinkedHashMap<String, IB_Link> links, boolean includeStaticErrors)

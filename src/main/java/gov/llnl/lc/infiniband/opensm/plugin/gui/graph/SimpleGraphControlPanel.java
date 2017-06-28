@@ -63,8 +63,6 @@ import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -73,7 +71,6 @@ import java.util.List;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -96,8 +93,10 @@ import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ScalingControl;
 import edu.uci.ics.jung.visualization.subLayout.GraphCollapser;
-import gov.llnl.lc.smt.event.SmtMessage;
-import gov.llnl.lc.smt.event.SmtMessageType;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Updater;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_ServiceChangeListener;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
 import gov.llnl.lc.smt.filter.SmtFilter;
 import gov.llnl.lc.smt.manager.MessageManager;
 import gov.llnl.lc.smt.manager.SmtMessageUpdater;
@@ -112,12 +111,13 @@ import gov.llnl.lc.smt.swing.SMT_FabricGraphPanel;
  * 
  * @version Nov 26, 2013 9:18:42 AM
  **********************************************************************/
-public class SimpleGraphControlPanel extends JPanel
+public class SimpleGraphControlPanel extends JPanel implements OSM_ServiceChangeListener
 {
   /**
    * @wbp.parser.constructor
    */  
   SimpleCollapsableGraph SimpleGraph;
+  OpenSmMonitorService OMS;
   
   private static SmtMessageUpdater   Message_Mgr = null;
 
@@ -314,7 +314,6 @@ public class SimpleGraphControlPanel extends JPanel
         {
           if (v instanceof Graph)
           {
-
             Graph g = SimpleGraph.getCollapser().expand(SimpleGraph.getGraphLayout().getGraph(), (Graph) v);
             vv.getRenderContext().getParallelEdgeIndexFunction().reset();
             SimpleGraph.getGraphLayout().setGraph(g);
@@ -382,40 +381,17 @@ public class SimpleGraphControlPanel extends JPanel
         if (picked.size() > 1)
         {
           String descript = SimpleGraph.getToolTipText();
-
-          SmtFilter flter = SmtFilter.createFilterFromCollection(descript + " (" + picked.size() + " nodes)", picked);
+          SmtFilter flter = SmtFilter.createFilterFromCollection(descript + " (" + picked.size() + " nodes)", picked, OMS, true);
           if(filter != null)
             try
             {
-              flter.setDescription("fabric:    " + descript);
-              
-              JFileChooser fileChooser = new JFileChooser();
-              fileChooser.setDialogTitle("Save the Filter to a file");
-
-              int userSelection = fileChooser.showSaveDialog(null);
-
-              if (userSelection == JFileChooser.APPROVE_OPTION)
-              {
-                File fileToSave = fileChooser.getSelectedFile();
-                try
-                {
-                  Message_Mgr.postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INFO,
-                      "Save filter to file: " + fileToSave.getAbsolutePath()));
-                  SmtFilter.writeFilter(fileToSave.getAbsolutePath(), flter, flter.getDescription());
-                }
-                catch (IOException e1)
-                {
-                  Message_Mgr.postMessage(new SmtMessage(SmtMessageType.SMT_MSG_SEVERE,
-                      "Error Saving filter to file: " + fileToSave.getAbsolutePath()));
-                }
-              }
+              SmtFilter.saveToFile(flter, descript, true);
             }
             catch (Exception e1)
             {
               // TODO Auto-generated catch block
               e1.printStackTrace();
             }
-          
           vv.getPickedVertexState().clear();
           vv.repaint();
         }
@@ -528,6 +504,49 @@ public class SimpleGraphControlPanel extends JPanel
     
     f.pack();
     f.setVisible(true);
+  }
+
+  /************************************************************
+   * Method Name:
+   *  osmFabricUpdate
+  **/
+  /**
+   * Describe the method here
+   *
+   * @see gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricChangeListener#osmFabricUpdate(gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric)
+   *
+   * @param osmFabric
+   * @throws Exception
+   ***********************************************************/
+  
+  @Override
+  public void osmFabricUpdate(OSM_Fabric osmFabric) throws Exception
+  {
+    // TODO Auto-generated method stub
+    
+  }
+
+  /************************************************************
+   * Method Name:
+   *  osmServiceUpdate
+  **/
+  /**
+   * Describe the method here
+   *
+   * @see gov.llnl.lc.infiniband.opensm.plugin.data.OSM_ServiceChangeListener#osmServiceUpdate(gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Updater, gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService)
+   *
+   * @param updater
+   * @param osmService
+   * @throws Exception
+   ***********************************************************/
+  
+  @Override
+  public void osmServiceUpdate(OMS_Updater updater, OpenSmMonitorService osmService)
+      throws Exception
+  {
+    if(osmService != null)
+      OMS = osmService;
+    
   }
 
 }

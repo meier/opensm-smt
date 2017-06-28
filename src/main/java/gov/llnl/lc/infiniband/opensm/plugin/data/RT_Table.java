@@ -205,7 +205,7 @@ public class RT_Table implements Serializable, gov.llnl.lc.logging.CommonLogger,
     File inFile = new File(fName);
     if (!inFile.exists()) 
     {
-      logger.severe("Could not find file: (" + fName +") for reading");
+      logger.severe("Could not find node file: (" + fName +") for reading");
       return null;
     }
     

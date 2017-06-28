@@ -116,10 +116,10 @@ public class SimpleGraphMouseListener<V> implements GraphMouseListener<V>
         // generate a selection message (handled elsewhere)
         if(me.getSource() instanceof VisualizationViewer)
         {
-//          VisualizationViewer vv = (VisualizationViewer) me.getSource();
+          if(!me.isShiftDown())
+          // if the shift key is down, then allow multiple selection, but if just a single vertex, trigger a graph selection
            GraphSelectionManager.getInstance().updateAllListeners(new IB_GraphSelectionEvent(this, me.getSource(), v));
         }
-
       }
     }
     else
@@ -179,7 +179,7 @@ public class SimpleGraphMouseListener<V> implements GraphMouseListener<V>
   @Override
   public void graphReleased(V v, MouseEvent me)
   {
-    MessageManager.getInstance().postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INFO, "Vertex (" + ((IB_Vertex)v).toString() + ") PopUp release"));
+//    MessageManager.getInstance().postMessage(new SmtMessage(SmtMessageType.SMT_MSG_INFO, "Vertex (" + ((IB_Vertex)v).toString() + ") PopUp release"));
 //    System.err.println("SGM-R Popup for vertex " + v);
 //  System.err.println("IB Vertex " + v + " was released at (" + me.getX() + "," + me.getY() + ")");
     
