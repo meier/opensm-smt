@@ -291,13 +291,27 @@ public class FabricTreeModel implements TreeModel
     int myDepth          = parent.getDepth();
     int neighborDepth    = neighbor.getDepth();
     
+    // if either depth is less than 0 (leaf), return false
+    if((myDepth < 0) || (neighborDepth < 0))
+      return false;
+        
     // a child is exactly one less
     if(myDepth == (neighborDepth +1))
       return true;
     
-    // is this neighbor a "peer", same depth, but connected to me?
-    if((myDepth == neighborDepth) && (neighborDepth == getMaxNeighborDepth(neighbor)))
-        return true;
+//    // is this neighbor a "peer", same depth, but connected to me?
+//    if(myDepth == neighborDepth)
+//    {
+//      // same level as me, so check if 
+//      System.err.println("1 My Depth is: " + myDepth + ", and neighbor depth is: " + neighborDepth);
+//      
+//      // what is the maximum neibhborDepth of my neightbor??
+//      System.err.println("2 My key: " + parent.getKey() + ", and neighbor key is: " + neighbor.getKey());
+//      if(neighborDepth == getMaxNeighborDepth(neighbor))
+//        return false;
+//    }
+//if(myDepth == neighborDepth) && (neighborDepth == getMaxNeighborDepth(neighbor)))
+//        return true;
 
     return false;    
   }
@@ -305,7 +319,7 @@ public class FabricTreeModel implements TreeModel
   
   private static int getMaxNeighborDepth(IB_Vertex pv)
   {
-    int maxD = 0;
+    int maxD = -1;
     if (pv != null)
     {
       LinkedHashMap<String, IB_Vertex> nMap = pv.getNeighborMap();

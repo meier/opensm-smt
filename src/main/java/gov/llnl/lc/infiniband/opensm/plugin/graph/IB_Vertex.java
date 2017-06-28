@@ -690,7 +690,8 @@ public class IB_Vertex implements Comparable<IB_Vertex>, CommonLogger
       {
         // create a new (sorted) hashmap
         IB_Vertex v = entry.getValue();
-        vMap.put(entry.getKey(), v);
+        if((v != null) && !(v.getDepth() < 0) && (v.getKey() != null) && (v.getKey().length() > 0))
+          vMap.put(entry.getKey(), v);
       }
     }
     return vMap;
@@ -1112,22 +1113,37 @@ public class IB_Vertex implements Comparable<IB_Vertex>, CommonLogger
   public LinkedHashMap <String, IB_Vertex> getNeighborMap()
   {
     // a list of all the IB_Vertex at the other end of the edges
-    // or return a null map if no neighbors
+    // or return a null or empty map if no neighbors
     
     LinkedHashMap<String, IB_Vertex> vertexMap = null;
     if ((Edges != null) && (Edges.size() > 0))
     {
+//      if(this.getDepth() == 1)
+//      {
+//        System.err.println("Depth: " + this.getDepth());
+//        System.err.println("Num Edges: " + Edges.size());
+//      }
+//
       vertexMap = new LinkedHashMap<String, IB_Vertex>();
       for (Entry<String, IB_Edge> entry : Edges.entrySet())
       {
-        IB_Edge e = entry.getValue();
+        IB_Edge   e = entry.getValue();
+        IB_Vertex v = e.getEndpoint1();
 
         // add only the other end, not me!
-        if(!this.equals(e.getEndpoint1()))
-          vertexMap.put(e.getEndpoint1().getKey(), e.getEndpoint1());
+        if(!this.equals(v))
+        {
+          if((v != null) && !(v.getDepth() < 0) && (v.getKey() != null) && (v.getKey().length() > 0))
+            vertexMap.put(v.getKey(), v);
+        }
         
-        if(!this.equals(e.getEndpoint2()))
-          vertexMap.put(e.getEndpoint2().getKey(), e.getEndpoint2());
+        // check the other end, include only if appropriate
+        v = e.getEndpoint2();
+        if(!this.equals(v))
+        {
+          if((v != null) && !(v.getDepth() < 0) && (v.getKey() != null) && (v.getKey().length() > 0))
+            vertexMap.put(v.getKey(), v);
+        }
       }
     }
     return vertexMap;
