@@ -70,12 +70,14 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 
+import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_AnonymizedCollection;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_Collection;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_FilteredCollection;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
 import gov.llnl.lc.smt.SmtConstants;
 import gov.llnl.lc.smt.command.SmtCommand;
 import gov.llnl.lc.smt.command.config.SmtConfig;
+import gov.llnl.lc.smt.filter.SmtAnonymizer;
 import gov.llnl.lc.smt.filter.SmtFilter;
 import gov.llnl.lc.smt.props.SmtProperty;
 import gov.llnl.lc.time.TimeStamp;
@@ -167,6 +169,14 @@ public class SmtFile extends SmtCommand
       System.out.println("\nCompressed output file: " + fileName);
       System.out.println(getFileInfo(fileName, includeTS));
       
+    }
+    else if (subCommand.equalsIgnoreCase(SmtProperty.SMT_FILE_ANONYMIZE.getName()))
+    {
+      System.out.println("Anonymizing input file: " + subCommandArg);
+//      System.out.println("  using anonymizer file file: " + 
+      String fileName = anonymizeFile(subCommandArg, config);
+      System.out.println("\nAnonymized output file: " + fileName);
+      System.out.println(getFileInfo(fileName, includeTS));      
     }
     else if (subCommand.equalsIgnoreCase(SmtProperty.SMT_FILE_FILTER.getName()))
     {
@@ -447,6 +457,8 @@ public class SmtFile extends SmtCommand
     Option extract = OptionBuilder.hasArg(true).hasArgs(9).withArgName( sp.getArgName() ).withValueSeparator('=').withDescription(  sp.getDescription() ).withLongOpt(sp.getName()).create( sp.getShortName() );
     sp = SmtProperty.SMT_LIST_TIMESTAMP;
     Option lTimeStamps = new Option( sp.getShortName(), sp.getName(), false, sp.getDescription() );    
+    sp = SmtProperty.SMT_FILE_ANONYMIZE;
+    Option fA  = OptionBuilder.hasArg(true).hasArgs(2).withArgName( sp.getArgName() ).withValueSeparator('=').withDescription(  sp.getDescription() ).withLongOpt(sp.getName()).create( sp.getShortName() );
     sp = SmtProperty.SMT_FILE_FILTER;
     Option fF  = OptionBuilder.hasArg(true).hasArgs(2).withArgName( sp.getArgName() ).withValueSeparator('=').withDescription(  sp.getDescription() ).withLongOpt(sp.getName()).create( sp.getShortName() );
 
@@ -457,6 +469,7 @@ public class SmtFile extends SmtCommand
     options.addOption( concat );
     options.addOption( extract );
     options.addOption( lTimeStamps );
+    options.addOption( fA );
     options.addOption( fF );
     
     return true;
@@ -520,6 +533,16 @@ public class SmtFile extends SmtCommand
     {
       config.put(SmtProperty.SMT_SUBCOMMAND.getName(), sp.getName());
       saveConcatinationArgs(line.getOptionValues(sp.getName()), config);
+    }
+    
+    sp = SmtProperty.SMT_FILE_ANONYMIZE;
+    if(line.hasOption(sp.getName()))
+    {
+      // must be two arguments, first is anonymize filename,  final is output filename
+      
+      config.put(sp.getName(), line.getOptionValue(sp.getName()));
+      config.put(SmtProperty.SMT_SUBCOMMAND.getName(), sp.getName());
+      saveAnonymizeArgs(line.getOptionValues(sp.getName()), config);
     }
     
     sp = SmtProperty.SMT_FILE_FILTER;
@@ -630,6 +653,16 @@ public class SmtFile extends SmtCommand
     }
   }
   
+  private void saveAnonymizeArgs(String[] args, Map<String, String> config)
+  {
+    if((args != null && args.length > 0))
+    {
+      config.put(SmtProperty.SMT_ANONYMIZE_FILE.getName(), args[0]);
+      if(args.length > 1)
+        config.put(SmtProperty.SMT_WRITE_OMS_HISTORY.getName(), args[1]);
+    }
+  }
+  
   private void saveFilterArgs(String[] args, Map<String, String> config)
   {
     if((args != null && args.length > 0))
@@ -688,6 +721,54 @@ public class SmtFile extends SmtCommand
     return fName;    
   }
   
+  private String anonymizeFile(String inFile, SmtConfig config)
+  {
+    String inputFileName = convertSpecialFileName(inFile);
+    OMS_Collection origHistory;
+    try
+    {
+      origHistory = OMS_Collection.readOMS_Collection(inputFileName);
+    }
+    catch (Exception e1)
+    {
+      // TODO Auto-generated catch block
+      e1.printStackTrace();
+      return null;
+    }
+
+    OpenSmMonitorService OMS = origHistory.getCurrentOMS();
+    SmtAnonymizer anonymizer = getAnonymizer(config, OMS);
+    String fName = getFileName(config);
+
+    if ((anonymizer != null) && !anonymizer.hasEmptyAnonymizer())
+    {
+      try
+      {
+        // create a new, filtered, collection
+        OMS_AnonymizedCollection newHistory = new OMS_AnonymizedCollection();
+        newHistory.setAnonymizerFileName(anonymizer.getAnonymizerFileName());
+        newHistory.setHistoryFileName(inputFileName);
+        for (OpenSmMonitorService oms : origHistory.getOSM_History().values())
+        {
+          // anonymize the original, and add to new History
+          //  let the anonyzer do the work
+          newHistory.put(SmtAnonymizer.getOpenSmMonitorService(oms, anonymizer));
+        }
+        OMS_AnonymizedCollection.writeOMS_Collection(fName, newHistory);
+      }
+      catch (Exception e)
+      {
+        System.err.println("Could not anonymize file: " + inputFileName + ", to " + fName);
+        System.err.println("Exception: " + e.getMessage());
+        e.printStackTrace();
+      }
+    }
+    else
+      System.err.println("Invalid anonymizer file specification");
+
+    return fName;
+  }  
+
   private String filterFile(String inFile, SmtConfig config)
   {
     String inputFileName = convertSpecialFileName(inFile);
@@ -734,6 +815,43 @@ public class SmtFile extends SmtCommand
 
     return fName;
   }  
+
+  /************************************************************
+   * Method Name:
+   *  getAnonymizer
+  **/
+  /**
+   * Describe the method here
+   *
+   * @see     describe related java objects
+   *
+   * @param config
+   * @return
+   ***********************************************************/
+  private SmtAnonymizer getAnonymizer(SmtConfig config, OpenSmMonitorService OMS)
+  {
+    Map<String,String> map = config.getConfigMap();
+    String val = map.get(SmtProperty.SMT_ANONYMIZE_FILE.getName());
+    SmtAnonymizer anonymizer = null;
+    
+    try
+    {
+      anonymizer = new SmtAnonymizer(val, OMS);
+      if(!anonymizer.hasEmptyAnonymizer())
+        System.err.println("Read in an anonymizer file from: " + val);
+      else
+      {
+        System.err.println("Could not read the anonymizer file");
+        return null;
+      }
+    }
+    catch (IOException e)
+    {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    return anonymizer;
+  }
 
   /************************************************************
    * Method Name:
