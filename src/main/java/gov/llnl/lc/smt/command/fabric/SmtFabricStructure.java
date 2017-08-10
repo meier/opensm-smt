@@ -555,7 +555,9 @@ public class SmtFabricStructure implements CommonLogger, SmtConstants
       String sGuid = guidBins.getKey(k);
       IB_Guid sysGuid = new IB_Guid(sGuid);
       
-      OSM_System osm_sys = new OSM_System(sysGuid, fabric);
+//      OSM_System osm_sys = new OSM_System(sysGuid, fabric);
+      OSM_System osm_sys = OSM_System.getOSM_System(fabric, sysGuid);
+
       osm_sys.determineStructure(fabric);
       OsmSystems.add(osm_sys);
 

@@ -70,7 +70,6 @@ import gov.llnl.lc.logging.CommonLogger;
  **********************************************************************/
 public class CommandProperties extends Properties implements CommonLogger
 {
-
   public static final String SCMD_NUM_ARGS            = "SmtCommand.arguments.number";
   public static final String SCMD_FILE_SPECIFIED      = "SmtCommand.file.specified.boolean";
   public static final String SCMD_HOST_SPECIFIED      = "SmtCommand.host.specified.boolean";

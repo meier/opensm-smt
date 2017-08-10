@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "SMT\-FILE" "1" "2016-12-07" "User Commands" "Subnet Monitoring Tools"
+.TH "SMT\-FILE" "1" "2017-08-10" "User Commands" "Subnet Monitoring Tools"
 .
 .SH "NAME"
 \fBsmt\-file\fR \- a tool for interrogating and manipulating \fBSMT\fR files
@@ -56,6 +56,49 @@ When placed at the beginning of a new line, with a valid filename, the contents 
 \fB# <Comment>\fR
 When placed at the beginning of a new line, the line will be ignored, and any text will be considered a comment\.
 .
+.SS "Anonymize"
+Private or sensitive data can be removed from an existing history file through the use of the \fBanonymize\fR subcommand\. The behavior of this subcommand is controlled by the instructions in a properties file\. The following substitutions are supported\. Defaults values will be used, if nothing is specified\.
+.
+.TP
+\fBAnonymize\.name\fR=[FILE NAME]
+the name for this set of anonymization rules\. This can also just be the filename\.
+.
+.TP
+\fBAnonymize\.description\fR=[ DESCRIPTION ]
+the provided \fBDESCRIPTION\fR replaces any internal descriptions\.
+.
+.TP
+\fBAnonymize\.fabric\.name\fR=[NAME]
+the provided \fBNAME\fR replaces the name of the fabric or cluster\.
+.
+.TP
+\fBAnonymize\.object\.name\fR=[NAME]
+the provided \fBNAME\fR replaces any internal names, such as node names\.
+.
+.TP
+\fBAnonymize\.guid\.offset\.inHex\fR=[0xOFFSET]
+the provided \fB0xOFFSET\fR (a hex value) will be added to every guid value\.
+.
+.TP
+\fBAnonymize\.subnet\.offset\.inHex\fR=[0xOFFSET]
+the provided \fB0xOFFSET\fR (a hex value) will be added to the subnet prefix\.
+.
+.TP
+\fBAnonymize\.key\.offset\.inHex\fR=[0xOFFSET]
+the provided \fB0xOFFSET\fR (a hex value) will be added to every key value\.
+.
+.TP
+\fBAnonymize\.server\.name\fR=[NAME]
+the provided \fBNAME\fR replaces the name of the remote OMS service or host\.
+.
+.TP
+\fBAnonymize\.user\.name\fR=[NAME]
+the provided \fBNAME\fR replaces the name of a client user\. This refers to the OMS client sessions, maintained by the OMS Server\.
+.
+.TP
+\fBAnonymize\.host\.name\fR=[NAME]
+the provided \fBNAME\fR replaces the name of a client host\. This refers to the OMS client sessions, maintained by the OMS Server\.
+.
 .SH "OPTIONS"
 .
 .SS "Generic SMT Options"
@@ -93,6 +136,10 @@ joins or concatenates \fBOMS\fR history data from multiple files into a single \
 .TP
 \fB\-filter\fR, \fB\-\-filter\fR=[FILTER FILE] [OUTPUT FILE]
 uses the supplied \fBFILTER FILE\fR to reduce the contents of the input \fBOMS\fR history file\. The \fBfiltered\fR history is written to the \fBOUTPUT FILE\fR\.
+.
+.TP
+\fB\-anon\fR, \fB\-\-anonymizer\fR=[ANONYMIZE FILE] [OUTPUT FILE]
+uses the supplied \fBANONYMIZE FILE\fR to mask or replace the sensitive contents of the input \fBOMS\fR history file\. The \fBanonymized\fR history is written to the \fBOUTPUT FILE\fR\.
 .
 .TP
 \fB\-i\fR, \fB\-\-info\fR
@@ -147,6 +194,10 @@ show the details and contents of this configuration file
 .TP
 \fBsmt\-file historyFiles\.lst \-cH combinedCompressed\.his \-c 4\fR
 compress AND combine the history files contained in \fBhistoryFiles\.lst\fR and write them to \fBcombinedCompressed\.his\fR
+.
+.TP
+\fBsmt\-file MyCab\.his \-anon anonymize\.ano anonymizedCab\.his\fR
+produces a new \fBanonymized\fR history file using the supplied history file and an \fBanonymize\.ano\fR properties file
 .
 .SH "AUTHOR"
 Tim Meier \fImeier3@llnl\.gov\fR

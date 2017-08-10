@@ -209,8 +209,9 @@ public class OSM_System implements Serializable, CommonLogger, Comparable<OSM_Sy
   @Override
   public int compareTo(OSM_System o)
   {
-    // TODO Auto-generated method stub
-    return 0;
+    // the SysGuid is the only thing that MUST be unique
+
+   return SysGuid.compareTo(o.SysGuid);
   }
 
   /************************************************************
@@ -471,7 +472,31 @@ public class OSM_System implements Serializable, CommonLogger, Comparable<OSM_Sy
         k++;
       }
       
-      return sysArray;
+    return forceUniqueNames(sysArray);
+  }
+  
+  private static java.util.ArrayList <OSM_System> forceUniqueNames(java.util.ArrayList <OSM_System> sysArray)
+  {
+    if((sysArray == null) || (sysArray.isEmpty()))
+      return null;
+
+    // force the system names to be unique
+    int same = 0;
+    String postFix = "ABCDEFG";
+    for(OSM_System s1: sysArray)
+    {
+      String n1 = s1.getName();
+      for(OSM_System s2: sysArray)
+      {
+        String n2 = s2.getName();
+        if(!(s1.equals(s2)) && (n1.equals(n2)))
+        {
+          s2.setName(n2 + "-" + postFix.charAt(same)); 
+          same++;
+        }
+      }
+    }
+    return sysArray;
   }
   
   public static OSM_System getOSM_System(ArrayList <OSM_System> sysArray, IB_Guid sysGuid)
@@ -533,6 +558,11 @@ public class OSM_System implements Serializable, CommonLogger, Comparable<OSM_Sy
   public String getName()
   {
     return Name;
+  }
+
+  public void setName(String name)
+  {
+    Name = name;
   }
 
   /************************************************************

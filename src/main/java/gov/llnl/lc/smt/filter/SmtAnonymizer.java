@@ -56,15 +56,36 @@
 package gov.llnl.lc.smt.filter;
 
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
 
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Nodes;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Ports;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Subnet;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_SysInfo;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
+import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Node;
+import gov.llnl.lc.infiniband.opensm.plugin.data.PFM_Port;
+import gov.llnl.lc.infiniband.opensm.plugin.data.SBN_Manager;
+import gov.llnl.lc.infiniband.opensm.plugin.data.SBN_MulticastGroup;
+import gov.llnl.lc.infiniband.opensm.plugin.data.SBN_Node;
+import gov.llnl.lc.infiniband.opensm.plugin.data.SBN_PartitionKey;
+import gov.llnl.lc.infiniband.opensm.plugin.data.SBN_Port;
+import gov.llnl.lc.infiniband.opensm.plugin.data.SBN_Router;
+import gov.llnl.lc.infiniband.opensm.plugin.data.SBN_Switch;
+import gov.llnl.lc.infiniband.opensm.plugin.event.OSM_EventStats;
 import gov.llnl.lc.infiniband.opensm.plugin.net.OsmServerStatus;
+import gov.llnl.lc.net.MultiSSLServerStatus;
 import gov.llnl.lc.net.ObjectSession;
 import gov.llnl.lc.smt.command.SmtCommand;
+import gov.llnl.lc.smt.props.AnonymizeProperties;
 
 /**********************************************************************
- * Describe purpose and responsibility of SmtAnonymizer
+ * The SmtAnonymizer can be used to convert identifying information in
+ * OMS records into something else.  Typically this is used to strip out
+ * data that may be considered sensitive or private, while maintaining
+ * the integrity of the OMS data set.
  * <p>
  * @see  related classes and interfaces
  *
@@ -72,11 +93,23 @@ import gov.llnl.lc.smt.command.SmtCommand;
  * 
  * @version Aug 4, 2017 10:52:15 AM
  **********************************************************************/
-public class SmtAnonymizer
+public class SmtAnonymizer implements Serializable, gov.llnl.lc.logging.CommonLogger
 {
+  /**  describe serialVersionUID here **/
+  private static final long serialVersionUID = 1L;
+  
+  public AnonymizeProperties aProp;
 
-  String AnonymizerFileName = "unknown";
-  String Description        = "unknown";
+  protected String serverAnonymous     = "AnonymousServer";
+  protected String userAnonymous       = "AnonymousUser";
+  protected String hostAnonymous       = "AnonymousHost";
+
+  protected String Description         = "unknown";
+  protected String FabricName          = "anonymized";
+  protected String ObjectNameAnonymize = "anonymized";
+  protected long   guidAnonymize       = 0xff;
+  protected long   subnetAnonymize     = 0xff;
+  protected long   keyAnonymize        = 0xff;
  
   /************************************************************
    * Method Name:
@@ -92,7 +125,6 @@ public class SmtAnonymizer
   {
     super();
   }
-  
   
   /************************************************************
    * Method Name:
@@ -128,78 +160,21 @@ public class SmtAnonymizer
     super();
     String fName = SmtCommand.convertSpecialFileName(anonymizerFileName);
     if(fName != null)
-      AnonymizerFileName = fName;
-    
+      aProp = new AnonymizeProperties(fName);
+
+    if(aProp != null)
+    {
+      Description         = aProp.getDescription();
+      FabricName          = aProp.getFabricName();
+      ObjectNameAnonymize = aProp.getName();
+      guidAnonymize       = aProp.getGuidOffset();
+      subnetAnonymize     = aProp.getSubnetOffset();
+      keyAnonymize        = aProp.getKeyOffset();
+      serverAnonymous     = aProp.getServer();
+      userAnonymous       = aProp.getUser();
+      hostAnonymous       = aProp.getHost();
+    }
   }
-
-
-
-
-  /************************************************************
-   * Method Name:
-   *  getAnonymizerFileName
-  **/
-  /**
-   * Returns the value of anonymizerFileName
-   *
-   * @return the anonymizerFileName
-   *
-   ***********************************************************/
-  
-  public String getAnonymizerFileName()
-  {
-    return AnonymizerFileName;
-  }
-
-
-  /************************************************************
-   * Method Name:
-   *  setAnonymizerFileName
-  **/
-  /**
-   * Sets the value of anonymizerFileName
-   *
-   * @param anonymizerFileName the anonymizerFileName to set
-   *
-   ***********************************************************/
-  public void setAnonymizerFileName(String anonymizerFileName)
-  {
-    AnonymizerFileName = anonymizerFileName;
-  }
-
-
-  /************************************************************
-   * Method Name:
-   *  getDescription
-  **/
-  /**
-   * Returns the value of description
-   *
-   * @return the description
-   *
-   ***********************************************************/
-  
-  public String getDescription()
-  {
-    return Description;
-  }
-
-
-  /************************************************************
-   * Method Name:
-   *  setDescription
-  **/
-  /**
-   * Sets the value of description
-   *
-   * @param description the description to set
-   *
-   ***********************************************************/
-  public void setDescription(String description)
-  {
-    Description = description;
-  }
-
 
   /************************************************************
    * Method Name:
@@ -214,8 +189,6 @@ public class SmtAnonymizer
    ***********************************************************/
   public static void main(String[] args)
   {
-    // TODO Auto-generated method stub
-
   }
 
   /************************************************************
@@ -231,10 +204,8 @@ public class SmtAnonymizer
    ***********************************************************/
   public boolean hasEmptyAnonymizer()
   {
-    // TODO Auto-generated method stub
-    return false;
+    return aProp == null;
   }
-
 
   /************************************************************
    * Method Name:
@@ -251,34 +222,24 @@ public class SmtAnonymizer
    ***********************************************************/
   public static OpenSmMonitorService getOpenSmMonitorService(OpenSmMonitorService oms, SmtAnonymizer anonymizer)
   {
-    
-    
     // anonymize the original, and add to new History
-    // the fabric is the only thing that is filtered
-    //return new OpenSmMonitorService(oms.getParentSessionStatus(), oms.getRemoteServerStatus(), OSM_Fabric.getOSM_Fabric(oms.getFabric(), filter));
-
 
     // take apart the OMS, and anonymize each piece, before putting it back together
-    
-    // names, descriptions
-    // guids
     
     ObjectSession session  = anonymizer.anonymize(oms.getParentSessionStatus());
     OsmServerStatus server = anonymizer.anonymize(oms.getRemoteServerStatus());
     OSM_Fabric fabric      = anonymizer.anonymize(oms.getFabric());
     
-    OpenSmMonitorService newOMS = new OpenSmMonitorService(session, server, fabric);
-
-    return newOMS;
+    return new OpenSmMonitorService(session, server, fabric);
   }
-
 
   /************************************************************
    * Method Name:
    *  anonymize
   **/
   /**
-   * Describe the method here
+   * Remove any private, sensitive, or identifiable information from
+   * this object, while making sure it is still viable.
    *
    * @see     describe related java objects
    *
@@ -287,10 +248,96 @@ public class SmtAnonymizer
    ***********************************************************/
   private OSM_Fabric anonymize(OSM_Fabric fabric)
   {
-    System.err.println("Anonymize Fabric");
-    return fabric;
+    // the easiest way to anonymize the fabric, is to anonymize
+    // each component, and then create a new fabric from those parts
+    
+    OSM_Nodes aNodes       = anonymize(fabric.getOsmNodes());
+    OSM_Ports aPorts       = anonymize(fabric.getOsmPorts());
+    OSM_Subnet aSubnet     = anonymize(fabric.getOsmSubnet());
+    OSM_SysInfo aSysInfo   = anonymize(fabric.getOsmSysInfo());
+    OSM_EventStats aEstats = anonymize(fabric.getOsmEventStats());
+    
+    return new OSM_Fabric(FabricName, aNodes, aPorts, fabric.getOsmStats(), aSubnet, aSysInfo, aEstats);
   }
 
+  /************************************************************
+   * Method Name:
+   *  anonymize
+  **/
+  /**
+   * Remove any private, sensitive, or identifiable information from
+   * this object, while making sure it is still viable.
+   *
+   * @see     describe related java objects
+   *
+   * @param osmEventStats
+   * @return
+   ***********************************************************/
+  private OSM_EventStats anonymize(OSM_EventStats osmEventStats)
+  {
+    // these are just counters, nothing to anonymize
+    return osmEventStats;
+  }
+
+  /************************************************************
+   * Method Name:
+   *  anonymize
+  **/
+  /**
+   * Remove any private, sensitive, or identifiable information from
+   * this object, while making sure it is still viable.
+   *
+   * @see     describe related java objects
+   *
+   * @param osmSysInfo
+   * @return
+   ***********************************************************/
+  private OSM_SysInfo anonymize(OSM_SysInfo osmSysInfo)
+  {
+    // these are just counters, nothing to anonymize
+    return osmSysInfo;
+  }
+
+  /************************************************************
+   * Method Name:
+   *  anonymize
+  **/
+  /**
+   * Remove any private, sensitive, or identifiable information from
+   * this object, while making sure it is still viable.
+   *
+   * @see     describe related java objects
+   *
+   * @param osmSubnet
+   * @return
+   ***********************************************************/
+  private OSM_Subnet anonymize(OSM_Subnet osmSubnet)
+  {
+    // these are all public members, just replace the ones that are
+    // necessary, and leave the rest
+    
+    osmSubnet.Options.ca_name       = ObjectNameAnonymize + " Channel Adapter";
+    osmSubnet.Options.guid          += guidAnonymize;
+    osmSubnet.Options.m_key         += keyAnonymize;
+    osmSubnet.Options.sm_key        += keyAnonymize;
+    osmSubnet.Options.sa_key        += keyAnonymize;
+    osmSubnet.Options.cc_key        += keyAnonymize;
+    osmSubnet.Options.subnet_prefix += subnetAnonymize;
+        
+    SBN_Manager []        Managers = anonymize(osmSubnet.Managers);
+    SBN_Router []          Routers = anonymize(osmSubnet.Routers);
+    SBN_Switch []         Switches = anonymize(osmSubnet.Switches);
+    SBN_PartitionKey []      PKeys = anonymize(osmSubnet.PKeys);
+    SBN_MulticastGroup [] MCGroups = anonymize(osmSubnet.MCGroups);
+    
+    osmSubnet.Managers = Managers;
+    osmSubnet.Routers  = Routers;
+    osmSubnet.Switches = Switches;
+    osmSubnet.PKeys    = PKeys;
+    osmSubnet.MCGroups = MCGroups;
+    
+    return osmSubnet;
+  }
 
   /************************************************************
    * Method Name:
@@ -298,6 +345,270 @@ public class SmtAnonymizer
   **/
   /**
    * Describe the method here
+   *
+   * @see     describe related java objects
+   *
+   * @param mCGroups
+   * @return
+   ***********************************************************/
+  private SBN_MulticastGroup[] anonymize(SBN_MulticastGroup[] mCGroups)
+  {
+    for(SBN_MulticastGroup mg: mCGroups)
+    {
+      // replace guids
+      for(int ndex = 0; ndex < mg.port_guids.length; ndex++)
+        mg.port_guids[ndex] += guidAnonymize;
+    }
+    return mCGroups;
+  }
+
+  /************************************************************
+   * Method Name:
+   *  anonymize
+  **/
+  /**
+   * Describe the method here
+   *
+   * @see     describe related java objects
+   *
+   * @param pKeys
+   * @return
+   ***********************************************************/
+  private SBN_PartitionKey[] anonymize(SBN_PartitionKey[] pKeys)
+  {
+    for(SBN_PartitionKey pK: pKeys)
+    {
+      // replace keys and guid
+      pK.pkey += keyAnonymize;
+      
+      // replace guids
+      for(int ndex = 0; ndex < pK.full_members; ndex++)
+        pK.full_member_guids[ndex] += guidAnonymize;
+      
+      for(int ndex = 0; ndex < pK.full_member_guids.length; ndex++)
+        pK.full_member_guids[ndex] += guidAnonymize;
+    }
+    return pKeys;
+  }
+
+  /************************************************************
+   * Method Name:
+   *  anonymize
+  **/
+  /**
+   * Describe the method here
+   *
+   * @see     describe related java objects
+   *
+   * @param switches
+   * @return
+   ***********************************************************/
+  private SBN_Switch[] anonymize(SBN_Switch[] switches)
+  {
+    for(SBN_Switch s: switches)
+      // replace names and guid
+      s.guid += guidAnonymize;
+
+    return switches;
+  }
+
+  /************************************************************
+   * Method Name:
+   *  anonymize
+  **/
+  /**
+   * Describe the method here
+   *
+   * @see     describe related java objects
+   *
+   * @param routers
+   * @return
+   ***********************************************************/
+  private SBN_Router[] anonymize(SBN_Router[] routers)
+  {
+    for(SBN_Router r: routers)
+      r.guid += guidAnonymize;
+
+    return routers;
+  }
+
+  /************************************************************
+   * Method Name:
+   *  anonymize
+  **/
+  /**
+   * Describe the method here
+   *
+   * @see     describe related java objects
+   *
+   * @param managers
+   * @return
+   ***********************************************************/
+  private SBN_Manager[] anonymize(SBN_Manager[] managers)
+  {
+    for(SBN_Manager m: managers)
+    {
+      // replace names and guid
+      m.guid += guidAnonymize;
+      m.sm_key += keyAnonymize;
+    }
+    return managers;
+  }
+
+  /************************************************************
+   * Method Name:
+   *  anonymize
+  **/
+  /**
+   * Remove any private, sensitive, or identifiable information from
+   * this object, while making sure it is still viable.
+   *
+   * @see     describe related java objects
+   *
+   * @param osmPorts
+   * @return
+   ***********************************************************/
+  private OSM_Ports anonymize(OSM_Ports osmPorts)
+  {
+    // create new Ports from the PerfMgr and Subnet ports
+    
+    PFM_Port[] perfMgrPorts = anonymize(osmPorts.PerfMgrPorts);
+    SBN_Port[] subnPorts    = anonymize(osmPorts.SubnPorts);
+    
+    return new OSM_Ports(perfMgrPorts, subnPorts);
+  }
+
+  /************************************************************
+   * Method Name:
+   *  anonymize
+  **/
+  /**
+   * Remove any private, sensitive, or identifiable information from
+   * this object, while making sure it is still viable.
+   *
+   * @see     describe related java objects
+   *
+   * @param subnPorts
+   * @return
+   ***********************************************************/
+  private SBN_Port[] anonymize(SBN_Port[] subnPorts)
+  {
+    for(SBN_Port p: subnPorts)
+    {
+      // replace names and guid
+      p.node_guid               += guidAnonymize;
+      p.port_guid               += guidAnonymize;
+      p.linked_node_guid        += guidAnonymize;
+      p.linked_port_guid        += guidAnonymize;
+      
+      p.port_info.subnet_prefix += subnetAnonymize;
+      
+      // nothing in extended port info, yet...
+    }
+    return subnPorts;
+  }
+
+  /************************************************************
+   * Method Name:
+   *  anonymize
+  **/
+  /**
+   * Remove any private, sensitive, or identifiable information from
+   * this object, while making sure it is still viable.
+   *
+   * @see     describe related java objects
+   *
+   * @param perfMgrPorts
+   * @return
+   ***********************************************************/
+  private PFM_Port[] anonymize(PFM_Port[] perfMgrPorts)
+  {
+    for(PFM_Port p: perfMgrPorts)
+      // replace names and guid
+      p.node_guid += guidAnonymize;
+
+    return perfMgrPorts;
+  }
+
+  /************************************************************
+   * Method Name:
+   *  anonymize
+  **/
+  /**
+   * Remove any private, sensitive, or identifiable information from
+   * this object, while making sure it is still viable.
+   *
+   * @see     describe related java objects
+   *
+   * @param osmNodes
+   * @return
+   ***********************************************************/
+  private OSM_Nodes anonymize(OSM_Nodes osmNodes)
+  {
+    // create new Nodes from the PerfMgr and Subnet nodes
+    PFM_Node[] perfMgrNodes = anonymize(osmNodes.PerfMgrNodes);
+    SBN_Node[] subnNodes    = anonymize(osmNodes.SubnNodes);
+    
+    return new OSM_Nodes(perfMgrNodes, subnNodes);
+  }
+
+  /************************************************************
+   * Method Name:
+   *  anonymize
+  **/
+  /**
+   * Describe the method here
+   *
+   * @see     describe related java objects
+   *
+   * @param subnNodes
+   * @return
+   ***********************************************************/
+  private SBN_Node[] anonymize(SBN_Node[] subnNodes)
+  {
+    for(SBN_Node n: subnNodes)
+    {
+      // replace names and guid
+      n.node_guid += guidAnonymize;
+      n.port_guid += guidAnonymize;
+      n.sys_guid  += guidAnonymize;
+      n.description = n.getNodeGuid().toColonString() + " " + ObjectNameAnonymize;
+    }
+    return subnNodes;
+  }
+
+  /************************************************************
+   * Method Name:
+   *  anonymize
+  **/
+  /**
+   * Remove any private, sensitive, or identifiable information from
+   * this object, while making sure it is still viable.
+   *
+   *
+   * @see     describe related java objects
+   *
+   * @param perfMgrNodes
+   * @return
+   ***********************************************************/
+  private PFM_Node[] anonymize(PFM_Node[] perfMgrNodes)
+  {
+    for(PFM_Node n: perfMgrNodes)
+    {
+      // replace names and guid
+      n.node_guid += guidAnonymize;
+      n.node_name = n.getNodeGuid().toColonString() + " " + ObjectNameAnonymize;
+    }
+    return perfMgrNodes;
+  }
+
+  /************************************************************
+   * Method Name:
+   *  anonymize
+  **/
+  /**
+   * Remove any private, sensitive, or identifiable information from
+   * this object, while making sure it is still viable.
    *
    * @see     describe related java objects
    *
@@ -306,17 +617,49 @@ public class SmtAnonymizer
    ***********************************************************/
   private OsmServerStatus anonymize(OsmServerStatus remoteServerStatus)
   {
-    System.err.println("Anonymize ServerStatus");
+    MultiSSLServerStatus server = remoteServerStatus.Server;
+    server.setHost(serverAnonymous);
+    
+    java.util.ArrayList <ObjectSession> current_Sessions    = anonymize(server.getCurrent_Sessions());
+    java.util.ArrayList <ObjectSession> historical_Sessions = anonymize(server.getHistorical_Sessions());
+
+    server.setCurrent_Sessions(current_Sessions);
+    server.setHistorical_Sessions(historical_Sessions);
+    
+    remoteServerStatus.Server = server;
     return remoteServerStatus;
   }
-
+  
+  /************************************************************
+   * Method Name:
+   *  anonymize
+  **/
+  /**
+   * Remove any private, sensitive, or identifiable information from
+   * this object, while making sure it is still viable.
+   *
+   * @see     describe related java objects
+   *
+   * @param current_Sessions
+   * @return
+   ***********************************************************/
+  private ArrayList<ObjectSession> anonymize(ArrayList<ObjectSession> sessions)
+  {
+    if(sessions == null)
+      return sessions;
+    
+    for(ObjectSession o: sessions)
+      o = anonymize(o);
+    return sessions;
+  }
 
   /************************************************************
    * Method Name:
    *  anonymize
   **/
   /**
-   * Describe the method here
+   * Remove any private, sensitive, or identifiable information from
+   * this object, while making sure it is still viable.
    *
    * @see     describe related java objects
    *
@@ -325,7 +668,9 @@ public class SmtAnonymizer
    ***********************************************************/
   private ObjectSession anonymize(ObjectSession parentSessionStatus)
   {
-    System.err.println("Anonymize SessionStatus");
+    parentSessionStatus.setUser(userAnonymous);
+    parentSessionStatus.setHost(hostAnonymous);
+
     return parentSessionStatus;
   }
 

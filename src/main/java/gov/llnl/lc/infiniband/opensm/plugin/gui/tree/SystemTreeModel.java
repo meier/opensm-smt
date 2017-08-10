@@ -118,7 +118,10 @@ public class SystemTreeModel extends FabricTreeModel implements CommonLogger
   {
     this(null);
     // get an OSM_System object, which contains the structure of the chassis
-    OSM_System os = new OSM_System(sysGuid, fabric);
+//    OSM_System os = new OSM_System(sysGuid, fabric);
+    
+    OSM_System os = OSM_System.getOSM_System(fabric, sysGuid);
+
     
     // Build the Tree Model for System Image Guid
     

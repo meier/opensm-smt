@@ -159,7 +159,7 @@ public class SmtFile extends SmtCommand
       System.out.println(getFileInfo(subCommandArg, includeTS));
       String fileName = extractFile(subCommandArg, config);
       System.out.println("\nExtracting to output file: " + fileName);
-      System.out.println(getFileInfo(fileName, includeTS));
+//      System.out.println(getFileInfo(fileName, includeTS));
     }
     else if (subCommand.equalsIgnoreCase(SmtProperty.SMT_FILE_COMPRESS.getName()))
     {
@@ -167,25 +167,22 @@ public class SmtFile extends SmtCommand
       System.out.println(getFileInfo(subCommandArg, includeTS));
       String fileName = compressFile(subCommandArg, config);
       System.out.println("\nCompressed output file: " + fileName);
-      System.out.println(getFileInfo(fileName, includeTS));
+ //     System.out.println(getFileInfo(fileName, includeTS));
       
     }
     else if (subCommand.equalsIgnoreCase(SmtProperty.SMT_FILE_ANONYMIZE.getName()))
     {
       System.out.println("Anonymizing input file: " + subCommandArg);
-//      System.out.println("  using anonymizer file file: " + 
       String fileName = anonymizeFile(subCommandArg, config);
       System.out.println("\nAnonymized output file: " + fileName);
-      System.out.println(getFileInfo(fileName, includeTS));      
+//      System.out.println(getFileInfo(fileName, includeTS));      
     }
     else if (subCommand.equalsIgnoreCase(SmtProperty.SMT_FILE_FILTER.getName()))
     {
       System.out.println("Filtering input file: " + subCommandArg);
-//      System.out.println("  using filter file: " + 
       String fileName = filterFile(subCommandArg, config);
       System.out.println("\nFiltered output file: " + fileName);
-//      System.out.println(getFileInfo(fileName, includeTS));
-      
+//      System.out.println(getFileInfo(fileName, includeTS));    
     }
     
    return true;
@@ -731,7 +728,6 @@ public class SmtFile extends SmtCommand
     }
     catch (Exception e1)
     {
-      // TODO Auto-generated catch block
       e1.printStackTrace();
       return null;
     }
@@ -744,14 +740,14 @@ public class SmtFile extends SmtCommand
     {
       try
       {
-        // create a new, filtered, collection
+        // create a new, anonymized, collection
         OMS_AnonymizedCollection newHistory = new OMS_AnonymizedCollection();
-        newHistory.setAnonymizerFileName(anonymizer.getAnonymizerFileName());
+        newHistory.setAnonymizerFileName(anonymizer.aProp.getAnonymizerFileName());
         newHistory.setHistoryFileName(inputFileName);
         for (OpenSmMonitorService oms : origHistory.getOSM_History().values())
         {
           // anonymize the original, and add to new History
-          //  let the anonyzer do the work
+          //  let the anonymizer do the work
           newHistory.put(SmtAnonymizer.getOpenSmMonitorService(oms, anonymizer));
         }
         OMS_AnonymizedCollection.writeOMS_Collection(fName, newHistory);
@@ -779,7 +775,6 @@ public class SmtFile extends SmtCommand
     }
     catch (Exception e1)
     {
-      // TODO Auto-generated catch block
       e1.printStackTrace();
       return null;
     }
@@ -847,7 +842,6 @@ public class SmtFile extends SmtCommand
     }
     catch (IOException e)
     {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
     return anonymizer;
@@ -881,11 +875,9 @@ public class SmtFile extends SmtCommand
         System.err.println("Could not read the filter file");
         return null;
       }
-      
     }
     catch (IOException e)
     {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
     return filter;
@@ -1008,47 +1000,6 @@ public class SmtFile extends SmtCommand
     return outFile;    
   }
   
-
-
-  /************************************************************
-   * Method Name:
-   *  getFileList
-  **/
-  /**
-   * Describe the method here
-   *
-   * @see     describe related java objects
-   *
-   * @param inputFileName
-   * @return
-   ***********************************************************/
-  private List<String> getFileList6(String fileName)
-  {
-    List<String> fileList = new ArrayList<String>();
-
-//    try
-//    {
-//      FileInputStream fis = new FileInputStream(fileName);
-//      
-//      //Construct BufferedReader from InputStreamReader
-//      BufferedReader br = new BufferedReader(new InputStreamReader(fis));
-//     
-//      String line = null;
-//      while ((line = br.readLine()) != null)
-//      {
-//        // don't add blank lines or comments
-//        if(!line.isEmpty() && !line.startsWith("#"))
-//          fileList.add(line);
-//      }
-//      br.close();
-//    }
-//    catch (IOException e)
-//    {
-//      e.printStackTrace();
-//    }
-    return fileList;
-  }
-
   private List<String> getFileList(String fileName)
   {
     List<String> fileList = new ArrayList<String>();
