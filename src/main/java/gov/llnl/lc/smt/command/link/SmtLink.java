@@ -66,6 +66,7 @@ import org.apache.commons.cli.OptionBuilder;
 
 import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.core.IB_Link;
+import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Configuration;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_FabricDelta;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_LinkSpeed;
@@ -76,6 +77,7 @@ import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Ports;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OpenSmMonitorService;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Edge;
 import gov.llnl.lc.infiniband.opensm.plugin.graph.IB_Vertex;
+import gov.llnl.lc.infiniband.opensm.xml.IB_FabricConf;
 import gov.llnl.lc.smt.SmtConstants;
 import gov.llnl.lc.smt.command.SmtCommand;
 import gov.llnl.lc.smt.command.config.SmtConfig;
@@ -145,15 +147,20 @@ public class SmtLink extends SmtCommand
 
     // this is the LINK command, and it can take a subcommand and an argument
       String subCommandArg = null;
+      boolean delim   = false;
       boolean onlyMissing   = false;
       boolean includeMissing = true;
       
       subCommandArg = map.get(subCommand);
         
-        String oMstring = map.get(SmtProperty.SMT_ONLY_MISSING.getName());
-        if((oMstring != null) && (oMstring.startsWith("t") || (oMstring.startsWith("T"))))
-            onlyMissing = true;
-         
+      String delimString = map.get(SmtProperty.SMT_DELIMITER.getName());
+      if(delimString != null)
+          delim = true;
+       
+      String oMstring = map.get(SmtProperty.SMT_ONLY_MISSING.getName());
+      if((oMstring != null) && (oMstring.startsWith("t") || (oMstring.startsWith("T"))))
+          onlyMissing = true;
+       
         String iMstring = map.get(SmtProperty.SMT_INCLUDE_MISSING.getName());
         if((iMstring != null) && (iMstring.startsWith("f") || (iMstring.startsWith("F"))))
           includeMissing = false;
@@ -186,10 +193,26 @@ public class SmtLink extends SmtCommand
           fabric = fd.getFabric2();
           links = fabric.getIB_Links(g);        
         }
+        
         switch (qType)
         {
           case LINK_LIST:
             System.out.println(LinkQuery.describeAllQueryTypes());
+            break;
+            
+          case LINK_CONFIG:
+            OSM_Configuration cfg = getOsmConfig(true);
+            if((cfg != null) && (cfg.getFabricConfig() != null) && (cfg.getFabricConfig().getFabricName() != null))
+            {
+              // save this configuration and then perform a check
+              OSM_Configuration.cacheOSM_Configuration(OMService.getFabricName(), cfg);
+              printLinksAsConfigured(cfg, delimString);
+            }
+            else
+            {
+              logger.severe("Couldn't obtain Fabric configuration, check service connection and existance of config file.");
+              System.err.println("Couldn't obtain Fabric configuration, check service connection and existance of config file.");
+            }
             break;
             
           case LINK_STATUS:
@@ -344,6 +367,9 @@ public class SmtLink extends SmtCommand
     sp = SmtProperty.SMT_DUMP;
     Option dump  = OptionBuilder.hasArg(false).withDescription(  sp.getDescription() ).withLongOpt(sp.getName()).create( sp.getShortName() );
     
+    sp = SmtProperty.SMT_DELIMITER;
+    Option delim  = OptionBuilder.hasArg(true).hasArgs(1).withArgName( sp.getArgName() ).withValueSeparator('=').withDescription(  sp.getDescription() ).withLongOpt(sp.getName()).create( sp.getShortName() );
+    
     sp = SmtProperty.SMT_QUERY_LEVEL;
     Option level  = OptionBuilder.hasArg(true).hasArgs(1).withArgName( sp.getArgName() ).withValueSeparator('=').withDescription(  sp.getDescription() ).withLongOpt(sp.getName()).create( sp.getShortName() );
 
@@ -354,6 +380,7 @@ public class SmtLink extends SmtCommand
     options.addOption( qList );
     options.addOption( status );
     options.addOption( dump );
+    options.addOption( delim );
 
     options.addOption( level );
     options.addOption( oMissing );
@@ -422,9 +449,19 @@ public class SmtLink extends SmtCommand
       config.put(sp.getName(), line.getOptionValue(sp.getName()));
     }
 
+    // save some defaults
+    config.put(SmtProperty.SMT_DELIMITER.getName(), "   ");
     config.put(SmtProperty.SMT_INCLUDE_MISSING.getName(), "true");
     config.put(SmtProperty.SMT_ONLY_MISSING.getName(),    "false");
     
+    sp = SmtProperty.SMT_DELIMITER;
+    if(line.hasOption(sp.getName()))
+    {
+      config.put(sp.getName(), line.getOptionValue(sp.getName()));
+      // this is an argument for the query configured subcommand
+      // this is NOT a subcommand
+    }    
+
     sp = SmtProperty.SMT_ONLY_MISSING;
     if(line.hasOption(sp.getName()))
     {
@@ -556,6 +593,20 @@ public class SmtLink extends SmtCommand
     
     // vertex map  needs to be created first, so depths can be assigned
     return IB_Vertex.createEdgeMap(IB_Vertex.createVertexMap(Fabric));
+  }
+  
+  private boolean printLinksAsConfigured(OSM_Configuration cfg, String delimiter)
+  {
+    // mimics the behavior of "ibparsefabricconf -d"delim""
+    //
+    // instead of using the ibfabricconf.xml file, uses the data structure
+    // within IB_FabricConf
+    //
+    // The origin of IB_FabricConf can be from ibfabricconf.xml or ibfabricconf.json
+    System.out.print(cfg.getFabricConfig().toLinkStrings(delimiter));
+    
+    // all the information for a link should be on a single line, with delimiter as separator
+    return true;
   }
   
   private boolean printStringMap(LinkedHashMap <String, String> map)

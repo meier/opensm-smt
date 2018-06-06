@@ -218,7 +218,11 @@ public class FabricConfTreeModel extends DefaultTreeModel
 
   private void addNodeElement(UserObjectTreeNode parent, IB_LinkListElement lle)
   {
+    
     NameValueNode          vmn = new NameValueNode("switch", lle.getName());
+    
+    if(lle.getPortElements().size() < 3)
+      vmn = new NameValueNode("channel adapter", lle.getName());
 //    NameValueNode          vmn = new NameValueNode("link list", lle);
     UserObjectTreeNode    vmtn = new UserObjectTreeNode(vmn, true);
     parent.add(vmtn);
@@ -234,6 +238,21 @@ public class FabricConfTreeModel extends DefaultTreeModel
 //    mmn = new NameValueNode("num ports", lle.getPortElements().size());
 //    mmtn = new UserObjectTreeNode(mmn, false);
 //    vmtn.add(mmtn);
+    
+    // conditionally add speed and width
+    if(!lle.getSpeedAttribute().equals("unspecified"))
+    {
+      vmn = new NameValueNode("speed", lle.getSpeedAttribute());
+      vmtn.add(new UserObjectTreeNode(vmn, false));
+    }
+    
+    if(!lle.getWidthAttribute().equals("unspecified"))
+    {
+      vmn = new NameValueNode("width", lle.getWidthAttribute());
+      vmtn.add(new UserObjectTreeNode(vmn, false));
+    }
+    
+
 
     addCommentElements(vmtn, lle.getCommentElements());
 
@@ -262,6 +281,19 @@ public class FabricConfTreeModel extends DefaultTreeModel
 //    NameValueNode          vmn = new NameValueNode("link", pe);
     UserObjectTreeNode    vmtn = new UserObjectTreeNode(vmn, true);
     parent.add(vmtn);
+    
+    // conditionally add speed and width
+    if(!pe.getSpeed().equals("unspecified"))
+    {
+      vmn = new NameValueNode("speed", pe.getSpeed());
+      vmtn.add(new UserObjectTreeNode(vmn, false));
+    }
+    
+    if(!pe.getWidth().equals("unspecified"))
+    {
+      vmn = new NameValueNode("width", pe.getWidth());
+      vmtn.add(new UserObjectTreeNode(vmn, false));
+    }
     
     NameValueNode      mmn = new NameValueNode("remote node", pe.getIB_RemoteNodeElement().getName());
 //    NameValueNode      mmn = new NameValueNode("port", pe.getNumber());

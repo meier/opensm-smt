@@ -82,6 +82,7 @@ import gov.llnl.lc.infiniband.opensm.plugin.graph.SystemErrGraphListener;
 import gov.llnl.lc.infiniband.opensm.plugin.net.OsmClientApi;
 import gov.llnl.lc.infiniband.opensm.plugin.net.OsmServiceManager;
 import gov.llnl.lc.infiniband.opensm.plugin.net.OsmSession;
+import gov.llnl.lc.infiniband.opensm.xml.IB_FabricConf;
 import gov.llnl.lc.logging.CommonLogger;
 
 public class FabricConfTreePanel extends JPanel implements CommonLogger, IB_GraphSelectionListener
@@ -270,6 +271,28 @@ public class FabricConfTreePanel extends JPanel implements CommonLogger, IB_Grap
 
   public static void main(String[] args) throws Exception
   {
+
+    JFrame frame = new JFrame();
+    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    frame.setLocation(100, 50);
+
+            IB_FabricConf fc    = new IB_FabricConf("/home/meier3/IB_DIAGS_OUT/ibfabricconf.xml");
+
+            FabricConfTreeModel model = new FabricConfTreeModel(fc);
+            FabricConfTreePanel etp = new FabricConfTreePanel();
+            etp.setTreeModel(model);
+            
+            SystemErrGraphListener listener = new SystemErrGraphListener();
+   
+            JScrollPane scroller = new JScrollPane(etp);  
+            frame.getContentPane().add(scroller, BorderLayout.CENTER); 
+            frame.pack();
+            frame.setVisible(true);
+
+  }
+
+  public static void mainOrig(String[] args) throws Exception
+  {
     OSM_Configuration Config   = null;
     
     /** from the client interface **/
@@ -284,7 +307,7 @@ public class FabricConfTreePanel extends JPanel implements CommonLogger, IB_Grap
     /* the one and only OsmServiceManager */
     OsmServiceManager OsmService = OsmServiceManager.getInstance();
     String hostName = "localhost";
-    String portNum  = "10018";
+    String portNum  = "10014";
 
     try
     {

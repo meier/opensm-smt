@@ -86,6 +86,7 @@ public enum SmtProperty implements Serializable, NetworkConstants
   SMT_PLAY_CONTROL(             5, "play controls",          "playControl", "pControl", "",          "use gui controls for playback"),
   SMT_DUMP(                     6, "raw dump",               "dump",        "dump",     "",          "raw dump"),
   SMT_ID_PORT(                  7, "port id",                "nodePort",    "p",     "port number",  "return port specific results"),
+  SMT_DELIMITER(                8, "parsing delimiter",      "delimiter",   "delim",     "string",   "field separator (configured query option)"),
   SMT_QUERY_LIST(             100, "SmtQuery.list",          "queryList",   "ql",        "query option",      "list the available query options"),
   SMT_QUERY_TYPE(             101, "SmtQuery.type",          "query",       "q",        "query option",      "the type of query to perform"),
   SMT_QUERY_ALL(              102, "SmtQuery.all",           "queryAll", "qa", "", "searches everything"),
