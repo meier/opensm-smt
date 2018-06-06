@@ -4,8 +4,8 @@
 %define cmd_dir /usr/bin
 
 Name:           	opensm-smt-java
-Version:        	2.05
-Release:        	63%{?dist}
+Version:        	2.06
+Release:        	65%{?dist}
 Summary:        	Subnet monitoring tools for OpenSM, that use the OpenSM Monitoring Service
 
 Group:          	Development/Libraries
@@ -79,6 +79,8 @@ rm -rf $RPM_BUILD_ROOT
 %{cmd_dir}/*
 
 %changelog
+* Wed Jun 6 2018 Tim Meier <meier3@llnl.gov> 2.06-65
+- version 2.06 release 65, initial support for JSON fabric config
 * Tue Jan 23 2018 Tim Meier <meier3@llnl.gov> 2.05-63
 - version 2.05 release 63, file annonymizer, handle some missing timestamps
 * Fri Dec 9 2016 Tim Meier <meier3@llnl.gov> 2.03-59
