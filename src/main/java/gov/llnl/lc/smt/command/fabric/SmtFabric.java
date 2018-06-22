@@ -55,6 +55,9 @@
  ********************************************************************/
 package gov.llnl.lc.smt.command.fabric;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -67,6 +70,7 @@ import org.apache.commons.cli.OptionBuilder;
 
 import gov.llnl.lc.infiniband.core.IB_Guid;
 import gov.llnl.lc.infiniband.core.IB_Link;
+import gov.llnl.lc.infiniband.opensm.json.IB_FabricJson;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OMS_WhatsUpInfo;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Configuration;
 import gov.llnl.lc.infiniband.opensm.plugin.data.OSM_Fabric;
@@ -173,6 +177,16 @@ public class SmtFabric extends SmtCommand
       config.put(SmtProperty.SMT_QUERY_TYPE.getName(), SmtProperty.SMT_LIST.getName());
     }
 
+    // save some defaults
+    sp = SmtProperty.SMT_VERBOSE;
+    config.put(sp.getName(), "false");
+    if(line.hasOption(sp.getName()))
+      config.put(sp.getName(), "true");
+    sp = SmtProperty.SMT_PRETTY;
+    config.put(sp.getName(), "false");
+    if(line.hasOption(sp.getName()))
+      config.put(sp.getName(), "true");
+    
     sp = SmtProperty.SMT_FABRIC_CONFIG_CMD;
     if(line.hasOption(sp.getName()))
     {
@@ -185,6 +199,20 @@ public class SmtFabric extends SmtCommand
       config.put(SmtProperty.SMT_SUBCOMMAND.getName(), SmtProperty.SMT_NODE_MAP_CMD.getName());
     }
 
+    sp = SmtProperty.SMT_GENERATE_XML;
+    if(line.hasOption(sp.getName()))
+    {
+      config.put(SmtProperty.SMT_SUBCOMMAND.getName(), sp.getName());
+      config.put(sp.getName(), line.getOptionValue(sp.getName()));
+    }
+    
+    sp = SmtProperty.SMT_GENERATE_JSON;
+    if(line.hasOption(sp.getName()))
+    {
+      config.put(SmtProperty.SMT_SUBCOMMAND.getName(), sp.getName());
+      config.put(sp.getName(), line.getOptionValue(sp.getName()));
+    }
+    
     sp = SmtProperty.SMT_FABRIC_DISCOVER;
     if(line.hasOption(sp.getName()))
     {
@@ -240,6 +268,17 @@ public class SmtFabric extends SmtCommand
     OSM_Configuration cfg  = null;
     
     
+    boolean verbose = false;
+    boolean pretty  = false;
+    
+    String bString = map.get(SmtProperty.SMT_VERBOSE.getName());
+    if((bString != null) && (bString.startsWith("t") || (bString.startsWith("T"))))
+        verbose = true;
+     
+    bString = map.get(SmtProperty.SMT_PRETTY.getName());
+    if((bString != null) && (bString.startsWith("t") || (bString.startsWith("T"))))
+        pretty = true;
+     
     String subCommand = map.get(SmtProperty.SMT_SUBCOMMAND.getName());
     if (subCommand == null)
       subCommand = SmtProperty.SMT_HELP.getName();
@@ -255,7 +294,7 @@ public class SmtFabric extends SmtCommand
       cfg = getOsmConfig(true);
       if((cfg != null) && (cfg.getFabricConfig() != null) && (cfg.getFabricConfig().getFabricName() != null))
       {
-        // save this configuration and then perform a check
+        // save this configuration and then show it
         OSM_Configuration.cacheOSM_Configuration(OMService.getFabricName(), cfg);
         System.out.println(cfg.getFabricConfig().toContent());
       }
@@ -264,6 +303,18 @@ public class SmtFabric extends SmtCommand
         logger.severe("Couldn't obtain Fabric configuration, check service connection.");
         System.err.println("Couldn't obtain Fabric configuration, check service connection.");
       }
+      return true;
+    }
+    else if(subCommand.equalsIgnoreCase(SmtProperty.SMT_GENERATE_XML.getName()))
+    {
+      String filename = map.get(SmtProperty.SMT_GENERATE_XML.getName());
+      showGeneratedTopology(false, filename, pretty, !verbose);
+      return true;
+    }
+    else if(subCommand.equalsIgnoreCase(SmtProperty.SMT_GENERATE_JSON.getName()))
+    {
+      String filename = map.get(SmtProperty.SMT_GENERATE_JSON.getName());
+      showGeneratedTopology(true, filename, pretty, !verbose);
       return true;
     }
     else if (subCommand.equalsIgnoreCase(SmtProperty.SMT_STATUS.getName()))
@@ -296,8 +347,6 @@ public class SmtFabric extends SmtCommand
       SmtFabricStructure fs = null;
       if(OMService != null)
         fs = new SmtFabricStructure(OMService);
-      else
-        System.err.println("The OMService is null, baby");
       
       switch (qType)
       {
@@ -327,29 +376,31 @@ public class SmtFabric extends SmtCommand
           
         case FAB_CHECK:
           // check for dynamic link errors AND configuration errors
-          System.out.println("Checking for Link errors...");
-          LinkedHashMap<String, String> errMap = IB_LinkInfo.getErrorLinkInfoRecords(OMService, getOSM_FabricDelta(false));
-          if((errMap != null) && !(errMap.isEmpty()))
-            for (Map.Entry<String, String> mapEntry : errMap.entrySet())
-              System.out.println(mapEntry.getValue());
-          else
-            System.out.println("  no errors found");
-          System.out.println();
- 
-          cfg = getOsmConfig(true);
-          if((cfg != null) && (cfg.getFabricConfig() != null) && (cfg.getFabricConfig().getFabricName() != null))
-          {
-            // save this configuration and then perform a check
-            OSM_Configuration.cacheOSM_Configuration(OMService.getFabricName(), cfg);
-            OMService.getFabric().checkFabricStructure(cfg.getFabricConfig(), true);
-          }
+//          System.out.println("Checking for Link errors...");
+//          LinkedHashMap<String, String> errMap = IB_LinkInfo.getErrorLinkInfoRecords(OMService, getOSM_FabricDelta(false));
+//          if((errMap != null) && !(errMap.isEmpty()))
+//            for (Map.Entry<String, String> mapEntry : errMap.entrySet())
+//              System.out.println(mapEntry.getValue());
+//          else
+//            System.out.println("  no errors found");
+//          System.out.println();
+// 
+//          cfg = getOsmConfig(true);
+//          if((cfg != null) && (cfg.getFabricConfig() != null) && (cfg.getFabricConfig().getFabricName() != null))
+//          {
+//            // save this configuration and then perform a check
+//            OSM_Configuration.cacheOSM_Configuration(OMService.getFabricName(), cfg);
+//            OMService.getFabric().checkFabricStructure(cfg.getFabricConfig(), true);
+//          }
+//          System.out.println("\nNow for something new ****");
+          System.out.println(getFabricCheckReport());
           break;
           
         case FAB_CONFIG:
           cfg = getOsmConfig(true);
           if((cfg != null) && (cfg.getFabricConfig() != null) && (cfg.getFabricConfig().getFabricName() != null))
           {
-            // save this configuration and then perform a check
+            // save this configuration and then show it
             OSM_Configuration.cacheOSM_Configuration(OMService.getFabricName(), cfg);
             
             System.out.println(cfg.toInfo());
@@ -683,6 +734,35 @@ public class SmtFabric extends SmtCommand
     return buff.toString();
   }
   
+  private void showGeneratedTopology(boolean provideJSON, String filename, boolean pretty, boolean concise)
+  {
+    IB_FabricJson fab = new IB_FabricJson(OMService.getFabric());
+    StringBuffer buff = new StringBuffer();
+    if(provideJSON)
+      buff.append(fab.toJsonString(pretty, concise));
+    else
+      buff.append(fab.toXmlString(concise));
+      
+    if(filename == null)
+      System.out.println(buff.toString());
+    else
+    {
+      // write this out to a file
+      try 
+      {
+        File file = new File(filename);
+        FileWriter fileWriter = new FileWriter(file);
+        fileWriter.write(buff.toString());
+        fileWriter.flush();
+        fileWriter.close();
+      }
+      catch (IOException e)
+      {
+        e.printStackTrace();
+      }
+    }
+   }
+
   private void showDiscoveredFabrics(Map<String,String> map)
   {
     String hostNam  = map.get(SmtProperty.SMT_HOST.getName());
@@ -770,6 +850,35 @@ public class SmtFabric extends SmtCommand
     return buff.toString() + SmtConstants.NEW_LINE;
   }
 
+  public String getFabricCheckReport() throws Exception
+  {
+    StringBuffer buff = new StringBuffer();
+    OSM_Configuration cfg  = null;
+    
+    // check for dynamic link errors AND configuration errors
+    buff.append("Checking for Link errors..." + SmtConstants.NEW_LINE);
+    LinkedHashMap<String, String> errMap = IB_LinkInfo.getErrorLinkInfoRecords(OMService, getOSM_FabricDelta(false));
+    if((errMap != null) && !(errMap.isEmpty()))
+      for (Map.Entry<String, String> mapEntry : errMap.entrySet())
+        buff.append(mapEntry.getValue() + SmtConstants.NEW_LINE);
+    else
+      buff.append("  no errors found" + SmtConstants.NEW_LINE );
+    buff.append(SmtConstants.NEW_LINE);
+
+    cfg = getOsmConfig(true);
+    if((cfg != null) && (cfg.getFabricConfig() != null) && (cfg.getFabricConfig().getFabricName() != null))
+    {
+      // save this configuration and then perform a check
+      OSM_Configuration.cacheOSM_Configuration(OMService.getFabricName(), cfg);
+      
+      IB_FabricJson currentFabric = new IB_FabricJson(OMService.getFabric());
+      IB_FabricJson goldFabric = new IB_FabricJson(cfg.getFabricConfig());
+      
+      buff.append(goldFabric.getDifferenceReport(currentFabric) );
+    }
+    return buff.toString() + SmtConstants.NEW_LINE;
+  }
+
 
 
   /************************************************************
@@ -815,15 +924,31 @@ public class SmtFabric extends SmtCommand
     sp = SmtProperty.SMT_FABRIC_DISCOVER;
     Option discover  = OptionBuilder.hasArg(true).hasArgs(1).withArgName( sp.getArgName() ).withValueSeparator('=').withDescription(  sp.getDescription() ).withLongOpt(sp.getName()).create( sp.getShortName() );
 
+    sp = SmtProperty.SMT_GENERATE_XML;
+    Option gXML  = OptionBuilder.hasOptionalArg().withArgName( sp.getArgName() ).withValueSeparator('=').withDescription(  sp.getDescription() ).withLongOpt(sp.getName()).create( sp.getShortName() );
+
+    sp = SmtProperty.SMT_GENERATE_JSON;
+    Option gJSON  = OptionBuilder.hasOptionalArg().withArgName( sp.getArgName() ).withValueSeparator('=').withDescription(  sp.getDescription() ).withLongOpt(sp.getName()).create( sp.getShortName() );
+
     sp = SmtProperty.SMT_STATUS;
     Option status  = OptionBuilder.hasArg(false).withDescription(  sp.getDescription() ).withLongOpt(sp.getName()).create( sp.getShortName() );
 
+    sp = SmtProperty.SMT_VERBOSE;
+    Option verbose = new Option( sp.getShortName(), sp.getName(), false, sp.getDescription() );    
+    
+    sp = SmtProperty.SMT_PRETTY;
+    Option pretty = new Option( sp.getShortName(), sp.getName(), false, sp.getDescription() );    
+    
     options.addOption( status );
     options.addOption( qType );
     options.addOption( qList );
     options.addOption( discover );
     options.addOption( fConfig );
     options.addOption( nMap );
+    options.addOption( gXML );
+    options.addOption( gJSON );
+    options.addOption( verbose );
+    options.addOption( pretty );
     
     return true;
   }

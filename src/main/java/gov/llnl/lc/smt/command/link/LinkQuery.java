@@ -82,6 +82,7 @@ public enum LinkQuery
   LINK_ACTIVE(                7, "active",           "a",    "show active links"),    
   LINK_ERROR(                 8, "errors",           "e",   "show links with dynamic errors"),    
   LINK_CONFIG(                9, "configured",       "c",   "list all links as specified in ibfabricconf file (ideal)"),    
+  LINK_CURRENT(              11, "current",          "c",   "list all links on a single line (using delimiter)"),    
   LINK_SPEED(                10, "speed",            "s",   "list all links with the specified speed (QDR is default)"),    
   LINK_LAST_QUERY(          999, "QueryEnd",         "end",  "always the end of the property list");
   

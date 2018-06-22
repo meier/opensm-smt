@@ -947,6 +947,72 @@ public abstract class SmtCommand implements SmtCommandInterface, SmtConstants, C
    }
     return g;
   }
+  
+  public IB_Guid getNodeGuidFromConfig(SmtConfig config)
+  {
+    // if there are any arguments, they normally reference a node identifier
+    // return null, indicating couldn't be found, or nothing specified
+    if(config != null)
+    {
+      Map<String,String> map = config.getConfigMap();
+      String nodeid = map.get(SmtProperty.SMT_COMMAND_ARGS.getName());
+      if(nodeid != null)
+      {
+        // the id may be a name, lid, guid, or a port-guid (not same as node guid)
+        return getNodeGuid(nodeid);
+       }
+    }
+     return null;
+  }
+
+  public static int getPortNumberFromConfig(SmtConfig config)
+  {
+    // if there are any arguments, they normally reference a port identifier
+    // return 1 by default, indicating couldn't be found, or nothing specified
+    if(config != null)
+    {
+      Map<String,String> map = config.getConfigMap();
+      String portid = map.get(SmtProperty.SMT_COMMAND_ARGS.getName());
+      if(portid != null)
+      {
+        // should be at least two words
+        //  the very last word, is supposed to be the port number
+        //  if only one word, then check to see if there are 4 colons, if so, port number is after that
+        String[] args = portid.split(" ");
+        if((args != null) && (args.length > 0))
+        {
+          int p = 1;
+          if(args.length == 1)
+          {
+            // see if a port number is tagged on as the last value of a colon delimited guid+port string
+            String[] octets = portid.split(":");
+            if(octets.length > 4)
+              p = Integer.parseInt(octets[octets.length -1]);
+           }
+          else
+          {
+            // multiple words, only look at the last one
+            String arg = args[args.length -1];
+            try
+            {
+              p = Integer.parseInt(arg);
+            }
+            catch(Exception e)
+            {
+              // not a pure number, but perhaps colon delimited
+              String[] octets = arg.split(":");
+              p = 1;
+              if(octets.length > 1)
+                p = Integer.parseInt(octets[octets.length -1]);
+            }
+          }
+          return p;
+        }
+       }
+    }
+     return 1;
+  }
+
 
   protected HashMap<String, OSM_Node> getOSM_Nodes()
   {
@@ -1232,12 +1298,14 @@ public abstract class SmtCommand implements SmtCommandInterface, SmtConstants, C
       try
       {
         OMS_List lst = OpenSmMonitorService.getOMS_List(hostNam, portNum);
-
-        OMS = lst.getCurrentOMS();
+        if(lst != null)
+          OMS = lst.getCurrentOMS();
         if(history == null)
         {
+          // initialize the history, if possible
           history = new OMS_Collection();
-          history.put(lst.getOldestOMS());
+          if(lst != null)
+            history.put(lst.getOldestOMS());
           history.put(OMS);
         }
       }

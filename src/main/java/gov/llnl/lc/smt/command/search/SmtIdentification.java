@@ -203,10 +203,10 @@ public class SmtIdentification extends SmtCommand
     String subCommand    = null;
     Map<String,String> map = smtConfig.getConfigMap();
     
-    IB_Guid ng = getNodeGuid(config);
+    IB_Guid ng = getNodeGuidFromConfig(config);
     IB_Guid pg = getPortGuid(config);
     IB_Guid sg = getSystemGuid(config);
-    int  pNum = getPortNumber(config);
+    int  pNum = getPortNumberFromConfig(config);
     int  pKey = getPartitionKey(config);
     int  mLid = getMulticastLid(config);
         
@@ -492,22 +492,22 @@ public class SmtIdentification extends SmtCommand
      return null;
   }
 
-  private IB_Guid getNodeGuid(SmtConfig config)
-  {
-    // if there are any arguments, they normally reference a node identifier
-    // return null, indicating couldn't be found, or nothing specified
-    if(config != null)
-    {
-      Map<String,String> map = config.getConfigMap();
-      String nodeid = map.get(SmtProperty.SMT_COMMAND_ARGS.getName());
-      if(nodeid != null)
-      {
-        // the id may be a name, lid, guid, or a port-guid (not same as node guid)
-        return getNodeGuid(nodeid);
-       }
-    }
-     return null;
-  }
+//  public static IB_Guid getNodeGuidFromConfig(SmtConfig config)
+//  {
+//    // if there are any arguments, they normally reference a node identifier
+//    // return null, indicating couldn't be found, or nothing specified
+//    if(config != null)
+//    {
+//      Map<String,String> map = config.getConfigMap();
+//      String nodeid = map.get(SmtProperty.SMT_COMMAND_ARGS.getName());
+//      if(nodeid != null)
+//      {
+//        // the id may be a name, lid, guid, or a port-guid (not same as node guid)
+//        return getNodeGuid(nodeid);
+//       }
+//    }
+//     return null;
+//  }
 
   private IB_Guid getPortGuid(SmtConfig config)
   {
@@ -526,54 +526,54 @@ public class SmtIdentification extends SmtCommand
      return null;
   }
 
-  private int getPortNumber(SmtConfig config)
-  {
-    // if there are any arguments, they normally reference a port identifier
-    // return 0, indicating couldn't be found, or nothing specified
-    if(config != null)
-    {
-      Map<String,String> map = config.getConfigMap();
-      String portid = map.get(SmtProperty.SMT_COMMAND_ARGS.getName());
-      if(portid != null)
-      {
-        // should be at least two words
-        //  the very last word, is supposed to be the port number
-        //  if only one word, then check to see if there are 4 colons, if so, port number is after that
-        String[] args = portid.split(" ");
-        if((args != null) && (args.length > 0))
-        {
-          int p = 0;
-          if(args.length == 1)
-          {
-            // see if a port number is tagged on as the last value of a colon delimited guid+port string
-            String[] octets = portid.split(":");
-            if(octets.length > 4)
-              p = Integer.parseInt(octets[octets.length -1]);
-           }
-          else
-          {
-            // multiple words, only look at the last one
-            String arg = args[args.length -1];
-            try
-            {
-              p = Integer.parseInt(arg);
-            }
-            catch(Exception e)
-            {
-              // not a pure number, but perhaps colon delimited
-              String[] octets = arg.split(":");
-              p = 0;
-              if(octets.length > 1)
-                p = Integer.parseInt(octets[octets.length -1]);
-            }
-          }
-          return p;
-        }
-       }
-    }
-     return 0;
-  }
-
+//  public static int getPortNumberFromConfig2(SmtConfig config)
+//  {
+//    // if there are any arguments, they normally reference a port identifier
+//    // return 1 by default, indicating couldn't be found, or nothing specified
+//    if(config != null)
+//    {
+//      Map<String,String> map = config.getConfigMap();
+//      String portid = map.get(SmtProperty.SMT_COMMAND_ARGS.getName());
+//      if(portid != null)
+//      {
+//        // should be at least two words
+//        //  the very last word, is supposed to be the port number
+//        //  if only one word, then check to see if there are 4 colons, if so, port number is after that
+//        String[] args = portid.split(" ");
+//        if((args != null) && (args.length > 0))
+//        {
+//          int p = 1;
+//          if(args.length == 1)
+//          {
+//            // see if a port number is tagged on as the last value of a colon delimited guid+port string
+//            String[] octets = portid.split(":");
+//            if(octets.length > 4)
+//              p = Integer.parseInt(octets[octets.length -1]);
+//           }
+//          else
+//          {
+//            // multiple words, only look at the last one
+//            String arg = args[args.length -1];
+//            try
+//            {
+//              p = Integer.parseInt(arg);
+//            }
+//            catch(Exception e)
+//            {
+//              // not a pure number, but perhaps colon delimited
+//              String[] octets = arg.split(":");
+//              p = 1;
+//              if(octets.length > 1)
+//                p = Integer.parseInt(octets[octets.length -1]);
+//            }
+//          }
+//          return p;
+//        }
+//       }
+//    }
+//     return 1;
+//  }
+//
   /************************************************************
    * Method Name:
    *  main

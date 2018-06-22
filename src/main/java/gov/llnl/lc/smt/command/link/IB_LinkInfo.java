@@ -955,7 +955,7 @@ return map;
     OSM_FabricDeltaAnalyzer fda = (fd == null) ? null: new OSM_FabricDeltaAnalyzer(fd);
     
     // from this data analyzer, get all the links with dynamic errors
-    LinkedHashMap<String, IB_Edge> edgeMap = fda.getDynamicErrorEdgeMap();
+    LinkedHashMap<String, IB_Edge> edgeMap = (fda == null) ? null: fda.getDynamicErrorEdgeMap();
     
     // return only good links, with dynamic errors
     if((edgeMap != null) && !(edgeMap.isEmpty()))

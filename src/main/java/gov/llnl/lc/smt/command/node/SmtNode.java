@@ -87,6 +87,7 @@ import gov.llnl.lc.smt.command.SmtCommand;
 import gov.llnl.lc.smt.command.config.SmtConfig;
 import gov.llnl.lc.smt.command.port.SmtPort;
 import gov.llnl.lc.smt.command.route.SmtRoute;
+import gov.llnl.lc.smt.command.search.SmtIdentification;
 import gov.llnl.lc.smt.props.SmtProperty;
 import gov.llnl.lc.system.Console;
 import gov.llnl.lc.system.Console.ConsoleColor;
@@ -160,8 +161,8 @@ public class SmtNode extends SmtCommand
     String subCommand    = null;
     Map<String,String> map = smtConfig.getConfigMap();
     
-    IB_Guid g = getNodeGuid(config);
-    int pNum  = getPortNumber(config);
+    IB_Guid g = getNodeGuidFromConfig(config);
+    int pNum  = getPortNumberFromConfig(config);
     
     if(config != null)
     {
@@ -708,58 +709,57 @@ public class SmtNode extends SmtCommand
     }
   }
   
-  private IB_Guid getNodeGuid(SmtConfig config)
-  {
-    // if there are any arguments, they normally reference a node identifier
-    // return null, indicating couldn't be found, or nothing specified
-    if(config != null)
-    {
-      Map<String,String> map = config.getConfigMap();
-      String nodeid = map.get(SmtProperty.SMT_COMMAND_ARGS.getName());
-      if(nodeid != null)
-      {
-        return getNodeGuid(nodeid);
-      }
-    }
-     return null;
-  }
+//  private IB_Guid getNodeGuidOrig(SmtConfig config)
+//  {
+//    // if there are any arguments, they normally reference a node identifier
+//    // return null, indicating couldn't be found, or nothing specified
+//    if(config != null)
+//    {
+//      Map<String,String> map = config.getConfigMap();
+//      String nodeid = map.get(SmtProperty.SMT_COMMAND_ARGS.getName());
+//      if(nodeid != null)
+//      {
+//        return getNodeGuid(nodeid);
+//      }
+//    }
+//     return null;
+//  }
   
-  private int getPortNumber(SmtConfig config)
-  {
-    // FIXME - See equivalent method in OSM_Fabric, eliminate here
-    
-    // if there are any arguments, they normally reference a port identifier
-    // return 0, indicating couldn't be found, or nothing specified
-    if(config != null)
-    {
-      Map<String,String> map = config.getConfigMap();
-      String portid = map.get(SmtProperty.SMT_COMMAND_ARGS.getName());
-      if(portid != null)
-      {
-        // should be at least two words
-        //  the very last word, is supposed to be the port number
-        //  if only one word, then check to see if there are 4 colons, if so, port number is after that
-        String[] args = portid.split(" ");
-        if((args != null) && (args.length > 0))
-        {
-          int p = 0;
-          if(args.length == 1)
-          {
-            // see if a port number is tagged on as the last value of a colon delimited guid+port string
-            String[] octets = portid.split(":");
-            if(octets.length > 4)
-              p = Integer.parseInt(octets[octets.length -1]);
-           }
-          else
-            p = Integer.parseInt(args[args.length -1]);
-          return p;
-        }
-       }
-    }
-     return 0;
-  }
+//  private int getPortNumber3(SmtConfig config)
+//  {
+//    // FIXME - See equivalent method in OSM_Fabric, eliminate here
+//    
+//    // if there are any arguments, they normally reference a port identifier
+//    // return 0, indicating couldn't be found, or nothing specified
+//    if(config != null)
+//    {
+//      Map<String,String> map = config.getConfigMap();
+//      String portid = map.get(SmtProperty.SMT_COMMAND_ARGS.getName());
+//      if(portid != null)
+//      {
+//        // should be at least two words
+//        //  the very last word, is supposed to be the port number
+//        //  if only one word, then check to see if there are 4 colons, if so, port number is after that
+//        String[] args = portid.split(" ");
+//        if((args != null) && (args.length > 0))
+//        {
+//          int p = 0;
+//          if(args.length == 1)
+//          {
+//            // see if a port number is tagged on as the last value of a colon delimited guid+port string
+//            String[] octets = portid.split(":");
+//            if(octets.length > 4)
+//              p = Integer.parseInt(octets[octets.length -1]);
+//           }
+//          else
+//            p = Integer.parseInt(args[args.length -1]);
+//          return p;
+//        }
+//       }
+//    }
+//     return 0;
+//  }
   
-
   
   private static String getStatLine(String label, long sw, long ca, long total)
   {
