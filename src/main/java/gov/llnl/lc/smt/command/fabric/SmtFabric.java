@@ -300,8 +300,8 @@ public class SmtFabric extends SmtCommand
       }
       else
       {
-        logger.severe("Couldn't obtain Fabric configuration, check service connection.");
-        System.err.println("Couldn't obtain Fabric configuration, check service connection.");
+        logger.severe("Couldn't obtain Fabric configuration, check file permissions and/or service connection.");
+        System.err.println("Couldn't obtain Fabric configuration, check file permissions and/or service connection.");
       }
       return true;
     }

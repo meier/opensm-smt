@@ -5,7 +5,7 @@
 
 Name:           	opensm-smt-java
 Version:        	2.07
-Release:        	67%{?dist}
+Release:        	69%{?dist}
 Summary:        	Subnet monitoring tools for OpenSM, that use the OpenSM Monitoring Service
 
 Group:          	Development/Libraries
