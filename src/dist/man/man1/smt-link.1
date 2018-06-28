@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "SMT\-LINK" "1" "2016-12-07" "User Commands" "Subnet Monitoring Tools"
+.TH "SMT\-LINK" "1" "2018-06-27" "User Commands" "Subnet Monitoring Tools"
 .
 .SH "NAME"
 \fBsmt\-link\fR \- returns information about one or more links in the fabric
@@ -71,7 +71,7 @@ The guid is expressed in 4 groups of 16 bit hexidecimal numbers\. These groups m
 Numbers are often used to identify elements within the context of a \'type\' of element\. They can be refered to as \'keys\' or \'local ids\'\. SMT supports expressing numbers as normal base\-10 integers, or as hexidecimal\. Hexidecimal numbers \fBmust\fR be preceeded with \fB0x\fR\.
 .
 .SS "name"
-Strings are used to decribe or name an element\. The SMT commands currently only supports the use of \fBnames\fR to identy a \fBnode\fR\.
+Strings are used to decribe or name an element\. The SMT commands currently only supports the use of \fBnames\fR to identify a \fBnode\fR\.
 .
 .SH "OPTIONS"
 .
@@ -99,6 +99,10 @@ prints the version of the SMT command
 .
 .SS "Command Options"
 If a NODE ID is supplied with the command, then all of the links of the switch or channel adapter will be displayed\. If a PORT ID is supplied, then the individual link associated with that port will be displayed\.
+.
+.TP
+\fB\-delim\fR, \fB\-\-delimiter\fR=[string]
+use the provided string as a field separator for the output of \fBconfigured\fR and \fBcurrent\fR query options\.
 .
 .TP
 \fB\-L\fR, \fB\-\-level\fR=[level value]
@@ -130,6 +134,14 @@ shows all of the links in the fabric that are active
 .TP
 \fBall\fR
 shows all of the links
+.
+.TP
+\fBconfigured\fR
+using the topology file (/etc/infiniband\-diags/ibfabricconf\.xml by default), list all of the links in the fabric the way they should be\. This is used as an ideal reference, to look for differences in the fabric\. The links are provided on a single line in the form: \fIlocal node\fR\fIlocal port num\fR\fIremote portnum\fR\fIremote node\fR\fIspeed\fR\fIwidth\fR\. The fields can be separated by an optional delimiter by using the \-delim \fIstring\fR option\.
+.
+.TP
+\fBcurrent\fR
+using the current state of the fabric, list all of the links\. The output will be formatted as described above\.
 .
 .TP
 \fBdown\fR
@@ -213,7 +225,7 @@ shows all of the QDR links
 Tim Meier \fImeier3@llnl\.gov\fR
 .
 .SH "COPYRIGHT"
-Copyright (c) 2016, Lawrence Livermore National Security, LLC\. Produced at the Lawrence Livermore National Laboratory\. All rights reserved\. LLNL\-CODE\-673346
+Copyright (c) 2018, Lawrence Livermore National Security, LLC\. Produced at the Lawrence Livermore National Laboratory\. All rights reserved\. LLNL\-CODE\-673346
 .
 .SH "SEE ALSO"
 SMT(7), OMS(7), OsmJniPi(8), smt(1), smt\-record(1), smt\-fabric(1), smt\-system(1), smt\-node(1), smt\-port(1)
