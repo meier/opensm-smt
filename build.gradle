@@ -46,7 +46,7 @@ dependencies {
     compile name: 'LcSecureClientServer'
     compile name: 'OsmClientServer-2.06'
     compile name: 'commons-cli'
-    compile name: 'commons-collections-3.2.1'
+    compile name: 'commons-collections-3.2.2'
     compile name: 'guava-18.0'
     compile name: 'javassist'
     compile name: 'reflections-0.9.9-RC1'
